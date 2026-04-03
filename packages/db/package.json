@@ -1,0 +1,20 @@
+{
+    "name": "@certjs/db",
+    "version": "1.0.0",
+    "description": "",
+    "license": "ISC",
+    "author": "",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b"
+    },
+    "dependencies": {
+        "@neondatabase/serverless": "^1.0.2",
+        "dotenv": "^17.3.1"
+    },
+    "devDependencies": {
+        "drizzle-kit": "^0.31.10"
+    }
+}

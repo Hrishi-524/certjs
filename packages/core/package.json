@@ -1,0 +1,19 @@
+{
+    "name": "@certjs/core",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "test": "npx tsx test-render-engine.ts"
+    },
+    "dependencies": {
+        "@napi-rs/canvas": "^0.1.97",
+        "@types/node": "^25.5.0",
+        "sharp": "^0.32.1"
+    },
+    "devDependencies": {
+        "npx": "^10.2.2",
+        "tsx": "^4.21.0",
+        "typescript": "^6.0.2"
+    }
+}

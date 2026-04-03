@@ -1,0 +1,12 @@
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Access-Control-Allow-Origin: http://localhost:3000
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 483
+ETag: W/"1e3-umOuXU4KdW1ieLVhqbRZ47vjZ3k"
+Date: Thu, 19 Mar 2026 16:45:48 GMT
+Connection: close
+
+{"message":"Placeholders added to template","placeholders":[{"id":"95b26926-f2f5-4902-84ae-3dff67d783b8","template_id":"48f9ba78-e33f-4eef-99cb-a95a8ac2f41c","name":"name","x":400,"y":300,"align":"center","font_size":48,"font_color":"#1a1a1a","font_family":"sans-serif"},{"id":"e3df114e-a2c5-4ecd-9710-054d609656ac","template_id":"48f9ba78-e33f-4eef-99cb-a95a8ac2f41c","name":"rank","x":400,"y":380,"align":"center","font_size":32,"font_color":"#555555","font_family":"sans-serif"}]}

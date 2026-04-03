@@ -1,0 +1,19 @@
+{
+    "name": "certjs",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "npm run build -w @certjs/db",
+        "dev:api": "npm run dev -w api",
+        "dev:worker": "npm run dev -w worker"
+    },
+    "dependencies": {
+        "bullmq": "^5.72.1",
+        "drizzle-orm": "^0.45.1",
+        "ioredis": "^5.10.1",
+        "postgres": "^3.4.8"
+    }
+}

@@ -1,0 +1,13 @@
+{   
+    "name": "@certjs/db",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": ".",
+        "declaration": true
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "dist"]
+}

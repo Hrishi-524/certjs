@@ -1,0 +1,5 @@
+inputs/
+outputs/
+logs/
+temp/
+test-render-engine.ts

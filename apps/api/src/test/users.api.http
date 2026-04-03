@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3000/api/v1
+
+### Create a temporary user 
+POST {{baseUrl}}/users/temp
+Content-Type: application/json
+
+{
+  "username": "tempuser2",
+  "email": "tempuser2@example.com",
+  "password": "tempuserpassword2"
+}

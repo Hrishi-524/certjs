@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+drizzle/
+coverage/
+*.log
+*.env
+*.tsbuildinfo
+*.js
+*.d.ts
+*.map
+.idea/
+.vscode/
+.DS_Store
