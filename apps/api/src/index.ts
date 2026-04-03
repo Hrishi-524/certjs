@@ -15,9 +15,9 @@ app.get("/health", (req, res) => {
     res.send("Health check successful!");
 });
 
-import indexRouter from "./routes/index.router.js";
+import indexRouter from "./routes";
 
-app.use("/api/v1", indexRouter)
+app.use("/api", indexRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
