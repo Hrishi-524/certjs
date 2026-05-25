@@ -1,0 +1,20 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "ignoreDeprecations": "6.0",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "rootDir": ".",
+        "types": ["node"],
+        "baseUrl": ".",
+        "paths": {
+            "@certjs/db": ["../../packages/db/src"],
+            "@certjs/db/schema": ["../../packages/db/src/schema"],
+            "@certjs/core/*": ["../../packages/core/src/*"],
+            "@certjs/queue": ["../../packages/queue/src"]
+        }
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "dist"]
+}

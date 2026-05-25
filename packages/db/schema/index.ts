@@ -5,7 +5,7 @@ import { apikeys } from "./api_keys";
 import { placeholders } from "./placeholders";
 import { jobs } from "./jobs";
 
-export const schema = {
+export {
     users,
     templates,
     documents,

@@ -1,4 +1,4 @@
-** Scema Definations **
+** Schema Definations **
 
 api_keys schema:
 id, user_id (FK), key_hash, name, created_at, lastused_at
