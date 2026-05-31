@@ -23,6 +23,8 @@ export default async function fetchTemplateBuffer(
             Key: key,
         });
 
+
+        
         const response = await s3.send(command);
 
         if (!response.Body) {
