@@ -10,9 +10,9 @@ export const uploadTemplate = async (req: Request, res: Response) => {
     }
 
     // const userId = req.user.id;
-    const user_id = "7c2324a4-d19c-4fc3-8d88-975074b66948";
     const template_id = crypto.randomUUID();
-    const { name, width, height } = req.body;
+    // NOTE: this is temporary that user_id is passed in the body, we will replace this with the user id from the auth middleware once we have that set up
+    const { name, width, height, user_id } = req.body;
 
     const result = await uploadTemplateImage(
         req.file.buffer,

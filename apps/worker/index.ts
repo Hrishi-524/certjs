@@ -5,10 +5,12 @@ import { documents, jobs, templates, placeholders } from "@certjs/db/schema"
 import fetchTemplateBuffer from "./fetch-template-buffer";
 import { db } from "@certjs/db"
 import { eq } from "drizzle-orm";
+import { uploadGeneratedCertificate } from "./upload-rendered-document";
 
 const connection = new IORedis({
     host: "127.0.0.1",
     port: 6379,
+    maxRetriesPerRequest: null,
 });
 
 export const worker = new Worker( "certificates", async (job) => {
@@ -18,7 +20,7 @@ export const worker = new Worker( "certificates", async (job) => {
 
     try {
         // 1. Fetch document
-        const [document] = await db.select().from(documents).where(eq(document_id, documents.id));
+        const [document] = await db.select().from(documents).where(eq(documents.id, document_id));
 
         // 2. Ideompotency guard
         if(document.status === "completed") {
@@ -75,18 +77,21 @@ export const worker = new Worker( "certificates", async (job) => {
             data,
         });
 
+        // 9.5 Upload to S3 and get URL
+        const response = await uploadGeneratedCertificate(renderedBuffer, document_id);
+        
         // 10. Update document record with S3 URL and mark as completed
-        await db.update(documents).set({ s3_url: "https://example.com/rendered-certificate.png", status: "completed" }).where(eq(documents.id, document_id));
+        await db.update(documents).set({ s3_url: response.url, status: "completed" }).where(eq(documents.id, document_id));
 
         // 11. Update processed count in job
         await db.update(jobs).set({ processed_count: batch_job.processed_count + 1 }).where(eq(jobs.id, batch_job.id));
 
-        // 12. atomic increment
-        await db.execute(`
-            UPDATE jobs
-            SET processed_count = processed_count + 1
-            WHERE id = '${batch_job.id}'
-        `);
+        // // 12. atomic increment
+        // await db.execute(`
+        //     UPDATE jobs
+        //     SET processed_count = processed_count + 1
+        //     WHERE id = '${batch_job.id}'
+        // `);
         
         console.log(`Job ${job.id} completed successfully`);
     } catch (error) {

@@ -13,3 +13,12 @@ export {
     placeholders,
     jobs
 }
+
+export const schema = {
+    users,
+    templates,
+    documents,
+    apikeys,
+    placeholders,
+    jobs
+}

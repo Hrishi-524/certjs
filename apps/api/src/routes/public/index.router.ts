@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { generateCertificate } from "@/controllers/document.controller";
+import { getDoc } from "@/controllers/document.controller";
 
 const router = Router();
 
-router.post("/certificates/generate", generateCertificate);
+router.get("/certificates/:id", getDoc);
 
 export default router;

@@ -6,8 +6,8 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "npm run build -w @certjs/db",
-        "dev:api": "npm run dev -w api",
+        "build": "npm run build -w @certjs/db && npm run build -w @certjs/queue && npm run build -w @certjs/core",
+        "dev:api": "npm run dev -w certjs-api",
         "dev:worker": "npm run dev -w worker"
     },
     "dependencies": {

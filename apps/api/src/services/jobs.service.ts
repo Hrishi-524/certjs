@@ -24,7 +24,7 @@ export async function createBatchJobService(params: createBatchJobParams) {
         }
     }
 
-    const { job, docs } = await db.transaction(async (tx) => {
+    // const { job, docs } = await db.transaction(async (tx) => {
         // 3. CREATE JOB (DB)
         const [job] = await db.insert(jobs).values({
             job_type: "CERTIFICATE_BATCH",
@@ -32,6 +32,7 @@ export async function createBatchJobService(params: createBatchJobParams) {
             user_id: template.user_id,
             template_id: params.template_id,
             total_count: params.recipients.length,
+            zip_s3_url: null,
             processed_count: 0,
         }).returning();
 
@@ -43,13 +44,14 @@ export async function createBatchJobService(params: createBatchJobParams) {
                 job_id: job.id, // should it be batch job_id or child job_id
                 recipient_data: recipient_data,
                 verify_token: crypto.randomBytes(32).toString("hex"),
+                s3_url: "",
             }).returning();
 
             docs.push(document);
         }
 
-        return { job, docs };
-    });
+        // return { job, docs };
+    // });
 
     // 5. ENQUEUE DOCUMENT JOBS
     await Promise.all(
