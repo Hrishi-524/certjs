@@ -3,6 +3,16 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./render-engine": {
+            "types": "./dist/render-engine.d.ts",
+            "default": "./dist/render-engine.js"
+        }
+    },
     "scripts": {
         "build": "tsc -b",
         "test": "npx tsx test-render-engine.ts"

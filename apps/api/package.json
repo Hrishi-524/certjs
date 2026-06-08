@@ -1,5 +1,5 @@
 {
-    "name": "certjs-api",
+    "name": "@certjs/api",
     "version": "1.0.0",
     "description": "certjs express backend api",
     "keywords": [
@@ -24,7 +24,6 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.1009.0",
-        "@neondatabase/serverless": "^1.0.2",
         "@types/bcrypt": "^6.0.0",
         "@types/cookie-parser": "^1.4.10",
         "@types/cors": "^2.8.19",

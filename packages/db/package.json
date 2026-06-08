@@ -7,12 +7,31 @@
     "type": "commonjs",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./index": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./schema": {
+            "types": "./dist/schema/index.d.ts",
+            "default": "./dist/schema/index.js"
+        },
+        "./schema/*": {
+            "types": "./dist/schema/*.d.ts",
+            "default": "./dist/schema/*.js"
+        }
+    },
     "scripts": {
         "build": "tsc -b"
     },
     "dependencies": {
         "@neondatabase/serverless": "^1.0.2",
-        "dotenv": "^17.3.1"
+        "dotenv": "^17.3.1",
+        "postgres": "^3.4.9"
     },
     "devDependencies": {
         "drizzle-kit": "^0.31.10"

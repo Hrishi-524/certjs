@@ -6,14 +6,18 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "npm run build -w @certjs/db && npm run build -w @certjs/queue && npm run build -w @certjs/core",
-        "dev:api": "npm run dev -w certjs-api",
-        "dev:worker": "npm run dev -w worker"
+        "build:packages": "npm run build -w @certjs/db && npm run build -w @certjs/queue && npm run build -w @certjs/core",
+        "build:apps": "npm run build -w @certjs/api && npm run build -w @certjs/worker",
+        "build": "npm run build:packages && npm run build:apps",
+        "dev:api": "npm run dev -w @certjs/api",
+        "dev:worker": "npm run dev -w @certjs/worker"
     },
     "dependencies": {
         "bullmq": "^5.72.1",
         "drizzle-orm": "^0.45.1",
-        "ioredis": "^5.10.1",
-        "postgres": "^3.4.8"
+        "ioredis": "^5.10.1"
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.2"
     }
 }

@@ -1,21 +1,22 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "target": "esnext",
-        "module": "commonjs",
-        // "moduleResolution": "node",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+
         "outDir": "./dist",
         "rootDir": ".",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
+
         "sourceMap": true,
         "declaration": true,
-        // "baseUrl": ".",
+
+        "ignoreDeprecations": "6.0",
+        "baseUrl": ".",
+        
         "paths": {
-            "@/*": ["./src/*"],
-            "@certjs/db": ["../../packages/db"]
+            "@/*": ["./src/*"]
         }
     },
-    "include": ["src/**/*", "drizzle.config.ts"],
-    "exclude": ["node_modules", "dist"]
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "src/test/**/*"]
 }
