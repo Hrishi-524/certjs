@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "name": "certjs",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ],
+  "size": 0.0009851455688476562,
+  "filesCount": 6,
+  "presets": {
+    "requestType": "http",
+    "requestUrl": "http://localhost:3000"
+  }
+}

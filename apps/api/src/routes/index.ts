@@ -1,10 +1,10 @@
 import { Router } from "express";
 const router = Router();
 
-import internalRouter from "@/routes/internal/index.router";
-import publicRouter from "@/routes/public/index.router";
+import dashboardRouter from "@/routes/dashboard/index.router";
+import developerRouter from "@/routes/developer/index.router";
 
-router.use("/in", internalRouter);
-router.use("/v1", publicRouter)
+router.use("/dashboard", dashboardRouter);
+router.use("/v1", developerRouter);
 
 export default router;

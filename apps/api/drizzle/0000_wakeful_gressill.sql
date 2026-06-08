@@ -1,3 +1,4 @@
+CREATE TYPE "public"."oauth_provider" AS ENUM('google');--> statement-breakpoint
 CREATE TYPE "public"."job_status" AS ENUM('queued', 'processing', 'done', 'failed');--> statement-breakpoint
 CREATE TABLE "apikeys" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -16,7 +17,7 @@ CREATE TABLE "documents" (
 	"status" text DEFAULT 'pending' NOT NULL,
 	"error" text,
 	"verify_token" text NOT NULL,
-	"s3_url" text,
+	"s3_url" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -26,7 +27,7 @@ CREATE TABLE "jobs" (
 	"idempotency_key" text NOT NULL,
 	"user_id" uuid NOT NULL,
 	"template_id" uuid NOT NULL,
-	"status" "job_status" DEFAULT 'queued' NOT NULL,
+	"status" text DEFAULT 'pending' NOT NULL,
 	"attempts" integer DEFAULT 0 NOT NULL,
 	"max_attempts" integer DEFAULT 3 NOT NULL,
 	"last_error" text,
@@ -38,6 +39,15 @@ CREATE TABLE "jobs" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"completed_at" timestamp,
 	CONSTRAINT "jobs_idempotency_key_unique" UNIQUE("idempotency_key")
+);
+--> statement-breakpoint
+CREATE TABLE "oauth_accounts" (
+	"id" uuid NOT NULL,
+	"provider" "oauth_provider" NOT NULL,
+	"provider_account_id" text NOT NULL,
+	"email" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "placeholders" (
@@ -57,6 +67,19 @@ CREATE TABLE "placeholders" (
 	"height" integer NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "sessions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"token_hash" text NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"revoked_at" timestamp,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"last_used_at" timestamp,
+	"user_agent" text,
+	"ip_address" text,
+	CONSTRAINT "sessions_token_hash_unique" UNIQUE("token_hash")
+);
+--> statement-breakpoint
 CREATE TABLE "templates" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -71,10 +94,14 @@ CREATE TABLE "templates" (
 --> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
 	"username" text NOT NULL,
 	"email" text NOT NULL,
-	"password_hash" text NOT NULL,
-	"created_at" timestamp NOT NULL,
+	"email_verified" boolean DEFAULT false NOT NULL,
+	"password_hash" text,
+	"avatar_url" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_username_unique" UNIQUE("username"),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
@@ -83,5 +110,7 @@ ALTER TABLE "apikeys" ADD CONSTRAINT "apikeys_user_id_users_id_fk" FOREIGN KEY (
 ALTER TABLE "documents" ADD CONSTRAINT "documents_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "jobs" ADD CONSTRAINT "jobs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "jobs" ADD CONSTRAINT "jobs_template_id_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."templates"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "oauth_accounts" ADD CONSTRAINT "oauth_accounts_id_users_id_fk" FOREIGN KEY ("id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "placeholders" ADD CONSTRAINT "placeholders_template_id_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."templates"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "templates" ADD CONSTRAINT "templates_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;

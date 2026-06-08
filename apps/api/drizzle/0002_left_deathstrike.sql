@@ -1,1 +1,0 @@
-ALTER TABLE "documents" ALTER COLUMN "s3_url" SET NOT NULL;
