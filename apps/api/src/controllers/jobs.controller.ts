@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { createBatchJobService } from "@/services/jobs.service";
+import { createBatchJobService } from "@/services/jobs/jobs.service";
 import { createJobSchema } from "@/validations/jobs.validations";
 
 export const createBatchJob = async (

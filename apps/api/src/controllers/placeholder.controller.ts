@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { IdParam } from "./types";
-import { createPlaceholders, getPlaceholdersByTemplateId } from "@/services/placeholders.service";
+import { createPlaceholders, getPlaceholdersByTemplateId } from "@/services/placeholders/placeholders.service";
 
 export const addPlaceholdersToTemplate = async (req: Request<IdParam>, res: Response) => {
     const { id: template_id } = req.params;

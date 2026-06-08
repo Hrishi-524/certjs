@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { IdParam } from "@/controllers/types";
-import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate } from "@/services/templates.service";
-import { uploadTemplateImage } from "@/services/storage.service";
+import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate } from "@/services/templates/templates.service";
+import { uploadTemplateImage } from "@/services/templates/storage.service";
 import crypto from "crypto";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
