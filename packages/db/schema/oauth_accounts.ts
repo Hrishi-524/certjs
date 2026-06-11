@@ -14,7 +14,7 @@ updated_at
 
 export const oauth_accounts = pgTable("oauth_accounts", {
     id: uuid("id").defaultRandom().primaryKey(),
-    user_id: uuid("id").notNull().references(() => users.id),
+    user_id: uuid("user_id").notNull().references(() => users.id),
     provider: oauthProviderEnum("provider").notNull(),
     provider_account_id: text("provider_account_id").notNull(),
     email: text("email").notNull(),

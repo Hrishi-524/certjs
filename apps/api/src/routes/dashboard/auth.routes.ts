@@ -1,6 +1,6 @@
 import { Router } from "express";
 import wrapAsync from "@/utils/wrapAsync";
-import { signUpUser, loginUser, logoutUser, getCurrentUser, refreshAccessToken, logoutAllUserSessions} from "@/controllers/auth.controller";
+import { signUpUser, loginUser, logoutUser, getCurrentUser, refreshAccessToken, logoutAllUserSessions, redirectToGoogleAuth, handleGoogleAuthCallback} from "@/controllers/auth.controller";
 import { requireAuth } from "@/middleware/auth.middleware";
 import { signUpSchema, loginSchema } from "@/schema/auth.schema";
 import { validateRequest } from "@/middleware/validate-request";
@@ -17,5 +17,9 @@ router.get("/me", requireAuth, wrapAsync(getCurrentUser));
 router.post("/refresh", wrapAsync(refreshAccessToken));
 
 router.post("/logout-all", wrapAsync(logoutAllUserSessions));
+
+router.get("/google", wrapAsync(redirectToGoogleAuth));
+
+router.get("/google/callback", wrapAsync(handleGoogleAuthCallback));
 
 export default router;

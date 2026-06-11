@@ -8,6 +8,13 @@
       "when": 1780927406050,
       "tag": "0000_wakeful_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781170194752,
+      "tag": "0001_old_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }

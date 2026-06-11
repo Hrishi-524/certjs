@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import { registerWithPassword, loginWithPassword, logout, getCurrentUserService, refreshSession, logoutAllSessionsForUser } from "@/services/auth/auth.service";
 import { UnauthorizedError } from "@/middleware/express-errors";
+import { getGoogleAuthUrl, loginWithGoogle } from "@/services/auth/oauth.servcie";
+import { googleOAuthClient } from "@/config/google-oauth";
 
 // helpers
 const refreshCookieOptions = {
@@ -107,5 +109,22 @@ export const logoutAllUserSessions = async (req: Request, res: Response) => {
     res.clearCookie("refresh_token", refreshCookieOptions);
 
     res.status(200).json({ success: true });
+}
+
+export async function redirectToGoogleAuth(req: Request, res: Response) {
+    const url = getGoogleAuthUrl();
+    console.log("Redirecting to Google OAuth URL:", url);
+    res.redirect(url);
+}
+
+export async function handleGoogleAuthCallback(req: Request, res: Response) {
+    const code = req.query.code as string;
+    const credentials = await loginWithGoogle(code)
+    res.cookie(
+        "refreshToken",
+        credentials.refreshToken,
+        refreshCookieOptions
+    );
+    res.json(credentials);
 }
 
