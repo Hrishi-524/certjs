@@ -1,32 +1,39 @@
 import type { Request, Response, NextFunction } from "express";
 import { IdParam } from "./types";
-import { createPlaceholders, getPlaceholdersByTemplateId } from "@/services/placeholders/placeholders.service";
+import { createPlaceholders, getPlaceholdersByTemplateId, updatePlaceholder, deletePlaceholder } from "@/services/placeholders/placeholders.service";
+import { CreatePlaceholdersSchema, IdParamSchema, PlaceholderIdParamSchema, UpdatePlaceholderSchema} from "@/schema/placeholders.schema";
 
-export const addPlaceholdersToTemplate = async (req: Request<IdParam>, res: Response) => {
-    const { id: template_id } = req.params;
-    const items = req.body; 
+export async function addPlaceholdersToTemplate(req: Request<IdParam>, res: Response) {
+    const { id : template_id } = IdParamSchema.parse(req.params);
 
-    const result = await createPlaceholders(template_id, items);
+    const items = CreatePlaceholdersSchema.parse(req.body);
 
-    res.status(201).json({
-        message: "Placeholders added to template",
-        placeholders: result
-    });
+    const listOfPlaceholders = await createPlaceholders(template_id, items);
+
+    res.status(201).json(listOfPlaceholders);
 }
 
-export const getPlaceholdersForTemplate = async (req: Request<IdParam>, res: Response) => {
+export async function getPlaceholdersForTemplate(req: Request<IdParam>, res: Response) {
     const { id : template_id } = req.params;
 
     const placeholders = await getPlaceholdersByTemplateId(template_id);
 
-    res.status(200).json({
-        message: "Placeholders retrieved for template",
-        placeholders
-    });
+    res.status(200).json(placeholders);
 }
 
-export const updatePlaceholderForTemplate = async (req: Request, res: Response, next: NextFunction) => {
+export async function updatePlaceholderForTemplate(req: Request, res: Response) {
+    const { id: templateId, placeholderId } =  PlaceholderIdParamSchema.parse(req.params);
+    const data = UpdatePlaceholderSchema.parse(req.body);
+
+    const updatedPlaceholder = await updatePlaceholder(templateId, placeholderId, data);
+
+    res.status(200).json(updatedPlaceholder);
 }
 
-export const deletePlaceholderForTemplate = async (req: Request, res: Response, next: NextFunction) => {
+export async function deletePlaceholderForTemplate(req: Request, res: Response) {
+    const { id: templateId, placeholderId } =  PlaceholderIdParamSchema.parse(req.params);
+
+    await deletePlaceholder(placeholderId);
+
+    res.status(204).send();
 }

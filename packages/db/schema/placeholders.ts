@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, numeric } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, numeric, real } from "drizzle-orm/pg-core";
 import { templates } from "./templates"
 
 /*
@@ -9,16 +9,15 @@ export const placeholders = pgTable("placeholders", {
     id: uuid("id").defaultRandom().primaryKey(),
     template_id: uuid("template_id").notNull().references(() => templates.id),
     name: text("name").notNull(),
-    x: numeric("x", { precision: 10, scale: 2 }).notNull(),
-    y: numeric("y", { precision: 10, scale: 2 }).notNull(),
     key: text("key").notNull(),
-    width: numeric("width", { precision: 10, scale: 2 }).notNull(),
+    x: real("x").notNull(),
+    y: real("y").notNull(),
+    width: real("width").notNull(),
     strategy: text("strategy", { enum: ["shrink", "ellipsis", "wrap"] }).default("shrink").notNull(), // "shrink" | "ellipsis" | "wrap"
     min_font_size: integer("min_font_size"),
     align: text("align", { enum: ["left", "center", "right"] }).notNull().default("left"),
     font_size: integer("font_size").notNull(),
     font_color: text("font_color").notNull(),
     font_family: text("font_family").notNull(),
-    height: integer("height").notNull(), // Later Implemenation for text wrapping
-    // line_height: numeric("line_height"), // Later Implementation for text wrapping
+    height: integer("height").notNull()
 })

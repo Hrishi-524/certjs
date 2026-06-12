@@ -1,53 +1,113 @@
 import type { Request, Response, NextFunction } from "express";
 import type { IdParam } from "@/controllers/types";
-import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate } from "@/services/templates/templates.service";
+import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate, updateTemplateNameService, deactivateTemplateService } from "@/services/templates/templates.service";
 import { uploadTemplateImage } from "@/services/templates/storage.service";
 import crypto from "crypto";
+import { BadRequestError, NotFoundError } from "@/middleware/express-errors";
+import { createTemplateSchema, templateIdParamSchema } from "@/schema/templates.schema";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
     if (!req.file) {
-        return res.status(400).json({ message: "Template file is required" });
+        throw new BadRequestError("Template file is required")
     }
 
-    // const userId = req.user.id;
-    const template_id = crypto.randomUUID();
-    // NOTE: this is temporary that user_id is passed in the body, we will replace this with the user id from the auth middleware once we have that set up
-    const { name, width, height, user_id } = req.body;
+    const userId = req.user!.id;
+    const template_id = crypto.randomUUID()
+   
+    const { name, width, height } = createTemplateSchema.parse(req.body);
 
-    const result = await uploadTemplateImage(
+    const { key, url }= await uploadTemplateImage(
         req.file.buffer,
         req.file.mimetype,
-        user_id,
+        userId,
         template_id
     );
     
-    const template = await createTemplate(template_id, result.url, user_id, name, parseInt(width), parseInt(height));
+    const template = await createTemplate(template_id, url, userId, name, width, height);
 
     res.status(201).json({
-        message: "Template uploaded",
-        key: result.key,
-        url: result.url,
-        template
+        template_id: template.id,
+        user_id: template.user_id,
+        s3_key: key,
+        s3_url: url,
+        name: template.name,
+        width: template.width,
+        height: template.height,
+        created_at: template.created_at
     });
 };
 
-export const getTemplate = async (req: Request<IdParam>, res: Response, next: NextFunction) => {
-    const { id: templateId } = req.params;
-    const template = await getTemplateById(templateId);
+export async function getTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
+    const { id: templateId } = templateIdParamSchema.parse(req.params);
+    const userId = req.user!.id;
+
+    const template = await getTemplateById(templateId, userId);
+
     if (!template) {
-        return res.status(404).json({ message: "Template not found" });
+        throw new NotFoundError("Template not found");
     }
-    res.status(200).json(template);
+
+    res.status(200).json({
+        template_id: template.id,
+        user_id: template.user_id,
+        s3_url: template.s3_url,
+        name: template.name,
+        width: template.width,
+        height: template.height,
+        created_at: template.created_at
+    });
 }
 
-export const getTemplates = async (req: Request, res: Response, next: NextFunction) => {
-    const templates = await getAllTemplates();
-    res.status(200).json(templates);
+export async function getTemplates(req: Request, res: Response, next: NextFunction) {
+    const userId = req.user!.id
 
+    const templates = await getAllTemplates(userId);
+
+    res.status(200).json(
+        templates
+    );
 }
 
-export const deleteTemplate = async (req: Request<IdParam>, res: Response, next: NextFunction) => {
-    const { id: templateId } = req.params;
-    await deleteTemplateById(templateId);
-    res.status(204).json({ message: "Template deleted" });
+export async function deleteTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
+    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const userId = req.user!.id
+
+    await deleteTemplateById(templateId, userId);
+
+    res.status(204).end();
+}
+
+export async function updateTemplateName(req: Request<IdParam>, res: Response, next: NextFunction) {
+    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const { name } = req.body
+    const userId = req.user!.id
+
+    const template = await updateTemplateNameService(templateId, userId, name)
+
+    return res.status(200).json({
+        template_id: template.id,
+        user_id: template.user_id,
+        s3_url: template.s3_url,
+        name: template.name,
+        width: template.width,
+        height: template.height,
+        created_at: template.created_at
+    })
+}
+
+export async function deactivateTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
+    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const userId = req.user!.id
+
+    const template = await deactivateTemplateService(templateId, userId)
+
+    return res.status(200).json({
+        template_id: template.id,
+        user_id: template.user_id,
+        s3_url: template.s3_url,
+        name: template.name,
+        width: template.width,
+        height: template.height,
+        created_at: template.created_at
+    })
 }

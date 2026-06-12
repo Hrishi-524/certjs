@@ -1,91 +1,146 @@
-@baseUrl = http://localhost:3000/api/v1
-@templateId = 48f9ba78-e33f-4eef-99cb-a95a8ac2f41c
+@baseUrl = http://localhost:3000
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDcxMzhkNS1mODJiLTQxOTEtYTA1Ni1hZTk2ZGQzNzE1M2UiLCJpYXQiOjE3ODEyNjAyNDYsImV4cCI6MTc4MTI2MTE0Nn0.VX8i7K4Eq0SA_HmfuJi7TD5pupOsWHBr8MUasEotCtA
 
-### Upload a template
-POST {{baseUrl}}/templates
-Content-Type: multipart/form-data; boundary=----FormBoundary
+### Upload template
+# @name uploadTemplate
+# Response shape:
+# {
+#   "template_id": "...",
+#   "user_id": "...",
+#   "s3_key": "...",
+#   "s3_url": "...",
+#   "name": "...",
+#   "width": 1200,
+#   "height": 800,
+#   "created_at": "..."
+# }
+POST {{baseUrl}}/api/dashboard/templates
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----certjstemplateboundary
 
-------FormBoundary
-Content-Disposition: form-data; name="template"; filename="sample.png"
-Content-Type: image/png
-
-< ./sample.png
-------FormBoundary
+------certjstemplateboundary
 Content-Disposition: form-data; name="name"
 
-My Certificate Template
-------FormBoundary
+Worker Test Template
+------certjstemplateboundary
 Content-Disposition: form-data; name="width"
 
 1200
-------FormBoundary
+------certjstemplateboundary
 Content-Disposition: form-data; name="height"
 
 800
-------FormBoundary--
+------certjstemplateboundary
+Content-Disposition: form-data; name="template"; filename="template.png"
+Content-Type: image/png
 
-### Get all templates
-GET {{baseUrl}}/templates
-Accept: application/json
+< ../../packages/core/inputs/template.png
+------certjstemplateboundary--
+
+###
+@templateId = {{uploadTemplate.response.body.$.template_id}}
+
+### List templates
+# @name listTemplates
+# Response shape: array of template rows owned by current user.
+GET {{baseUrl}}/api/dashboard/templates
+Authorization: Bearer {{accessToken}}
 
 ### Get template by ID
-GET {{baseUrl}}/templates/{{templateId}}
-Accept: application/json
+# @name getTemplate
+# Response shape:
+# {
+#   "template_id": "...",
+#   "user_id": "...",
+#   "s3_url": "...",
+#   "name": "...",
+#   "width": 1200,
+#   "height": 800,
+#   "created_at": "..."
+# }
+GET {{baseUrl}}/api/dashboard/templates/{{templateId}}
+Authorization: Bearer {{accessToken}}
 
-### Delete template
-DELETE {{baseUrl}}/templates/{{templateId}}
-
-# ─────────────────────────────────────────
-# PLACEHOLDERS
-# ─────────────────────────────────────────
-
-### Add placeholders to template
-POST {{baseUrl}}/templates/{{templateId}}/placeholders
-Content-Type: application/json
-
-[
-    {
-        "name": "name",
-        "x": 400,
-        "y": 300,
-        "align": "center",
-        "font_size": 48,
-        "font_color": "#1a1a1a",
-        "font_family": "sans-serif"
-    },
-    {
-        "name": "rank",
-        "x": 400,
-        "y": 380,
-        "font_size": 32,
-        "font_color": "#555555",
-        "font_family": "sans-serif",
-        "align": "center"
-    }
-]
-
-### Get placeholders for template
-GET {{baseUrl}}/templates/{{templateId}}/placeholders
-Accept: application/json
-
-# ─────────────────────────────────────────
-# JOBS (for later)
-# ─────────────────────────────────────────
-
-### Create a batch generation job
-POST {{baseUrl}}/jobs
+### Update template name
+# @name updateTemplateName
+# Body is currently read directly in controller as `{ "name": string }`.
+PATCH {{baseUrl}}/api/dashboard/templates/{{templateId}}
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "template_id": "{{templateId}}",
-  "webhook_url": "https://webhook.site/your-id-here",
-  "recipients": [
-    { "name": "Hrishi Patil", "rank": "1st" },
-    { "name": "John Doe",     "rank": "2nd" },
-    { "name": "Jane Smith",   "rank": "3rd" }
-  ]
+  "name": "Updated Worker Test Template"
 }
 
-### Get job status
-GET {{baseUrl}}/jobs/your-job-uuid-here
-Accept: application/json
+### Add placeholders to template
+# @name createPlaceholders
+# Body must be an array matching CreatePlaceholdersSchema.
+# Response shape: inserted placeholder rows.
+POST {{baseUrl}}/api/dashboard/templates/{{templateId}}/placeholders
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+[
+  {
+    "name": "Recipient Name",
+    "key": "name",
+    "x": 430,
+    "y": 360,
+    "width": 340,
+    "height": 60,
+    "strategy": "shrink",
+    "min_font_size": 24,
+    "align": "center",
+    "font_size": 48,
+    "font_color": "#111111",
+    "font_family": "Arial"
+  },
+  {
+    "name": "Course Name",
+    "key": "course",
+    "x": 360,
+    "y": 455,
+    "width": 480,
+    "height": 44,
+    "strategy": "shrink",
+    "min_font_size": 18,
+    "align": "center",
+    "font_size": 32,
+    "font_color": "#333333",
+    "font_family": "Arial"
+  }
+]
+
+###
+@placeholderId = {{createPlaceholders.response.body.$[0].id}}
+
+### List placeholders for template
+# @name listPlaceholders
+# Response shape: array of placeholder rows for this template.
+GET {{baseUrl}}/api/dashboard/templates/{{templateId}}/placeholders
+Authorization: Bearer {{accessToken}}
+
+### Update placeholder
+# @name updatePlaceholder
+# Body is partial PlaceholderSchema.
+PUT {{baseUrl}}/api/dashboard/templates/{{templateId}}/placeholders/{{placeholderId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Recipient Full Name",
+  "font_size": 44,
+  "font_color": "#000000"
+}
+
+### Delete placeholder
+# @name deletePlaceholder
+# Expected: 204 No Content
+DELETE {{baseUrl}}/api/dashboard/templates/{{templateId}}/placeholders/{{placeholderId}}
+Authorization: Bearer {{accessToken}}
+
+### Delete template
+# @name deleteTemplate
+# Expected: 204 No Content
+DELETE {{baseUrl}}/api/dashboard/templates/{{templateId}}
+Authorization: Bearer {{accessToken}}

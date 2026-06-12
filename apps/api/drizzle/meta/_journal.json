@@ -15,6 +15,13 @@
       "when": 1781170194752,
       "tag": "0001_old_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781255949772,
+      "tag": "0002_dusty_nitro",
+      "breakpoints": true
     }
   ]
 }
