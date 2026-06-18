@@ -34,7 +34,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
         const absY = Math.round(ph.y * height);
 
         // Get Placeholder metadata and use defaults where necessary
-        const content : string | string[] = input.data[ph.key] ?? "";
+        const content = input.data[ph.key];
         console.log(`Rendering placeholder "${ph.name}" with content (raw):`, content);
         const strategy : "shrink" | "ellipsis" | "wrap" = ph.strategy ?? "shrink";
         const fontSize : number = ph.font_size ?? 40;
@@ -45,7 +45,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
         
         // Get Placeholder text and apply strategy if needed
         let result : LayoutResult = strategyFn(
-            content,
+            String(content),
             min_font_size,
             width,
             ph_width,

@@ -3,7 +3,7 @@ export interface Placeholder {
     template_id: string;
 
     name: string;
-    key: string;
+    key: string | number;
 
     x: number;      
     y: number;
@@ -24,7 +24,7 @@ export interface Placeholder {
 export interface RenderInput {
     templateBuffer: Buffer;
     placeholders: Placeholder[];
-    data: Record<string, string>;
+    data: Record<string, string | number>;
 }
 
 export interface LayoutResult {

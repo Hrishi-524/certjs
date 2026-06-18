@@ -1,70 +1,231 @@
 import { db } from "@certjs/db";
-import { templates, jobs, documents } from "@certjs/db/schema";
-import { eq } from "drizzle-orm";
-import crypto from "crypto";
+import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
+import { eq, and } from "drizzle-orm";
+import crypto, { verify } from "crypto";
 import { certificateQueue } from "@certjs/queue";
+import type { CreateJobParams } from "@/types/jobs-types";
+import { BadRequestError, ForbiddenError, NotFoundError } from "@/middleware/express-errors";
 
-type createBatchJobParams = {
-    template_id: string;
-    recipients: Record<string, any>[];
-    idempotency_key: string;
-}
-export async function createBatchJobService(params: createBatchJobParams) {
-    // 1. VALIDATE INPUT
-    const [template] = await db.select().from(templates).where(eq(templates.id, params.template_id));
-    if (!template) {
-        throw new Error("Template not found");
+export async function createBatchJobService(params: CreateJobParams) {
+    // 1. Validate template exists
+    const [template] = await db.select().from(templates).where(
+        eq(templates.id, params.templateId)
+    );
+
+    if(!template) {
+        throw new NotFoundError("Template not found")
     }
 
-    // 2. HANDLE IDEMPOTENCY
-    if (params.idempotency_key) {
-        const existingJob = await db.select().from(jobs).where(eq(jobs.idempotency_key, params.idempotency_key));
-        if (existingJob.length > 0) {
-            return existingJob[0];
-        }
+    // 2. Validate ownership
+    if(template.user_id !== params.userId) {
+        throw new ForbiddenError("You dont own this template")
     }
 
-    // const { job, docs } = await db.transaction(async (tx) => {
-        // 3. CREATE JOB (DB)
-        const [job] = await db.insert(jobs).values({
-            job_type: "CERTIFICATE_BATCH",
-            idempotency_key: params.idempotency_key,
-            user_id: template.user_id,
-            template_id: params.template_id,
-            total_count: params.recipients.length,
-            zip_s3_url: null,
-            processed_count: 0,
-        }).returning();
+    // 3. Validate template active
+    if(!template.is_active) {
+        throw new BadRequestError("Template is inactive")
+    }
 
-        const docs = []
-
-        for(const recipient_data of params.recipients) {
-            // 4. CREATE DOCUMENTS (DB)
-            const [document] = await db.insert(documents).values({
-                job_id: job.id, // should it be batch job_id or child job_id
-                recipient_data: recipient_data,
-                verify_token: crypto.randomBytes(32).toString("hex"),
-                s3_url: "",
-            }).returning();
-
-            docs.push(document);
-        }
-
-        // return { job, docs };
-    // });
-
-    // 5. ENQUEUE DOCUMENT JOBS
-    await Promise.all(
-        docs.map((doc) => certificateQueue.add(
-            "generate_document",
-            { document_id : doc.id },
-            {
-                attempts: 3,
-                backoff: { type: "exponential", delay: 2000 }
-            }
-        ))
+    // 4. Load Placeholders
+    const placeholdersList = await db.select().from(placeholders).where(
+        eq(placeholders.template_id, template.id)
     )
 
-    // 6. RETURN RESPONSE
-    return job;
+    // 5. Ensure that template has placeholders
+    if (placeholdersList.length === 0) {
+        throw new BadRequestError( "Template has no placeholders" );
+    }
+    
+    // 6. Extract required keys
+    const requiredKeys = new Set( placeholdersList.map(p => p.key) )
+
+    // 7. Validate recipients array
+    if(params.recipients.length === 0) {
+        throw new BadRequestError( "Request has no recipients" );
+    }
+
+    // 8. Validate every recipient
+    for(const recipient of params.recipients) {
+        for(const key of requiredKeys) {
+            if(recipient[key] === undefined) {
+                throw new BadRequestError( `Missing placeholder key: ${key}` );
+            }
+        }
+    }
+
+    // 9. Idempotency Check
+    if (params.idempotencyKey) {
+        const [existingJob] = await db
+            .select()
+            .from(jobs)
+            .where(
+                and(
+                    eq(jobs.user_id, params.userId),
+                    eq(jobs.idempotency_key, params.idempotencyKey)
+                )
+            );
+
+        if (existingJob) {
+            return {
+                job: {
+                    id: existingJob.id,
+                    status: existingJob.status,
+                    total_count: existingJob.total_count,
+                    processed_count: existingJob.processed_count
+                }
+            };
+        }
+    }
+
+    // 10. Create Parent Job
+    const [job] = await db.insert(jobs).values({
+        job_type: "CERTIFICATE_BATCH",
+        idempotency_key: params.idempotencyKey,
+        user_id: params.userId,
+        template_id: params.templateId,
+        status: "pending",
+        total_count: params.recipients.length,
+        processed_count: 0,
+        webhook_url: params.webhookUrl
+    }).returning()
+
+    // 11. Create Document Rows - Child Job (document in bullmq job)
+    const documentsList = params.recipients.map(recipient => ({
+        job_id: job.id,
+        recipient_data: recipient, 
+        verify_token: crypto.randomBytes(32).toString("hex"),
+        s3_url: ""
+    }))
+
+    // 12. Insert All Dcoument Rows
+    const createdDocuments = await db.insert(documents).values(documentsList).returning()
+
+    // 13. Enqueue BullMQ Child Jobs
+    await Promise.all(
+        createdDocuments.map(doc => 
+            certificateQueue.add(
+                "generate_document",
+                {
+                    document_id: doc.id
+                }
+            )
+        )
+    );
+
+    // 14. Return Summary
+    return {
+        job: {
+            id: job.id,
+            status: job.status,
+            total_count: job.total_count,
+            processed_count: job.processed_count
+        }
+    };
+}
+
+export async function getJobStatusService(jobId: string, userId: string) {
+    const [job] = await db.select().from(jobs).where(
+        and(
+            eq(jobs.id, jobId),
+            eq(jobs.user_id, userId)
+        )
+    )
+
+    if(!job) {
+        throw new NotFoundError("Job with given job_id not found")
+    }
+
+    return {
+        status: job.status,
+        meta: {
+            total_count: job.total_count,
+            processed_count: job.processed_count,
+            last_error: job.last_error,
+            attempts: job.attempts,
+            max_attempts: job.max_attempts,
+        }
+    }
+}
+
+export async function getZip(jobId: string, userId: string) {
+    const [job] = await db.select().from(jobs).where(
+        and(
+            eq(jobs.id, jobId),
+            eq(jobs.user_id, userId)
+        )
+    )
+
+    if(!job) {
+        throw new NotFoundError("Job not found")
+    }
+
+    if(job.status !== "completed" || !job.zip_s3_url) {
+        return undefined
+    }
+
+    return job.zip_s3_url
+}
+
+export async function retryJobService(jobId: string, userId: string) {
+    const [job] = await db.select().from(jobs).where(
+        and(
+            eq(jobs.id, jobId),
+            eq(jobs.user_id, userId)
+        )
+    )
+
+    const failedDocs = await db.select().from(documents).where(
+        and(
+            eq(documents.job_id, jobId),
+            eq(documents.status, "failed")
+        )
+    )
+
+    if (failedDocs.length === 0) {
+        throw new BadRequestError("No failed documents to retry");
+    }
+
+    await db.update(documents).set({
+        status: "pending",
+        error: null
+    }).where(
+        and(
+            eq(documents.job_id, jobId),
+            eq(documents.status, "failed")
+        )
+    );
+
+    await Promise.all(
+        failedDocs.map(doc =>
+            certificateQueue.add(
+                "generate_document",
+                {
+                    document_id: doc.id
+                }
+            )
+        )
+    );
+
+    return {
+        retried_count: failedDocs.length
+    };
+}
+
+export async function getJobDocumentsService(jobId: string, userId: string) {
+    const [job] = await db.select().from(jobs).where(
+        and(
+            eq(jobs.id, jobId),
+            eq(jobs.user_id, userId)
+        )
+    )
+
+    if (!job) {
+        throw new NotFoundError("Job not found");
+    }
+
+    const docs = await db.select().from(documents).where(
+        eq(documents.job_id, jobId)
+    )
+
+    return docs;
 }

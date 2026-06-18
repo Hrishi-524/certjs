@@ -1,10 +1,4 @@
-import { pgTable, uuid, text, timestamp, jsonb } from "drizzle-orm/pg-core";
-import { jobs } from "./jobs"
-
-/*
-documents schema:
-id, job_id (FK), recipient_data, verify_token, s3_url, created_at
-*/
+/**
 type RecipientData = Record<string, string | number>;
 
 export const documents = pgTable("documents", {
@@ -17,3 +11,7 @@ export const documents = pgTable("documents", {
     s3_url: text("s3_url").notNull(),
     created_at: timestamp("created_at").defaultNow().notNull()
 });
+*/
+export async function createDocService() {
+    
+}

@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, integer, pgEnum, unique } from "drizzle-orm/pg-core";
 import { users } from "./users"
 import { templates } from "./templates"
 import { statusEnum } from "./enum"
@@ -11,7 +11,7 @@ jobs schema:
 export const jobs = pgTable("jobs", {
     id: uuid("id").defaultRandom().primaryKey(),
     job_type: text("job_type", { enum: ["CERTIFICATE_BATCH"] }).notNull(),
-    idempotency_key: text("idempotency_key").notNull().unique(),
+    idempotency_key: text("idempotency_key").notNull(),
     user_id: uuid("user_id").notNull().references(() => users.id),
     template_id: uuid("template_id").notNull().references(() => templates.id),
     status: text("status", { enum: ["pending", "processing", "completed", "failed"] }).notNull().default("pending"),
@@ -25,4 +25,10 @@ export const jobs = pgTable("jobs", {
     webhook_url: text("webhook_url"),
     created_at: timestamp("created_at").defaultNow().notNull(),
     completed_at: timestamp("completed_at")
-})
+}, 
+(table) => [
+    unique("jobs_user_idempotency_unique").on(
+        table.user_id,
+        table.idempotency_key
+    )
+])

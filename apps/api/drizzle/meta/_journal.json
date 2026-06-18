@@ -22,6 +22,13 @@
       "when": 1781255949772,
       "tag": "0002_dusty_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781276929158,
+      "tag": "0003_sticky_frog_thor",
+      "breakpoints": true
     }
   ]
 }
