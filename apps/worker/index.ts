@@ -118,9 +118,11 @@ export const worker = new Worker( "certificates", async (job) => {
         // 12. Mark Parent Job as completed if all documents are processed
         const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batch_job.id));
 
-        if(updatedJob && updatedJob.processed_count === updatedJob.total_count) {
+        if(updatedJob && updatedJob.processed_count + updatedJob.failed_count === updatedJob.total_count) {
+            const failedStatus = updatedJob.failed_count > 0 ? "failed" : "completed";
+    
             await db.update(jobs).set({ 
-                status: "completed", 
+                status: failedStatus, 
                 completed_at: new Date() 
             }).where(eq(jobs.id, batch_job.id));
         }

@@ -1,9 +1,9 @@
 import { db } from "@certjs/db";
-import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
 import { eq, and } from "drizzle-orm";
-import crypto, { verify } from "crypto";
-import { certificateQueue } from "@certjs/queue";
+import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
+import { enqueueDocument } from "@/services/queue/queue.service";
 import type { CreateJobParams } from "@/types/jobs-types";
+import crypto from "crypto";
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "@/middleware/express-errors";
 
 export async function createBatchJobService(params: CreateJobParams) {
@@ -77,8 +77,6 @@ export async function createBatchJobService(params: CreateJobParams) {
         }
     }
 
-    
-    
     const { createdDocuments, job } = await db.transaction(async (tx) => {
         // 10. Create Parent Job
         const [job] = await tx.insert(jobs).values({
@@ -110,33 +108,7 @@ export async function createBatchJobService(params: CreateJobParams) {
     }
 
     // 13. Enqueue BullMQ Child Jobs
-    try {
-        await Promise.all(createdDocuments.map(doc =>
-                certificateQueue.add(
-                    "generate_document",
-                    {
-                        document_id: doc.id
-                    },
-                    {
-                        attempts: 3,
-                        backoff: {
-                            type: "exponential",
-                            delay: 2000
-                        },
-                        removeOnComplete: 1000,
-                        removeOnFail: 1000
-                    }
-                )
-            )
-        )
-    } catch (error) {
-        await db.update(jobs).set({
-            status: "failed",
-            last_error: error instanceof Error ? error.message : "Queue enqueue failed"
-        }).where(eq(jobs.id, job.id));
-
-        throw error;
-    }
+    await enqueueDocument(createdDocuments, job.id);
 
     // 14. Return Summary
     return {
@@ -167,10 +139,8 @@ export async function getJobStatusService(jobId: string, userId: string) {
         meta: {
             total_count: job.total_count,
             processed_count: job.processed_count,
-            last_error: job.last_error,
-            attempts: job.attempts,
-            max_attempts: job.max_attempts,
-            failed_count: job.failed_count
+            failed_count: job.failed_count,
+            last_error: job.last_error
         }
     }
 }
@@ -202,6 +172,10 @@ export async function retryJobService(jobId: string, userId: string) {
         )
     )
 
+    if (!job) {
+        throw new NotFoundError("Job not found");
+    }
+
     const failedDocs = await db.select().from(documents).where(
         and(
             eq(documents.job_id, jobId),
@@ -223,16 +197,12 @@ export async function retryJobService(jobId: string, userId: string) {
         )
     );
 
-    await Promise.all(
-        failedDocs.map(doc =>
-            certificateQueue.add(
-                "generate_document",
-                {
-                    document_id: doc.id
-                }
-            )
-        )
-    );
+    await db.update(jobs).set({
+        status: "processing",
+        last_error: null
+    }).where(eq(jobs.id, jobId));
+
+    await enqueueDocument(failedDocs, jobId);
 
     return {
         retried_count: failedDocs.length
