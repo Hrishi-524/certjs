@@ -21,6 +21,7 @@ export const jobs = pgTable("jobs", {
     failed_at: timestamp("failed_at"),
     total_count: integer("total_count").notNull(),
     processed_count: integer("processed_count").notNull(),
+    failed_count: integer("failed_count").notNull().default(0),
     zip_s3_url: text("zip_s3_url"),
     webhook_url: text("webhook_url"),
     created_at: timestamp("created_at").defaultNow().notNull(),

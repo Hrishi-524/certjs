@@ -4,8 +4,9 @@ import { renderCertificate } from "@certjs/core/render-engine"
 import { documents, jobs, templates, placeholders } from "@certjs/db/schema"
 import fetchTemplateBuffer from "./fetch-template-buffer";
 import { db } from "@certjs/db"
-import { eq } from "drizzle-orm";
+import { or, and, eq } from "drizzle-orm";
 import { uploadGeneratedCertificate } from "./upload-rendered-document";
+import { sql } from "drizzle-orm";
 
 const connection = new IORedis({
     host: "127.0.0.1",
@@ -18,25 +19,46 @@ export const worker = new Worker( "certificates", async (job) => {
 
     const { document_id } = job.data;
 
+    // 1. Fetch document
+    const [document] = await db.select().from(documents).where(eq(documents.id, document_id));
+
+    if(!document) {
+        throw new Error("Document not found");
+    }
+
+    // 2. Ideompotency guard
+    if(document.status === "completed") {
+        console.log(`Document ${document.id} already processed`);
+        return document.s3_url; // Return existing S3 URL if already processed
+    }
+
+    // 3. Mark document as "processing"
+    await db.update(documents).set({ status: "processing" }).where(
+        and(
+            eq(documents.id, document_id),
+            or(
+                eq(documents.status, "pending"),
+                eq(documents.status, "failed")
+            )
+        )
+    )
+
+    // 4.Fetch job
+    const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
+ 
+    if(!batch_job) {
+        throw new Error("Job not found")
+    }
+
+    if(batch_job.status === "pending") {
+        await db.update(jobs).set({ status: "processing" }).where(eq(jobs.id, batch_job.id));
+    }
+
+    if(batch_job.status === "completed") {
+        throw new Error("Job already completed");
+    }
+
     try {
-        // 1. Fetch document
-        const [document] = await db.select().from(documents).where(eq(documents.id, document_id));
-
-        // 2. Ideompotency guard
-        if(document.status === "completed") {
-            return
-        }
-
-        // 3. Mark document as "processing"
-        await db.update(documents).set({ status: "processing" }).where(eq(documents.id, document_id));
-
-        // 4.Fetch job
-        const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
-
-        if(!batch_job) {
-            throw new Error("Job not found")
-        }
-
         // 5.Fetch template
         const [template] = await db.select().from(templates).where(eq(templates.id, batch_job.template_id));
 
@@ -81,24 +103,43 @@ export const worker = new Worker( "certificates", async (job) => {
         const response = await uploadGeneratedCertificate(renderedBuffer, document_id);
         
         // 10. Update document record with S3 URL and mark as completed
-        await db.update(documents).set({ s3_url: response.url, status: "completed" }).where(eq(documents.id, document_id));
+        await db.update(documents).set({ 
+            s3_url: response.url, 
+            status: "completed" 
+        }).where(eq(documents.id, document_id));
 
         // 11. Update processed count in job
-        await db.update(jobs).set({ processed_count: batch_job.processed_count + 1 }).where(eq(jobs.id, batch_job.id));
+        await db.update(jobs).set({
+            processed_count: sql`${jobs.processed_count} + 1`
+        }).where(eq(jobs.id, batch_job.id));
 
-        // // 12. atomic increment
-        // await db.execute(`
-        //     UPDATE jobs
-        //     SET processed_count = processed_count + 1
-        //     WHERE id = '${batch_job.id}'
-        // `);
-        
         console.log(`Job ${job.id} completed successfully`);
-    } catch (error) {
-        console.error("Worker error:", error);
-        await db.update(documents).set({ status: "failed",error: String(error) }).where(eq(documents.id, document_id));
 
+        // 12. Mark Parent Job as completed if all documents are processed
+        const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batch_job.id));
+
+        if(updatedJob && updatedJob.processed_count === updatedJob.total_count) {
+            await db.update(jobs).set({ 
+                status: "completed", 
+                completed_at: new Date() 
+            }).where(eq(jobs.id, batch_job.id));
+        }
+
+    } catch (error) {
         // Required for bullmq retry
+        console.error("Worker error:", error);
+
+        await db.update(documents).set({ 
+            status: "failed",
+            error: String(error)
+        }).where(eq(documents.id, document_id));
+        
+        await db.update(jobs).set({
+            last_error: String(error),
+            failed_count: sql`${jobs.failed_count} + 1`
+        }).where(eq(jobs.id, batch_job.id));
+
+
         throw error; 
     }
 }, { connection, concurrency: 5 });

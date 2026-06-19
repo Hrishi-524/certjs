@@ -14,6 +14,6 @@ export const documents = pgTable("documents", {
     status: text("status", { enum: ["pending", "processing", "completed", "failed"] }).notNull().default("pending"),
     error: text("error"),
     verify_token: text("verify_token").notNull(),
-    s3_url: text("s3_url").notNull(),
+    s3_url: text("s3_url"),
     created_at: timestamp("created_at").defaultNow().notNull()
 });
