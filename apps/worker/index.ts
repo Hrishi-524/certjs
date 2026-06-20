@@ -2,11 +2,12 @@ import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { renderCertificate } from "@certjs/core/render-engine"
 import { documents, jobs, templates, placeholders } from "@certjs/db/schema"
-import fetchTemplateBuffer from "./fetch-template-buffer";
+import fetchFileBuffer from "./fetch-file-buffer";
 import { db } from "@certjs/db"
 import { or, and, eq } from "drizzle-orm";
 import { uploadGeneratedCertificate } from "./upload-rendered-document";
 import { sql } from "drizzle-orm";
+import { enqueueFinalizeQueue } from "./finlaize-queue";
 
 const connection = new IORedis({
     host: "127.0.0.1",
@@ -19,21 +20,8 @@ export const worker = new Worker( "certificates", async (job) => {
 
     const { document_id } = job.data;
 
-    // 1. Fetch document
-    const [document] = await db.select().from(documents).where(eq(documents.id, document_id));
-
-    if(!document) {
-        throw new Error("Document not found");
-    }
-
-    // 2. Ideompotency guard
-    if(document.status === "completed") {
-        console.log(`Document ${document.id} already processed`);
-        return document.s3_url; // Return existing S3 URL if already processed
-    }
-
     // 3. Mark document as "processing"
-    await db.update(documents).set({ status: "processing" }).where(
+    const claimed = await db.update(documents).set({ status: "processing" }).where(
         and(
             eq(documents.id, document_id),
             or(
@@ -41,7 +29,19 @@ export const worker = new Worker( "certificates", async (job) => {
                 eq(documents.status, "failed")
             )
         )
-    )
+    ).returning()
+
+    // 1. Fetch document
+    const [document] = claimed;
+
+    if(!document) {
+        throw new Error("Document not found");
+    }
+    // 2. Ideompotency guard
+    if(document.status === "completed") {
+        console.log(`Document ${document.id} already processed`);
+        return document.s3_url; // Return existing S3 URL if already processed
+    }
 
     // 4.Fetch job
     const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
@@ -51,7 +51,12 @@ export const worker = new Worker( "certificates", async (job) => {
     }
 
     if(batch_job.status === "pending") {
-        await db.update(jobs).set({ status: "processing" }).where(eq(jobs.id, batch_job.id));
+        await db.update(jobs).set({ status: "processing" }).where(
+            and(
+                eq(jobs.id, batch_job.id),
+                eq(jobs.status, "pending")
+            )
+        );
     }
 
     if(batch_job.status === "completed") {
@@ -81,7 +86,7 @@ export const worker = new Worker( "certificates", async (job) => {
         if(template.s3_url === null) {
             throw new Error("Template has no associated buffer URL");
         }
-        const templateBuffer = await fetchTemplateBuffer(template.s3_url);
+        const templateBuffer = await fetchFileBuffer(template.s3_url);
 
         // 8. Validate data
         const data = document.recipient_data;
@@ -121,25 +126,40 @@ export const worker = new Worker( "certificates", async (job) => {
         if(updatedJob && updatedJob.processed_count + updatedJob.failed_count === updatedJob.total_count) {
             const failedStatus = updatedJob.failed_count > 0 ? "failed" : "completed";
     
-            await db.update(jobs).set({ 
-                status: failedStatus, 
-                completed_at: new Date() 
-            }).where(eq(jobs.id, batch_job.id));
+            if(failedStatus === "completed") {
+                console.log(`Batch Job ${batch_job.id} completed successfully`);
+                console.log("Enquiung deterministic finalizer job for zip creation")
+                await enqueueFinalizeQueue(batch_job.id);
+            } else {
+                await db.update(jobs).set({ 
+                    status: failedStatus, 
+                    completed_at: new Date() 
+                }).where(eq(jobs.id, batch_job.id));
+            }
+
         }
 
     } catch (error) {
         // Required for bullmq retry
         console.error("Worker error:", error);
 
-        await db.update(documents).set({ 
-            status: "failed",
-            error: String(error)
-        }).where(eq(documents.id, document_id));
-        
-        await db.update(jobs).set({
-            last_error: String(error),
-            failed_count: sql`${jobs.failed_count} + 1`
-        }).where(eq(jobs.id, batch_job.id));
+        const maxAttempts = job.opts.attempts ?? 1;
+
+        if (job.attemptsMade + 1 >= maxAttempts) {
+            await db.update(documents)
+                .set({
+                    status: "failed",
+                    error: String(error)
+                })
+                .where(eq(documents.id, document_id));
+
+            await db.update(jobs)
+                .set({
+                    last_error: String(error),
+                    failed_count: sql`${jobs.failed_count} + 1`
+                })
+                .where(eq(jobs.id, batch_job.id));
+        }
 
 
         throw error; 

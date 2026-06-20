@@ -9,12 +9,19 @@ const s3 = new S3Client({
 
 const bucket = process.env.S3_BUCKET_NAME!;
 
-export default async function fetchTemplateBuffer(
-    templateUrl: string
+export default async function fetchFileBuffer(
+    url: string
 ):  Promise<Buffer> {
     try {
         
-        const key = templateUrl.split(
+        /*
+            When it is certficate fetch key will be:
+                `certjs/documents/${document_id}.png`;
+            When it is template fetch key will be:
+                `certjs/templates/${user_id}/${template_id}`
+            
+        */
+        const key = url.split(
             `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/`
         )[1];
 
@@ -23,8 +30,6 @@ export default async function fetchTemplateBuffer(
             Key: key,
         });
 
-
-        
         const response = await s3.send(command);
 
         if (!response.Body) {

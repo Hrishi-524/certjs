@@ -4,6 +4,7 @@ import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
 import { enqueueDocument } from "@/services/queue/queue.service";
 import type { CreateJobParams } from "@/types/jobs-types";
 import crypto from "crypto";
+import { sql } from "drizzle-orm";
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "@/middleware/express-errors";
 
 export async function createBatchJobService(params: CreateJobParams) {
@@ -199,7 +200,8 @@ export async function retryJobService(jobId: string, userId: string) {
 
     await db.update(jobs).set({
         status: "processing",
-        last_error: null
+        last_error: null,
+        failed_count: sql`${jobs.failed_count} - ${failedDocs.length}`
     }).where(eq(jobs.id, jobId));
 
     await enqueueDocument(failedDocs, jobId);

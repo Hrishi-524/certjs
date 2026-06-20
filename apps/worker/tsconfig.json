@@ -4,6 +4,7 @@
         "ignoreDeprecations": "6.0",
         "module": "CommonJS",
         "moduleResolution": "node",
+        "esModuleInterop": true,
         "outDir": "dist",
         "rootDir": ".",
         "types": ["node"]
