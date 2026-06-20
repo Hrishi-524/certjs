@@ -15,16 +15,15 @@
     },
     "scripts": {
         "build": "tsc -b",
-        "test": "npx tsx test-render-engine.ts"
+        "test": "tsx test-render-engine.ts"
     },
     "dependencies": {
-        "@napi-rs/canvas": "^0.1.97",
+        "@napi-rs/canvas": "^0.1.100",
         "@types/node": "^25.5.0",
         "sharp": "^0.32.1"
     },
     "devDependencies": {
-        "npx": "^10.2.2",
         "tsx": "^4.21.0",
-        "typescript": "^6.0.2"
+        "typescript": "5.9.3"
     }
 }

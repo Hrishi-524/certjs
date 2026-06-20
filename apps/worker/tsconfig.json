@@ -1,9 +1,9 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "ignoreDeprecations": "6.0",
+        "ignoreDeprecations": "5.0",
         "module": "CommonJS",
-        "moduleResolution": "node",
+        // "moduleResolution": "node",
         "esModuleInterop": true,
         "outDir": "dist",
         "rootDir": ".",

@@ -3,7 +3,7 @@ import shrinkToFit from "./shrink-to-fit";
 import wrapText from "./warp-text";
 import ellipsisText from "./ellipsis";
 
-export function strategyFn(
+export default function strategyFn(
     content: string,
     minFontSize: number | undefined,
     width: number,

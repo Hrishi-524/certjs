@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODE5NzEwNjQsImV4cCI6MTc4MTk3MTk2NH0.b0QlGfYHGnBms8quA1zkpqj3lTa1f5xDyAzvXNeVTmo
+@templateId = 147d90eb-4035-4b0d-957a-1818abec7318
+@idempotencyKey = job-test-{{$guid}}
+
+### 1. Create Batch Job
+# @name createBatchJob
+# The recipient keys must match the placeholders configured on the template.
+# Response:
+# {
+#   "job_id": "...",
+#   "status": "pending",
+#   "total_count": 2,
+#   "processed_count": 0
+# }
+POST {{baseUrl}}/api/dashboard/jobs
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "templateId": "{{templateId}}",
+  "idempotencyKey": "{{idempotencyKey}}",
+  "recipients": [
+    {
+      "name": "Ada Lovelace",
+      "course": "Computer Science"
+    },
+    {
+      "name": "Alan Turing",
+      "course": "Computer Science"
+    }
+  ]
+}
+
+###
+@jobId = {{createBatchJob.response.body.$.job_id}}
+
+### 2. Get Job Status
+# @name getJobStatus
+# Response includes status, total_count, processed_count, errors, and attempts.
+GET {{baseUrl}}/api/dashboard/jobs/{{jobId}}
+Authorization: Bearer {{accessToken}}
+
+### 3. Get Job Documents
+# @name getJobDocuments
+# Response:
+# {
+#   "count": 2,
+#   "documents": [...]
+# }
+GET {{baseUrl}}/api/dashboard/jobs/{{jobId}}/documents
+Authorization: Bearer {{accessToken}}
+
+### 4. Retry Job
+# @name retryJob
+# This succeeds only when the job has failed document rows.
+# A successful job is expected to return 400: "No failed documents to retry".
+POST {{baseUrl}}/api/dashboard/jobs/{{jobId}}/retry
+Authorization: Bearer {{accessToken}}
+
+### 5. Download Job Zip
+# @name downloadJobZip
+# Returns 409 until the job is completed and zip_s3_url is available.
+GET {{baseUrl}}/api/dashboard/jobs/{{jobId}}/download
+Authorization: Bearer {{accessToken}}
+

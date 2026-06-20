@@ -84,4 +84,4 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
 
         throw error;
     }
-});
+}, { connection });

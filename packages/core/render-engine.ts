@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import type {  DebugOptions, LayoutResult, RenderInput } from "./types";
 import escapeXml from "./utils/escapeXml";
-import { strategyFn } from "./strategies";
+import strategyFn from "./strategies";
 import { buildDebugOverlay } from "./debug/overlay";
 
 export async function renderCertificate(input: RenderInput, debugOptions?: DebugOptions): Promise<Buffer> {

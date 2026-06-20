@@ -36,6 +36,13 @@
       "when": 1781892854213,
       "tag": "0004_worried_lenny_balinger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781970941038,
+      "tag": "0005_sticky_swordsman",
+      "breakpoints": true
     }
   ]
 }

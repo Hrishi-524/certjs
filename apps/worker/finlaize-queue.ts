@@ -1,4 +1,4 @@
-import { batchQueue } from "@certjs/queue/index";
+import { batchQueue } from "@certjs/queue";
 
 export async function enqueueFinalizeQueue(batch_job_id: string ) {
     await batchQueue.add(
@@ -7,7 +7,15 @@ export async function enqueueFinalizeQueue(batch_job_id: string ) {
             job_id: batch_job_id
         },
         {
-            jobId: `finalize:${batch_job_id}`
+            jobId: `finalize-${batch_job_id}`,
+            attempts: 3,
+            backoff: {
+                type: "exponential",
+                delay: 2000
+            },
+            removeOnComplete: 1000,
+            removeOnFail: 1000
+        
         }
     )
 }

@@ -8,6 +8,7 @@ import { or, and, eq } from "drizzle-orm";
 import { uploadGeneratedCertificate } from "./upload-rendered-document";
 import { sql } from "drizzle-orm";
 import { enqueueFinalizeQueue } from "./finlaize-queue";
+import "./finalizer-worker"
 
 const connection = new IORedis({
     host: "127.0.0.1",

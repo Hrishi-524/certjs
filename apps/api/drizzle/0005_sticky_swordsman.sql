@@ -1,0 +1,1 @@
+ALTER TABLE "placeholders" ALTER COLUMN "height" SET DATA TYPE real;

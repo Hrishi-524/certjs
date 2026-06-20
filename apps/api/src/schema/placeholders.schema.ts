@@ -18,7 +18,7 @@ export const PlaceholderSchema = z.object({
     font_size: z.number().int().positive(),
     font_color: z.string().trim().min(1),
     font_family: z.string().trim().min(1),
-    height: z.number().int().positive(),
+    height: z.number().positive(),
     strategy: z.enum(["shrink", "ellipsis", "wrap"]).optional(),
     min_font_size: z.number().int().positive().optional(),
     align: z.enum(["left", "center", "right"]).optional()

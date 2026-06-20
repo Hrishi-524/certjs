@@ -1,9 +1,8 @@
-import { line } from "drizzle-orm/pg-core";
 import type { LayoutResult } from "../types";
 import measureWidth from "../utils/measureWidth";
 import ellipsisText from "./ellipsis";
 
-export default function shrikToFit(
+export default function shrinkToFit(
     content: string, 
     min_font_size: number | undefined, 
     width: number, 

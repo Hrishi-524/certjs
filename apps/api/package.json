@@ -36,7 +36,6 @@
         "http": "^0.0.1-security",
         "jsonwebtoken": "^9.0.3",
         "multer": "^2.1.1",
-        "sharp": "^0.34.5",
         "zod": "^4.3.6"
     },
     "devDependencies": {

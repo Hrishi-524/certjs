@@ -1,6 +1,5 @@
 @baseUrl = http://localhost:3000
-@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDcxMzhkNS1mODJiLTQxOTEtYTA1Ni1hZTk2ZGQzNzE1M2UiLCJpYXQiOjE3ODEyNjAyNDYsImV4cCI6MTc4MTI2MTE0Nn0.VX8i7K4Eq0SA_HmfuJi7TD5pupOsWHBr8MUasEotCtA
-
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODE5NzEwNjQsImV4cCI6MTc4MTk3MTk2NH0.b0QlGfYHGnBms8quA1zkpqj3lTa1f5xDyAzvXNeVTmo
 ### Upload template
 # @name uploadTemplate
 # Response shape:
@@ -34,7 +33,7 @@ Content-Disposition: form-data; name="height"
 Content-Disposition: form-data; name="template"; filename="template.png"
 Content-Type: image/png
 
-< ../../packages/core/inputs/template.png
+< ../../packages/core/inputs/head_and_mentor.png
 ------certjstemplateboundary--
 
 ###
@@ -84,10 +83,10 @@ Content-Type: application/json
   {
     "name": "Recipient Name",
     "key": "name",
-    "x": 430,
-    "y": 360,
-    "width": 340,
-    "height": 60,
+    "x": 0.4,
+    "y": 0.3,
+    "width": 0.2,
+    "height": 0.1,
     "strategy": "shrink",
     "min_font_size": 24,
     "align": "center",
@@ -98,10 +97,10 @@ Content-Type: application/json
   {
     "name": "Course Name",
     "key": "course",
-    "x": 360,
-    "y": 455,
-    "width": 480,
-    "height": 44,
+    "x": 0.3,
+    "y": 0.4,
+    "width": 0.2,
+    "height": 0.1,
     "strategy": "shrink",
     "min_font_size": 18,
     "align": "center",

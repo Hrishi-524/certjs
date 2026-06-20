@@ -13,11 +13,11 @@ export const placeholders = pgTable("placeholders", {
     x: real("x").notNull(),
     y: real("y").notNull(),
     width: real("width").notNull(),
+    height: real("height").notNull(),
     strategy: text("strategy", { enum: ["shrink", "ellipsis", "wrap"] }).default("shrink").notNull(), // "shrink" | "ellipsis" | "wrap"
     min_font_size: integer("min_font_size"),
     align: text("align", { enum: ["left", "center", "right"] }).notNull().default("left"),
     font_size: integer("font_size").notNull(),
     font_color: text("font_color").notNull(),
-    font_family: text("font_family").notNull(),
-    height: integer("height").notNull()
+    font_family: text("font_family").notNull()
 })
