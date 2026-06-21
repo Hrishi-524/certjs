@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, numeric, real } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, unique, real } from "drizzle-orm/pg-core";
 import { templates } from "./templates"
 
 /*
@@ -20,4 +20,6 @@ export const placeholders = pgTable("placeholders", {
     font_size: integer("font_size").notNull(),
     font_color: text("font_color").notNull(),
     font_family: text("font_family").notNull()
-})
+}, (table) => ({
+    templateKeyUnique: unique("template_key_unique").on(table.template_id, table.key)
+}));

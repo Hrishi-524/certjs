@@ -1,6 +1,7 @@
 import { templates } from "@certjs/db/schema/templates"
 import { db, users } from "@certjs/db/index";
 import { eq, desc, and } from "drizzle-orm";
+import { NotFoundError } from "@/middleware/express-errors";
 
 export async function createTemplate(template_id: string, s3_url: string, userId: string, name: string, width: number, height: number) {
     const [template] = await db.insert(templates).values({ 
@@ -57,9 +58,14 @@ export async function updateTemplateNameService( templateId: string, userId: str
     }).where(
         and(
             eq(templates.id, templateId),
-            eq(templates.user_id, userId)
+            eq(templates.user_id, userId),
+            eq(templates.is_active, true)
         )
     ).returning();
+
+    if (!template) {
+        throw new NotFoundError("Template not found");
+    }
 
     return template;
 }

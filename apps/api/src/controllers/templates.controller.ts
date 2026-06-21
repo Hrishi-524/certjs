@@ -4,7 +4,7 @@ import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate, u
 import { uploadTemplateImage } from "@/services/templates/storage.service";
 import crypto from "crypto";
 import { BadRequestError, NotFoundError } from "@/middleware/express-errors";
-import { createTemplateSchema, templateIdParamSchema } from "@/schema/templates.schema";
+import { createTemplateSchema, templateIdParamSchema, updateTemplateSchema } from "@/schema/templates.schema";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
     if (!req.file) {
@@ -79,7 +79,7 @@ export async function deleteTemplate(req: Request<IdParam>, res: Response, next:
 
 export async function updateTemplateName(req: Request<IdParam>, res: Response, next: NextFunction) {
     const { id: templateId } = templateIdParamSchema.parse(req.params)
-    const { name } = req.body
+    const { name } = updateTemplateSchema.parse(req.body)
     const userId = req.user!.id
 
     const template = await updateTemplateNameService(templateId, userId, name)
