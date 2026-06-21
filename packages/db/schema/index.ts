@@ -1,7 +1,7 @@
 import { users } from "./users";
 import { templates } from "./templates";
 import { documents } from "./documents";
-import { apikeys } from "./api_keys";
+import { apikeys } from "./apikeys";
 import { placeholders } from "./placeholders";
 import { jobs } from "./jobs";
 import { oauth_accounts } from "./oauth_accounts";

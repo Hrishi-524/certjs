@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { jobs } from "./jobs"
 
 /*
@@ -16,4 +16,6 @@ export const documents = pgTable("documents", {
     verify_token: text("verify_token").notNull(),
     s3_url: text("s3_url"),
     created_at: timestamp("created_at").defaultNow().notNull()
-});
+}, (table) => [
+    index("documents_job_id_index").on(table.job_id)
+]);

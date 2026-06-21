@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 import { users } from "./users"
 
 /*
@@ -16,4 +16,6 @@ export const templates = pgTable("templates", {
     width: integer("width"),
     height: integer("height"),
     created_at: timestamp("created_at").defaultNow().notNull()
-});
+}, (table) => [
+    index("templates_user_id_index").on(table.user_id)
+]);

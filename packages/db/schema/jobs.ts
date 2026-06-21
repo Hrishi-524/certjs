@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, pgEnum, unique } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, integer, index, unique } from "drizzle-orm/pg-core";
 import { users } from "./users"
 import { templates } from "./templates"
 import { statusEnum } from "./enum"
@@ -31,5 +31,6 @@ export const jobs = pgTable("jobs", {
     unique("jobs_user_idempotency_unique").on(
         table.user_id,
         table.idempotency_key
-    )
+    ),
+    index("jobs_user_id_index").on(table.user_id),
 ])
