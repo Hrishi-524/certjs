@@ -11,12 +11,8 @@ import { UnauthorizedError } from "@/middleware/express-errors";
 
 export async function createBatchJob( req: Request, res: Response ) {
     const data = CreateJobSchema.parse(req.body);
-    const user_id = req.user?.id
-
-    if(!user_id) {
-        throw new UnauthorizedError("Unauthorized - cannot create jobs")
-    }
-
+    const user_id = req.user.id
+    
     const jobMeta = await createBatchJobService({
         userId: user_id,
         ...data
@@ -32,7 +28,7 @@ export async function createBatchJob( req: Request, res: Response ) {
 
 export async function getJobStatus(req: Request, res: Response) {
     const { jobId  } = JobIdParamSchema.parse(req.params)
-    const userId = req.user?.id
+    const userId = req.user.id
 
     if(!userId) {
         throw new UnauthorizedError("Unauthorized - cannot create jobs")
@@ -48,7 +44,7 @@ export async function getJobStatus(req: Request, res: Response) {
 
 export async function downloadJobZip(req: Request, res: Response) {
     const { jobId  } = JobIdParamSchema.parse(req.params)
-    const userId = req.user?.id
+    const userId = req.user.id
 
     if(!userId) {
         throw new UnauthorizedError("Unauthorized - cannot create jobs")
@@ -66,7 +62,7 @@ export async function downloadJobZip(req: Request, res: Response) {
 export async function retryJob(req: Request, res: Response) {
     const { jobId } = JobIdParamSchema.parse(req.params);
 
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     if (!userId) {
         throw new UnauthorizedError(
@@ -88,7 +84,7 @@ export async function retryJob(req: Request, res: Response) {
 export async function getJobDocuments(req: Request, res: Response) {
     const { jobId } = JobIdParamSchema.parse(req.params);
 
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     if (!userId) {
         throw new UnauthorizedError(

@@ -11,7 +11,7 @@ export const apikeys = pgTable("apikeys", {
     rate_limit: integer("rate_limit").notNull().default(1000),
     user_id: uuid("user_id").notNull().references(() => users.id),
     key_hash: text("key_hash").notNull().unique(),
-    key_prefix: text("key_prefix").notNull(),
+    key_prefix: text("key_prefix").notNull().unique(),
     name: text("name").notNull(),
     is_active: boolean("is_active").notNull().default(true),
     created_at: timestamp("created_at").defaultNow().notNull(),

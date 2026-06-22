@@ -1,0 +1,69 @@
+@baseUrl = http://localhost:3000
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODIxMjQ1NzYsImV4cCI6MTc4MjEyNTQ3Nn0.ro1nAbZi05SKVx5fRpzhRbBhHKQEpjp-Pie_t3jOeAI
+
+### 1. Create API Key
+# @name createApiKey
+# Body:
+# - name: string, 3-60 chars
+# - expiry: ISO date string, null, or omitted
+# Response:
+# {
+#   "apikey": "full-api-key-visible-only-on-create",
+#   "prefix": "...",
+#   "apiKeyId": "..."
+# }
+POST {{baseUrl}}/api/dashboard/api-keys
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Local Test API Key",
+  "expiry": "2027-12-31T23:59:59.000Z"
+}
+
+###
+@apiKeyId = {{createApiKey.response.body.$.apiKeyId}}
+@apiKey = {{createApiKey.response.body.$.apikey}}
+
+### 2. List API Keys
+# @name listApiKeys
+# Response shape:
+# [
+#   {
+#     "id": "...",
+#     "name": "...",
+#     "prefix": "...",
+#     "isActive": true,
+#     "createdAt": "...",
+#     "lastUsedAt": null,
+#     "expiresAt": "..."
+#   }
+# ]
+GET {{baseUrl}}/api/dashboard/api-keys
+Authorization: Bearer {{accessToken}}
+
+### 3. Get API Key Prefix
+# @name getApiKey
+# Response:
+# {
+#   "prefix": "..."
+# }
+GET {{baseUrl}}/api/dashboard/api-keys/{{apiKeyId}}
+Authorization: Bearer {{accessToken}}
+
+### 4. Deactivate API Key
+# @name deactivateApiKey
+# Response:
+# {
+#   "name": "...",
+#   "prefix": "..."
+# }
+POST {{baseUrl}}/api/dashboard/api-keys/{{apiKeyId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+### 5. Delete API Key
+# @name deleteApiKey
+# Expected: 204 No Content
+DELETE {{baseUrl}}/api/dashboard/api-keys/{{apiKeyId}}
+Authorization: Bearer {{accessToken}}
+

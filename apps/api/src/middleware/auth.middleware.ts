@@ -23,7 +23,10 @@ export async function requireAuth( req: Request, res: Response, next: NextFuncti
     try {
         const payload = verifyAccessToken(token);
 
-        req.user = { id: payload.sub };
+        req.user = { 
+            id: payload.sub,
+            authType: "jwt"
+        };
 
         next();
     } catch {

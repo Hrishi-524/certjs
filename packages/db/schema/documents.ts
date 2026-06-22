@@ -17,5 +17,6 @@ export const documents = pgTable("documents", {
     s3_url: text("s3_url"),
     created_at: timestamp("created_at").defaultNow().notNull()
 }, (table) => [
-    index("documents_job_id_index").on(table.job_id)
+    index("documents_job_id_index").on(table.job_id),
+    index("documents_verify_token_index").on(table.verify_token)
 ]);
