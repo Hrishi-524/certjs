@@ -1,4 +1,4 @@
-import { tryCatch, Worker } from "bullmq";
+import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { db } from "@certjs/db"
 import { documents, jobs } from "@certjs/db/schema"
@@ -7,6 +7,7 @@ import { createZip } from "./create-zip";
 import fetchFileBuffer from "./fetch-file-buffer";
 import { uploadZip } from "./upload-zip";
 import { sql } from "drizzle-orm";
+import { enqueueWebhookQueue } from "./webhook-queue";
 const connection = new IORedis({
     host: "127.0.0.1",
     port: 6379,
@@ -70,6 +71,8 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
             status: "completed",
             completed_at: new Date()
         }).where(eq(jobs.id, batch_job_id))
+
+        await enqueueWebhookQueue(batch_job_id);
     } catch(error) {
         console.error(`Finalizer job ${job.id} failed`, error);
 

@@ -1,12 +1,6 @@
 import { pgTable, uuid, text, timestamp, integer, index, unique } from "drizzle-orm/pg-core";
 import { users } from "./users"
 import { templates } from "./templates"
-import { statusEnum } from "./enum"
-
-/*
-jobs schema:
-- id (uuid, PK), job_type (text, enum: CERTIFICATE_BATCH), ideompotency_key (text, unique), user_id (uuid, FK to users), template_id (uuid, FK to templates), status (text, enum: queued, processing, completed, failed), attempts (integer), max_attempts (integer), last_error (text), failed_at (timestamp), total_count (integer), processed_count (integer), zip_s3_url (text), webhook_url (text), created_at (timestamp), completed_at (timestamp)   
-*/
 
 export const jobs = pgTable("jobs", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -20,10 +14,11 @@ export const jobs = pgTable("jobs", {
     last_error: text("last_error"),
     failed_at: timestamp("failed_at"),
     total_count: integer("total_count").notNull(),
-    processed_count: integer("processed_count").notNull(),
+    processed_count: integer("processed_count").notNull().default(0),
     failed_count: integer("failed_count").notNull().default(0),
     zip_s3_url: text("zip_s3_url"),
     webhook_url: text("webhook_url"),
+    webhook_secret: text("webhook_secret"),
     created_at: timestamp("created_at").defaultNow().notNull(),
     completed_at: timestamp("completed_at")
 }, 

@@ -10,3 +10,5 @@ const connection = new IORedis({
 export const certificateQueue = new Queue("certificates", { connection });
 
 export const batchQueue = new Queue("finalizer", { connection });
+
+export const webhookQueue = new Queue("webhooks", { connection });

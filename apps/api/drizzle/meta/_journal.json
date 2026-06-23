@@ -57,6 +57,13 @@
       "when": 1782124521500,
       "tag": "0007_soft_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782209899371,
+      "tag": "0008_chemical_onslaught",
+      "breakpoints": true
     }
   ]
 }

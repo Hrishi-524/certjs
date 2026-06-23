@@ -40,6 +40,18 @@ export async function getJobStatus(req: Request, res: Response) {
     );
 
     return res.status(200).json(jobStatus)
+/*
+    const jobStatus: {
+        status: "pending" | "processing" | "completed" | "failed";
+        meta: {
+            total_count: number;
+            processed_count: number;
+            failed_count: number;
+            last_error: string | null;
+        };
+    } 
+*/
+
 }
 
 export async function downloadJobZip(req: Request, res: Response) {
@@ -77,7 +89,7 @@ export async function retryJob(req: Request, res: Response) {
 
     return res.status(200).json({
         message: "Job queued for retry",
-        job: result
+        retryCount: result
     });
 }
 
@@ -101,4 +113,16 @@ export async function getJobDocuments(req: Request, res: Response) {
         count: documents.length,
         documents
     });
+/*
+    (property) documents: {
+        id: string;
+        job_id: string;
+        recipient_data: RecipientData;
+        status: "pending" | "processing" | "completed" | "failed";
+        error: string | null;
+        verify_token: string;
+        s3_url: string | null;
+        created_at: Date;
+    }[]
+*/
 }   
