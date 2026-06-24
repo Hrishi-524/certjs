@@ -9,15 +9,14 @@ Instead of manually designing and exporting certificates one by one, create a te
 ---
 
 ## Architecture
+<details open>
+<summary><b>System Architecture</b></summary>
 
 <p align="center">
-  <img src="./docs/architecture.svg" alt="CertJS Architecture" width="90%">
+  <img src="./docs/architecture.svg" alt="CertJS Architecture" width="95%">
 </p>
 
-
-<!-- Example:
-![CertJS Architecture](./docs/architecture.svg)
--->
+</details>
 
 ---
 
