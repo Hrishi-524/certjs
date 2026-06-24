@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODE5NzEwNjQsImV4cCI6MTc4MTk3MTk2NH0.b0QlGfYHGnBms8quA1zkpqj3lTa1f5xDyAzvXNeVTmo
-@templateId = 147d90eb-4035-4b0d-957a-1818abec7318
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODIyODk2MzQsImV4cCI6MTc4MjI5MDUzNH0.pcpeGYsZCY5WC4BEqzU0I-L405ONnkCjYppid-qQDvg
+@templateId = bb5c0aae-3fee-4729-bbff-1bec795caea6
 @idempotencyKey = job-test-{{$guid}}
 
 ### 1. Create Batch Job
@@ -22,14 +22,12 @@ Content-Type: application/json
   "idempotencyKey": "{{idempotencyKey}}",
   "recipients": [
     {
-      "name": "Ada Lovelace",
-      "course": "Computer Science"
-    },
-    {
-      "name": "Alan Turing",
+      "name": "Only one recipient 5",
       "course": "Computer Science"
     }
-  ]
+  ],
+  "webhookUrl": "https://webhook.site/9f44d1a3-1963-4075-9df8-349c8a102f4a",
+  "webhookSecret": "secret123"
 }
 
 ###

@@ -88,7 +88,8 @@ export async function createBatchJobService(params: CreateJobParams) {
             status: "pending",
             total_count: params.recipients.length,
             processed_count: 0,
-            webhook_url: params.webhookUrl
+            webhook_url: params.webhookUrl,
+            webhook_secret: params.webhookSecret
         }).returning()
 
         // 11. Create Document Rows - Child Job (document in bullmq job)

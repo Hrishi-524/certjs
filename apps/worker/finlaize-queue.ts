@@ -1,13 +1,13 @@
 import { batchQueue } from "@certjs/queue";
 
-export async function enqueueFinalizeQueue(batch_job_id: string ) {
+export async function enqueueFinalizeQueue(batchJobId: string ) {
     await batchQueue.add(
         "finalize_batch",
         {
-            job_id: batch_job_id
+            batchJobId
         },
         {
-            jobId: `finalize-${batch_job_id}`,
+            jobId: `finalize-${batchJobId}`,
             attempts: 3,
             backoff: {
                 type: "exponential",

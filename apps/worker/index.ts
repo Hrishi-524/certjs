@@ -9,6 +9,7 @@ import { uploadGeneratedCertificate } from "./upload-rendered-document";
 import { sql } from "drizzle-orm";
 import { enqueueFinalizeQueue } from "./finlaize-queue";
 import "./finalizer-worker"
+import "./webhook-worker"
 
 const connection = new IORedis({
     host: "127.0.0.1",
@@ -21,6 +22,7 @@ export const worker = new Worker( "certificates", async (job) => {
 
     const { document_id } = job.data;
 
+    // 1. Fetch document
     // 3. Mark document as "processing"
     const claimed = await db.update(documents).set({ status: "processing" }).where(
         and(
@@ -32,41 +34,36 @@ export const worker = new Worker( "certificates", async (job) => {
         )
     ).returning()
 
-    // 1. Fetch document
+    // 2. Ideompotency check
     const [document] = claimed;
 
     if(!document) {
         throw new Error("Document not found");
     }
-    // 2. Ideompotency guard
-    if(document.status === "completed") {
-        console.log(`Document ${document.id} already processed`);
-        return document.s3_url; // Return existing S3 URL if already processed
-    }
 
     // 4.Fetch job
-    const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
+    const [batchJob] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
  
-    if(!batch_job) {
+    if(!batchJob) {
         throw new Error("Job not found")
     }
 
-    if(batch_job.status === "pending") {
+    if(batchJob.status === "pending") {
         await db.update(jobs).set({ status: "processing" }).where(
             and(
-                eq(jobs.id, batch_job.id),
+                eq(jobs.id, batchJob.id),
                 eq(jobs.status, "pending")
             )
         );
     }
 
-    if(batch_job.status === "completed") {
+    if(batchJob.status === "completed") {
         throw new Error("Job already completed");
     }
 
     try {
         // 5.Fetch template
-        const [template] = await db.select().from(templates).where(eq(templates.id, batch_job.template_id));
+        const [template] = await db.select().from(templates).where(eq(templates.id, batchJob.template_id));
 
         if(!template) {
             throw new Error("Template not found")
@@ -117,25 +114,25 @@ export const worker = new Worker( "certificates", async (job) => {
         // 11. Update processed count in job
         await db.update(jobs).set({
             processed_count: sql`${jobs.processed_count} + 1`
-        }).where(eq(jobs.id, batch_job.id));
+        }).where(eq(jobs.id, batchJob.id));
 
         console.log(`Job ${job.id} completed successfully`);
 
         // 12. Mark Parent Job as completed if all documents are processed
-        const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batch_job.id));
+        const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batchJob.id));
 
         if(updatedJob && updatedJob.processed_count + updatedJob.failed_count === updatedJob.total_count) {
             const failedStatus = updatedJob.failed_count > 0 ? "failed" : "completed";
     
             if(failedStatus === "completed") {
-                console.log(`Batch Job ${batch_job.id} completed successfully`);
+                console.log(`Batch Job ${batchJob.id} completed successfully`);
                 console.log("Enquiung deterministic finalizer job for zip creation")
-                await enqueueFinalizeQueue(batch_job.id);
+                await enqueueFinalizeQueue(batchJob.id);
             } else {
                 await db.update(jobs).set({ 
                     status: failedStatus, 
                     completed_at: new Date() 
-                }).where(eq(jobs.id, batch_job.id));
+                }).where(eq(jobs.id, batchJob.id));
             }
 
         }
@@ -159,7 +156,7 @@ export const worker = new Worker( "certificates", async (job) => {
                     last_error: String(error),
                     failed_count: sql`${jobs.failed_count} + 1`
                 })
-                .where(eq(jobs.id, batch_job.id));
+                .where(eq(jobs.id, batchJob.id));
         }
 
 

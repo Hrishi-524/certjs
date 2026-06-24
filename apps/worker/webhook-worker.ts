@@ -21,14 +21,17 @@ export const webhookWorker = new Worker("webhook", async (job) => {
     }
 
     if (!batchJob.webhook_url) {
+        console.log(`No webhook URL for batch job ${batchJob.id}, skipping webhook delivery.`);
         return;
     }
+    console.log(`Sending webhook for batch job ${batchJob.id} to ${batchJob.webhook_url}`);
 
     if (!batchJob.zip_s3_url) {
         throw new Error("ZIP not available");
     }
 
     if (batchJob.status !== "completed" || !batchJob.zip_s3_url) {
+        console.log(`Batch job ${batchJob.id} is not ready for webhook delivery.`);
         throw new Error("Batch job not ready for webhook delivery");
     }
 
@@ -47,17 +50,27 @@ export const webhookWorker = new Worker("webhook", async (job) => {
 
     const signature = crypto.createHmac("sha256", batchJob.webhook_secret ?? "").update(body).digest("hex");
     
-    const response = await fetch(batchJob.webhook_url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
+    const headers = {
+        "Content-Type": "application/json",
+        "X-Certjs-Signature": signature
+    };
 
-    if (!response.ok) {
-        throw new Error(`Failed to send webhook: ${response.statusText}`);
+    try {
+        console.log(`Sending POST request to ${batchJob.webhook_url} with payload:`, payload);
+        const response = await fetch(batchJob.webhook_url, {
+            method: "POST",
+            headers, 
+            body
+        });
+            
+        console.log(await response.text());
+        if (!response.ok) {
+            throw new Error(`Failed to send webhook: ${response.statusText}`);
+        }
+            
+        console.log(`Webhook sent successfully for job ${batchJob.id}`);
+    } catch (error) {
+        console.error(`Webhook failed for batch ${batchJob.id}`, error);
+        throw error;
     }
-        
-    console.log(`Webhook sent successfully for job ${batchJob.id}`);
 }, { connection });

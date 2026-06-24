@@ -6,8 +6,9 @@ import { and, eq } from "drizzle-orm";
 import { createZip } from "./create-zip";
 import fetchFileBuffer from "./fetch-file-buffer";
 import { uploadZip } from "./upload-zip";
-import { sql } from "drizzle-orm";
 import { enqueueWebhookQueue } from "./webhook-queue";
+import "./webhook-worker"
+
 const connection = new IORedis({
     host: "127.0.0.1",
     port: 6379,
@@ -17,11 +18,12 @@ const connection = new IORedis({
 export const finalizerWorker = new Worker("finalizer", async (job) => {
     console.log(`Processing finalizer job ${job.id} with data:`, job.data)
 
-    const { job_id : batch_job_id } = job.data
+    const { batchJobId } = job.data
 
-    const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, batch_job_id));
+    const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, batchJobId));
 
     if (batch_job?.status === "completed" && batch_job.zip_s3_url) {
+        console.log(`Batch job ${batchJobId} is already completed with zip url: ${batch_job.zip_s3_url}. Skipping finalization.`);
         return;
     }
 
@@ -29,7 +31,7 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
         // 1. Read all completed documents for the batch job
         const completed_docs = await db.select().from(documents).where(
             and(
-                eq(documents.job_id, batch_job_id),
+                eq(documents.job_id, batchJobId),
                 eq(documents.status, "completed")
             )
         )
@@ -64,15 +66,19 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
         const zip_buffer = await createZip(doc_files)
 
         // 4. Uplaods Zip
-        const zip_s3_url = await uploadZip(zip_buffer, batch_job_id);
+        const zip_s3_url = await uploadZip(zip_buffer, batchJobId);
 
         await db.update(jobs).set({
             zip_s3_url: zip_s3_url,
             status: "completed",
             completed_at: new Date()
-        }).where(eq(jobs.id, batch_job_id))
+        }).where(eq(jobs.id, batchJobId))
 
-        await enqueueWebhookQueue(batch_job_id);
+        console.log(`Finalizer job ${job.id} completed successfully for batch job ${batchJobId}`);
+
+        await enqueueWebhookQueue(batchJobId);
+
+        console.log(`Webhook job enqueued for batch job ${batchJobId}`);
     } catch(error) {
         console.error(`Finalizer job ${job.id} failed`, error);
 
@@ -82,7 +88,7 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
             await db.update(jobs).set({
                 last_error: String(error),
                 status: "failed"
-            }).where(eq(jobs.id, batch_job_id));
+            }).where(eq(jobs.id, batchJobId));
         }
 
         throw error;

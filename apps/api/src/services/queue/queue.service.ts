@@ -13,6 +13,7 @@ export async function enqueueDocument(documents: Document[], jobId: string) {
                         document_id: doc.id
                     },
                     {
+                        jobId: `document-${doc.id}`,
                         attempts: 3,
                         backoff: {
                             type: "exponential",

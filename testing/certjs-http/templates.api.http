@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODE5NzEwNjQsImV4cCI6MTc4MTk3MTk2NH0.b0QlGfYHGnBms8quA1zkpqj3lTa1f5xDyAzvXNeVTmo
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWE5Y2NhNi1lNzVlLTRjNWMtODEwOC1iMTVhNzE1ZmQ4NDUiLCJpYXQiOjE3ODIyNzU2NjksImV4cCI6MTc4MjI3NjU2OX0.IXUNNogXRO4yxCyA9X5gg8DsJXd1jZYeqCFiqLT-sx0
 ### Upload template
 # @name uploadTemplate
 # Response shape:
@@ -33,7 +33,7 @@ Content-Disposition: form-data; name="height"
 Content-Disposition: form-data; name="template"; filename="template.png"
 Content-Type: image/png
 
-< ../../packages/core/inputs/head_and_mentor.png
+< ../../packages/core/inputs/signature.png
 ------certjstemplateboundary--
 
 ###

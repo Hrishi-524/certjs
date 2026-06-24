@@ -8,9 +8,9 @@ const bucket = process.env.S3_BUCKET_NAME!;
 
 export const uploadZip = async (
     fileBuffer: Buffer,
-    batch_job_id: string
+    batchJobId: string
 ) => {
-    const key = `certjs/zips/${batch_job_id}.zip`;
+    const key = `certjs/zips/${batchJobId}.zip`;
 
     const command = new PutObjectCommand({
         Bucket: bucket,

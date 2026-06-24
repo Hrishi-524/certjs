@@ -13,4 +13,6 @@ export type CreateJobParams = {
     idempotencyKey: string;
 
     webhookUrl?: string;
+
+    webhookSecret?: string;
 };
