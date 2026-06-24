@@ -10,5 +10,4 @@ coverage/
 .idea/
 .vscode/
 ignore/
-docs/
 .agents
