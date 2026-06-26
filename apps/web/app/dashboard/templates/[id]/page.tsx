@@ -1,0 +1,3 @@
+/*
+canvas for placing placeholders and saving chnages
+ */
