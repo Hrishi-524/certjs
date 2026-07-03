@@ -2,6 +2,7 @@
 
 import { SignupForm } from "@/components/signup-form"
 import { HugeiconsIcon } from "@hugeicons/react"
+import Image from "next/image"
 import { LayoutBottomIcon } from "@hugeicons/core-free-icons"
 
 export default function SignupPage() {
@@ -23,8 +24,10 @@ export default function SignupPage() {
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">
-        <img
-          src="/placeholder.svg"
+        <Image
+          src="/placeholder.jpg"
+          width={1920}
+          height={1080}
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />

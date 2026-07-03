@@ -8,17 +8,13 @@ import { generateAccessToken, generateRefreshToken, hashRefreshToken }from "./to
 import { createSession, findValidSessionByRefreshToken, revokeAllSessionsForUser, revokeSession, rotateRefreshToken } from "./sessions.service";
 
 export async function registerWithPassword(input: RegisterInput) {
-   const existingUser = await db.query.users.findFirst({
-        where: (users, { eq, or }) =>
-            or(
-                eq(users.email, input.email),
-                eq(users.username, input.username)
-            )
+    const existingUser = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.email, input.email)
     });
 
     if (existingUser) {
         throw new ConflictError(
-            "Email or Username already exists"
+            "Email already exists"
         );
     }
 
@@ -26,20 +22,29 @@ export async function registerWithPassword(input: RegisterInput) {
 
     const [user] = await db.insert(users).values({
         name: input.name,
-        username: input.username,
         email: input.email,
         password_hash: passwordHash
     }).returning({
         id: users.id,
-        email: users.email,
-        username: users.username
+        email: users.email
     });
 
+    const { session, refreshToken } = await createSession(user.id);
+
+    const accessToken = generateAccessToken(user.id);
+
     return {
-        id: user.id,
-        email: user.email,
-        username: user.username 
-    };
+        accessToken,
+        refreshToken,
+        session: {
+            id: session.id,
+            expires_at: session.expires_at
+        },
+        user: {
+            id: user.id,
+            email: user.email
+        }
+    }
 }
 
 export async function loginWithPassword(input: LoginInput) {
@@ -74,8 +79,7 @@ export async function loginWithPassword(input: LoginInput) {
         },
         user: {
             id: user.id,
-            email: user.email,
-            username: user.username
+            email: user.email
         }
     };
 }
@@ -122,7 +126,6 @@ export async function getCurrentUserService(userId: string) {
     return {
         id: user.id,
         name: user.name,
-        username: user.username,
         email: user.email,
         avatar_url: user.avatar_url,
         email_verified: user.email_verified

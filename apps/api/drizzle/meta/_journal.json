@@ -64,6 +64,13 @@
       "when": 1782209899371,
       "tag": "0008_chemical_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783086054114,
+      "tag": "0009_quick_gauntlet",
+      "breakpoints": true
     }
   ]
 }

@@ -13,13 +13,19 @@ const refreshCookieOptions = {
 };
 
 export async function signUpUser(req: Request, res: Response) {
-    const user = await registerWithPassword(req.body)
+    console.log("controllers/auth.controller.ts: signUpUser called with body:", req.body);
+    const data = await registerWithPassword(req.body)
 
+    console.log("controllers/auth.controller.ts: signUpUser response data:", data);
     res.status(201).json({
+        accessToken: data.accessToken,
         user: {
-            id: user.id,
-            email: user.email,
-            username: user.username
+            id: data.user.id,
+            email: data.user.email
+        },
+        session: {
+            id: data.session.id,
+            expiresAt: data.session.expires_at
         }
     });
 }
@@ -37,8 +43,7 @@ export async function loginUser(req: Request, res: Response) {
         accessToken: data.accessToken,
         user: {
             id: data.user.id,
-            email: data.user.email,
-            username: data.user.username
+            email: data.user.email
         },
         session: {
             id: data.session.id,
@@ -72,7 +77,6 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         user: {
             id: user.id,
             name: user.name,
-            username: user.username,
             email: user.email,
             avatarUrl: user.avatar_url,
             emailVerified: user.email_verified

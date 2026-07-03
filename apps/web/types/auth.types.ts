@@ -1,15 +1,18 @@
 export type SignUpInput = {
-    name: string;
-    username: string;
+    name: string
     email: string;
     password: string;
 }
 
 export type SignUpResponse = {
+    accessToken: string;
     user: {
         id: string;
         email: string;
-        username: string;
+    };
+    session: {
+        id: string;
+        expiresAt: string;
     }
 }
 
@@ -23,7 +26,6 @@ export type LoginResponse = {
     user: {
         id: string;
         email: string;
-        username: string;
     };
     session: {
         id: string;
@@ -39,7 +41,6 @@ export type MeResponse = {
     user: {
         id: string;
         name: string;
-        username: string;
         email: string;
         avatarUrl: string | null;
         emailVerified: boolean;
