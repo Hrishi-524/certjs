@@ -12,7 +12,7 @@ export const uploadTemplate = async (req: Request, res: Response) => {
     }
 
     const userId = req.user!.id;
-    const template_id = crypto.randomUUID()
+    const templateId = crypto.randomUUID()
    
     const { name, width, height } = createTemplateSchema.parse(req.body);
 
@@ -20,25 +20,25 @@ export const uploadTemplate = async (req: Request, res: Response) => {
         req.file.buffer,
         req.file.mimetype,
         userId,
-        template_id
+        templateId
     );
     
-    const template = await createTemplate(template_id, url, userId, name, width, height);
+    const template = await createTemplate(templateId, url, userId, name, width, height);
 
     res.status(201).json({
-        template_id: template.id,
-        user_id: template.user_id,
-        s3_key: key,
-        s3_url: url,
+        templateId: template.id,
+        userId: template.user_id,
+        s3Key: key,
+        s3Url: url,
         name: template.name,
         width: template.width,
         height: template.height,
-        created_at: template.created_at
+        createdAt: template.created_at
     });
 };
 
 export async function getTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
-    const { id: templateId } = templateIdParamSchema.parse(req.params);
+    const { templateId } = templateIdParamSchema.parse(req.params);
     const userId = req.user!.id;
 
     const template = await getTemplateById(templateId, userId);
@@ -48,13 +48,13 @@ export async function getTemplate(req: Request<IdParam>, res: Response, next: Ne
     }
 
     res.status(200).json({
-        template_id: template.id,
-        user_id: template.user_id,
-        s3_url: template.s3_url,
+        templateId: template.id,
+        userId: template.user_id,
+        s3Url: template.s3_url,
         name: template.name,
         width: template.width,
         height: template.height,
-        created_at: template.created_at
+        createdAt: template.created_at
     });
 }
 
@@ -69,7 +69,7 @@ export async function getTemplates(req: Request, res: Response, next: NextFuncti
 }
 
 export async function deleteTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
-    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const { templateId } = templateIdParamSchema.parse(req.params)
     const userId = req.user!.id
 
     await deleteTemplateById(templateId, userId);
@@ -78,36 +78,36 @@ export async function deleteTemplate(req: Request<IdParam>, res: Response, next:
 }
 
 export async function updateTemplateName(req: Request<IdParam>, res: Response, next: NextFunction) {
-    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const { templateId } = templateIdParamSchema.parse(req.params)
     const { name } = updateTemplateSchema.parse(req.body)
     const userId = req.user!.id
 
     const template = await updateTemplateNameService(templateId, userId, name)
 
     return res.status(200).json({
-        template_id: template.id,
-        user_id: template.user_id,
-        s3_url: template.s3_url,
+        templateId: template.id,
+        userId: template.user_id,
+        s3Url: template.s3_url,
         name: template.name,
         width: template.width,
         height: template.height,
-        created_at: template.created_at
+        createdAt: template.created_at
     })
 }
 
 export async function deactivateTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
-    const { id: templateId } = templateIdParamSchema.parse(req.params)
+    const { templateId } = templateIdParamSchema.parse(req.params)
     const userId = req.user!.id
 
     const template = await deactivateTemplateService(templateId, userId)
 
     return res.status(200).json({
-        template_id: template.id,
-        user_id: template.user_id,
-        s3_url: template.s3_url,
+        templateId: template.id,
+        userId: template.user_id,
+        s3Url: template.s3_url,
         name: template.name,
         width: template.width,
         height: template.height,
-        created_at: template.created_at
+        createdAt: template.created_at
     })
 }

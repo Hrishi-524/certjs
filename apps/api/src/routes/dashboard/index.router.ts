@@ -8,7 +8,7 @@ import authRouter from "@/routes/dashboard/auth.routes";
 import apiKeysRouter from "@/routes/dashboard/apikeys.routes";
 
 router.use("/auth", authRouter);
-router.use("/document", documentRouter);
+router.use("/documents", documentRouter);
 router.use("/jobs", jobsRouter);
 router.use("/templates", templatesRouter);
 router.use("/certificates", documentRouter);

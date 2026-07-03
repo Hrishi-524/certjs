@@ -21,21 +21,29 @@ export async function getDocumentService(docId: string, userId: string) {
         throw new UnauthorizedError("Unauthorized");
     }
 
-    return {
-        doc,
-        job_status: job.status,
-        template_id: job.template_id,
-    };
+    const normalizedDoc = {
+        id: doc.id,
+        jobId: doc.job_id,
+        recipientData: doc.recipient_data,
+        status: doc.status,
+        error: doc.error,
+        verifyToken: doc.verify_token,
+        s3Url: doc.s3_url,
+        createdAt: doc.created_at,
+        jobStatus: job.status,
+        templateId: job.template_id,
+    }
+    return normalizedDoc;
 }
 
 export async function downloadDocumentService(docId: string, userId: string) {
-    const { doc, job_status, template_id } = await getDocumentService(docId, userId);
+    const normalizedDoc = await getDocumentService(docId, userId);
 
-    if(doc.status !== "completed" || !doc.s3_url) {
+    if(normalizedDoc.status !== "completed" || !normalizedDoc.s3Url) {
         throw new NotFoundError("Document not available for download");
     }
 
-    const s3Key = doc.s3_url.split(".amazonaws.com/")[1];
+    const s3Key = normalizedDoc.s3Url.split(".amazonaws.com/")[1];
 
     if(!s3Key) {
         throw new NotFoundError("Invalid S3 URL stored for document");

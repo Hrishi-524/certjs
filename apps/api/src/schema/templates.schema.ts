@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const templateIdParamSchema = z.object({
-    id: z.uuid()
+    templateId: z.uuid()
 });
 
 export const createTemplateSchema = z.object({

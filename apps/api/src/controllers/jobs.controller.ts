@@ -11,18 +11,18 @@ import { UnauthorizedError } from "@/middleware/express-errors";
 
 export async function createBatchJob( req: Request, res: Response ) {
     const data = CreateJobSchema.parse(req.body);
-    const user_id = req.user.id
+    const userId = req.user.id
     
     const jobMeta = await createBatchJobService({
-        userId: user_id,
+        userId: userId,
         ...data
     })
     
     return res.status(201).json({
-        job_id: jobMeta.job.id,
+        jobId: jobMeta.job.id,
         status: jobMeta.job.status,
-        total_count: jobMeta.job.total_count,
-        processed_count: jobMeta.job.processed_count
+        totalCount: jobMeta.job.total_count,
+        processedCount: jobMeta.job.processed_count
     })
 };
 
@@ -44,12 +44,12 @@ export async function getJobStatus(req: Request, res: Response) {
     const jobStatus: {
         status: "pending" | "processing" | "completed" | "failed";
         meta: {
-            total_count: number;
-            processed_count: number;
-            failed_count: number;
-            last_error: string | null;
+            totalCount: number;
+            processedCount: number;
+            failedCount: number;
+            lastError: string | null;
         };
-    } 
+    }
 */
 
 }
@@ -62,13 +62,13 @@ export async function downloadJobZip(req: Request, res: Response) {
         throw new UnauthorizedError("Unauthorized - cannot create jobs")
     }
 
-    const zip_url = await getZip(jobId, userId)
+    const zipUrl = await getZip(jobId, userId)
 
-    if (!zip_url) {
+    if (!zipUrl) {
         return res.status(409).json({ message: "Job not completed yet" });
     }
 
-    return res.status(200).json(zip_url)
+    return res.status(200).json({zipUrl})
 }
 
 export async function retryJob(req: Request, res: Response) {
@@ -114,15 +114,15 @@ export async function getJobDocuments(req: Request, res: Response) {
         documents
     });
 /*
-    (property) documents: {
+    const documents: {
         id: string;
-        job_id: string;
-        recipient_data: RecipientData;
+        jobId: string;
+        recipientData: RecipientData;
         status: "pending" | "processing" | "completed" | "failed";
         error: string | null;
-        verify_token: string;
-        s3_url: string | null;
-        created_at: Date;
+        verifyToken: string;
+        s3Url: string | null;
+        createdAt: Date;
     }[]
 */
 }   

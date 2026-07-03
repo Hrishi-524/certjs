@@ -2,3 +2,12 @@
 // shows all your templates, includes pagination if templates are many
 // Recent activity section with jobs, certificates generated status and recently generated api keys
 // clicking on each card redirects to their correct dedicated page
+import React from 'react'
+
+function page() {
+  return (
+    <div>page</div>
+  )
+}
+
+export default page

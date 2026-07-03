@@ -42,7 +42,7 @@ export async function loginUser(req: Request, res: Response) {
         },
         session: {
             id: data.session.id,
-            expires_at: data.session.expires_at
+            expiresAt: data.session.expires_at
         }
     });
 }
@@ -60,7 +60,7 @@ export const logoutUser = async ( req: Request, res: Response ) => {
 
     res.clearCookie("refresh_token", refreshCookieOptions);
 
-    res.status(200).json({ success: true });
+    res.status(204).send();
 };
 
 export const getCurrentUser = async (req: Request, res: Response) => {
@@ -74,8 +74,8 @@ export const getCurrentUser = async (req: Request, res: Response) => {
             name: user.name,
             username: user.username,
             email: user.email,
-            avatar_url: user.avatar_url,
-            email_verified: user.email_verified
+            avatarUrl: user.avatar_url,
+            emailVerified: user.email_verified
         }
     });
 };
@@ -97,7 +97,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     );
 
     res.status(200).json({
-        access_token: tokens.accessToken
+        accessToken: tokens.accessToken
     });
 }
 
@@ -108,7 +108,7 @@ export const logoutAllUserSessions = async (req: Request, res: Response) => {
 
     res.clearCookie("refresh_token", refreshCookieOptions);
 
-    res.status(200).json({ success: true });
+    res.status(204).send();
 }
 
 export async function redirectToGoogleAuth(req: Request, res: Response) {

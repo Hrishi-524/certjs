@@ -6,45 +6,41 @@ import { getDocumentService, downloadDocumentService } from "@/services/document
 export async function getDocument(req: Request, res: Response) {
     const { documentId } = documentIdParamSchema.parse(req.params);
 
-    const user_id = req.user?.id
+    const userId = req.user?.id
 
-    if(!user_id) {
+    if(!userId) {
         throw new UnauthorizedError("Unauthorized - cannot create jobs")
     }
 
-    const data = await getDocumentService(documentId, user_id);
+    const docAndMeta = await getDocumentService(documentId, userId);
 
-    return res.status(200).json({
-        ...data.doc,
-        job_status: data.job_status,
-        template_id: data.template_id,
-    });
-    /*  following is data.doc structure based on documents schema, can be used for reference
-        (property) doc: {
+    return res.status(200).json(docAndMeta);
+    /*  
+        const docAndMeta: {
             id: string;
-            job_id: string;
-            recipient_data: RecipientData;
+            jobId: string;
+            recipientData: RecipientData;
             status: "pending" | "processing" | "completed" | "failed";
             error: string | null;
-            verify_token: string;
-            s3_url: string | null;
-            created_at: Date;
-        } 
+            verifyToken: string;
+            s3Url: string | null;
+            createdAt: Date;
+            jobStatus: "pending" | "processing" | "completed" | "failed";
+            templateId: string;
+        }
     */
 }
 
 export async function downloadDocument(req: Request, res: Response) {
     const { documentId } = documentIdParamSchema.parse(req.params);
 
-    const user_id = req.user?.id;
+    const userId = req.user?.id;
 
-    if (!user_id) {
+    if (!userId) {
         throw new UnauthorizedError("Unauthorized");
     }
 
-    const url = await downloadDocumentService(documentId, user_id);
+    const presignedUrl = await downloadDocumentService(documentId, userId);
 
-    return res.status(200).json({
-        url
-    });
+    return res.status(200).json({presignedUrl});
 }

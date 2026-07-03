@@ -139,10 +139,10 @@ export async function getJobStatusService(jobId: string, userId: string) {
     return {
         status: job.status,
         meta: {
-            total_count: job.total_count,
-            processed_count: job.processed_count,
-            failed_count: job.failed_count,
-            last_error: job.last_error
+            totalCount: job.total_count,
+            processedCount: job.processed_count,
+            failedCount: job.failed_count,
+            lastError: job.last_error
         }
     }
 }
@@ -208,7 +208,7 @@ export async function retryJobService(jobId: string, userId: string) {
     await enqueueDocument(failedDocs, jobId);
 
     return {
-        retried_count: failedDocs.length
+        retriedCount: failedDocs.length
     };
 }
 
@@ -228,5 +228,16 @@ export async function getJobDocumentsService(jobId: string, userId: string) {
         eq(documents.job_id, jobId)
     )
 
-    return docs;
+    const normalizedDocs = docs.map(doc => ({
+        id: doc.id,
+        jobId: doc.job_id,
+        recipientData: doc.recipient_data,
+        status: doc.status,
+        error: doc.error,
+        verifyToken: doc.verify_token,
+        s3Url: doc.s3_url,
+        createdAt: doc.created_at
+    }))
+
+    return normalizedDocs;
 }

@@ -25,9 +25,9 @@ export async function verifyCertificateService(verifyToken: string) {
 
     return {
         verified: true,
-        template_name: row.templates.name,
+        templateName: row.templates.name,
         recipient: row.documents.recipient_data,
-        issued_at: row.documents.created_at,
+        issuedAt: row.documents.created_at,
         status: row.documents.status
     }
 }

@@ -34,7 +34,19 @@ export async function getAllTemplates(userId: string) {
         desc(templates.created_at)
     );
 
-    return templatesList;
+    const normalizedTemplatesList = templatesList.map(template => ({
+        templateId: template.id,
+        userId: template.user_id,
+        name: template.name,
+        s3Url: template.s3_url,
+        version: template.version,
+        isActive: template.is_active,
+        width: template.width,
+        height: template.height,
+        createdAt: template.created_at
+    }));
+
+    return normalizedTemplatesList;
 }
 
 export async function deleteTemplateById(templateId: string, userId: string){

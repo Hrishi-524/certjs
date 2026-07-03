@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const IdParamSchema = z.object({
-    id: z.uuid()
+export const TemplateIdParamSchema = z.object({
+    templateId: z.uuid()
 });
 
 export const PlaceholderIdParamSchema = z.object({
-    id: z.uuid(),
+    templateId: z.uuid(),
     placeholderId: z.uuid()
 });
 
@@ -15,12 +15,12 @@ export const PlaceholderSchema = z.object({
     y: z.coerce.number().nonnegative(),
     key: z.string().trim().min(1),
     width: z.coerce.number().nonnegative(),
-    font_size: z.number().int().positive(),
-    font_color: z.string().trim().min(1),
-    font_family: z.string().trim().min(1),
+    fontSize: z.number().int().positive(),
+    fontColor: z.string().trim().min(1),
+    fontFamily: z.string().trim().min(1),
     height: z.number().positive(),
     strategy: z.enum(["shrink", "ellipsis", "wrap"]).optional(),
-    min_font_size: z.number().int().positive().optional(),
+    minFontSize: z.number().int().positive().optional(),
     align: z.enum(["left", "center", "right"]).optional()
 });
 
@@ -30,7 +30,7 @@ export const CreatePlaceholdersSchema =
 export const UpdatePlaceholderSchema =
     PlaceholderSchema.partial();
 
-export type IdParam = z.infer<typeof IdParamSchema>;
+export type TemplateIdParam = z.infer<typeof TemplateIdParamSchema>;
 
 export type PlaceholderIdParam = z.infer<typeof PlaceholderIdParamSchema>;
 
