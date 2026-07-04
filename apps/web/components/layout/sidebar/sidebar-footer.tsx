@@ -1,0 +1,45 @@
+import Link from "next/link";
+import {
+    SidebarMenu,
+    SidebarMenuItem,
+    SidebarMenuButton
+} from "@/components/ui/sidebar"
+import { AppIcon } from "@/components/shared/app-icon";
+import { AiSettingIcon } from '@hugeicons/core-free-icons';
+import { ThemeButton } from "@/components/shared/theme-button";
+import UserNav from "@/components/layout/sidebar/user-nav";
+
+function SidebarFooterContent() {
+    return (
+        <div className="space-y-2">
+            {/* Settings */}
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href="/dashboard/settings">
+                            <AppIcon  icon={AiSettingIcon}/>
+                            <span>Settings</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+
+            {/* Theme Selector */}
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <ThemeButton />
+                </SidebarMenuItem>
+            </SidebarMenu>
+            
+            {/* Profile */}
+            <SidebarMenu>
+                <SidebarMenuItem>
+                   <UserNav />
+                </SidebarMenuItem>
+            </SidebarMenu>
+
+        </div>
+    )
+}
+
+export default SidebarFooterContent

@@ -1,4 +1,4 @@
-// components/smart/theme-provider.tsx
+// components/theme/theme-provider.tsx
 
 "use client";
 

@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/smart/theme-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Tick01Icon } from '@hugeicons/core-free-icons';
-
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { QueryProvider } from "@/lib/query/query-provider";
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
@@ -32,10 +31,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)} suppressHydrationWarning>
         <body className="min-h-full flex flex-col">
-            <ThemeProvider>
-                {children}
-                <Toaster richColors position="top-center"/>
-            </ThemeProvider>
+            <TooltipProvider>
+                <QueryProvider>
+                    <ThemeProvider>
+                        {children}
+                        <Toaster richColors position="top-center"/>
+                    </ThemeProvider>
+                </QueryProvider>
+            </TooltipProvider>
         </body>
     </html>
   );

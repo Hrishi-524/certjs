@@ -129,6 +129,27 @@ export async function handleGoogleAuthCallback(req: Request, res: Response) {
         credentials.refreshToken,
         refreshCookieOptions
     );
-    res.json(credentials);
+    const redirectUrl = new URL("/auth/callback", process.env.FRONTEND_URL);
+
+    redirectUrl.searchParams.set(
+        "accessToken",
+        credentials.accessToken
+    );
+
+    res.redirect(redirectUrl.toString());
+/*
+    const credentials: {
+        accessToken: string;
+        refreshToken: `${string}-${string}-${string}-${string}-${string}`;
+        session: {
+            id: string;
+            expires_at: Date;
+        };
+        user: {
+            id: string;
+            email: string;
+        };
+    }
+*/
 }
 

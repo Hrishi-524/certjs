@@ -58,12 +58,11 @@ export async function loginWithGoogle(code: string) {
     
     // Find or Create user, ensure linking of oauth to users
     let userId: string
-    const username = generateUsername(payload)
 
     if(oauthAccount) {
         userId = oauthAccount.user_id
     } else {
-        userId = await findOrCreateUser(payload, username)
+        userId = await findOrCreateUser(payload)
     }
 
     // find user
@@ -94,13 +93,12 @@ export async function loginWithGoogle(code: string) {
         },
         user: {
             id: user.id,
-            email: user.email,
-            username: user.username
+            email: user.email
         }
     };
 }
 
-async function findOrCreateUser( payload: TokenPayload, username: string ) {
+async function findOrCreateUser( payload: TokenPayload ) {
     let userId: string
     // find user by email
     const user = await db.query.users.findFirst({
@@ -120,7 +118,6 @@ async function findOrCreateUser( payload: TokenPayload, username: string ) {
         const user = await db.transaction(async (tx) => {
             const [user] = await tx.insert(users).values({ 
                 name: payload.name!, 
-                username: username, 
                 email: payload.email!, 
                 avatar_url: payload.picture 
             }).returning()

@@ -4,7 +4,6 @@ import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
 users schema:
 id
 name
-username
 email
 email_verified
 password_hash nullable

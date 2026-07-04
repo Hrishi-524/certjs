@@ -25,11 +25,11 @@ export default function SignupPage() {
       </div>
       <div className="relative hidden bg-muted lg:block">
         <Image
-          src="/placeholder.jpg"
-          width={1920}
-          height={1080}
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+            src="/placeholder.jpg"
+            alt="Signup illustration"
+            fill
+            priority
+            className="object-cover"
         />
       </div>
     </div>
