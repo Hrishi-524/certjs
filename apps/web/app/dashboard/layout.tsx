@@ -6,8 +6,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <SidebarProvider
         style={
             {
-                "--sidebar-width": "13rem",
-                "--sidebar-width-mobile": "13rem",
+                "--sidebar-width": "15rem",
+                "--sidebar-width-mobile": "15rem",
             } as React.CSSProperties
         }
     >

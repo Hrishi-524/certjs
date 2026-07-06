@@ -28,7 +28,6 @@ export function ThemeButton() {
     return (
         <Button
             variant="ghost"
-            className="w-full justify-start"
             onClick={toggleTheme}
         >
             <AppIcon icon={icon} />
