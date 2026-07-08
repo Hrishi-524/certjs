@@ -35,7 +35,7 @@ function UserNav() {
     }
 
     const { user } = data
-    console.log(user)
+  
     const fallback = user.name?.charAt(0)?.toUpperCase() ?? "U"
 
     return (

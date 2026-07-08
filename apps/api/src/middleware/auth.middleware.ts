@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { UnauthorizedError } from "./express-errors";
 import { verifyAccessToken } from "@/services/auth/token.service";
 import { ErrorCode } from "@/types/auth-types";
-import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 export async function requireAuth( req: Request, res: Response, next: NextFunction ) {
     const authHeader = req.headers.authorization;
@@ -16,7 +16,7 @@ export async function requireAuth( req: Request, res: Response, next: NextFuncti
     if ( scheme !== "Bearer" || !token ) {
         return next(new UnauthorizedError("Invalid authorization header", ErrorCode.INVALID_AUTH_HEADER));
     }
-
+    
     try {
         const payload = verifyAccessToken(token);
 
@@ -27,12 +27,6 @@ export async function requireAuth( req: Request, res: Response, next: NextFuncti
 
         next();
     } catch(error) {
-        if(error instanceof TokenExpiredError) {
-            return next(new UnauthorizedError("Access token expired", ErrorCode.ACCESS_TOKEN_EXPIRED));
-        } 
-        if (error instanceof JsonWebTokenError) {
-            return next(new UnauthorizedError("Invalid access token", ErrorCode.INVALID_ACCESS_TOKEN));
-        }
         return next(error);
     }
 }

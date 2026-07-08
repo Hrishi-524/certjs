@@ -5,7 +5,7 @@ export function AppIcon(props: React.ComponentProps<typeof HugeiconsIcon>) {
     return (
         <HugeiconsIcon
             strokeWidth={2}
-            size={18}
+            size={20}
             {...props}
         />
     );

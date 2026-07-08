@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import { authConfig } from "@/config/auth-config";
 import crypto from "crypto";
+import { ErrorCode } from "@/types/auth-types";
+import { UnauthorizedError } from "@/middleware/express-errors";
 
 export interface AccessTokenPayload {
     sub: string;
@@ -17,7 +19,17 @@ export function generateAccessToken( userId: string ) {
 }
 
 export function verifyAccessToken( token: string ): AccessTokenPayload {
-    return jwt.verify(token, authConfig.jwtSecret) as AccessTokenPayload;
+    try {
+        return jwt.verify(token, authConfig.jwtSecret) as AccessTokenPayload;
+    } catch (error) {
+        if(error instanceof Error && error.name === "TokenExpiredError") {
+            throw new UnauthorizedError("Access token expired", ErrorCode.ACCESS_TOKEN_EXPIRED);
+        } 
+        if (error instanceof Error && error.name === "JsonWebTokenError") {
+            throw new UnauthorizedError("Invalid access token", ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+        throw error;
+    }    
 }
 
 export function generateRefreshToken() {

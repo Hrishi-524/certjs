@@ -4,6 +4,7 @@ import { UnauthorizedError } from "@/middleware/express-errors";
 import { getGoogleAuthUrl, loginWithGoogle } from "@/services/auth/oauth.servcie";
 import { googleOAuthClient } from "@/config/google-oauth";
 import { ErrorCode } from "@/types/auth-types";
+import { authConfig } from "@/config/auth-config";
 
 // helpers
 const refreshCookieOptions = {
@@ -14,10 +15,7 @@ const refreshCookieOptions = {
 };
 
 export async function signUpUser(req: Request, res: Response) {
-    console.log("controllers/auth.controller.ts: signUpUser called with body:", req.body);
     const data = await registerWithPassword(req.body)
-
-    console.log("controllers/auth.controller.ts: signUpUser response data:", data);
     res.status(201).json({
         accessToken: data.accessToken,
         user: {
@@ -35,7 +33,7 @@ export async function loginUser(req: Request, res: Response) {
     const data = await loginWithPassword(req.body);
 
     res.cookie(
-        "refresh_token",
+        "refreshToken",
         data.refreshToken,
         refreshCookieOptions
     );
@@ -54,7 +52,7 @@ export async function loginUser(req: Request, res: Response) {
 }
 
 export const logoutUser = async ( req: Request, res: Response ) => {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
         throw new UnauthorizedError(
@@ -64,7 +62,7 @@ export const logoutUser = async ( req: Request, res: Response ) => {
 
     await logout(refreshToken);
 
-    res.clearCookie("refresh_token", refreshCookieOptions);
+    res.clearCookie("refreshToken", refreshCookieOptions);
 
     res.status(204).send();
 };
@@ -83,7 +81,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
         throw new UnauthorizedError(
             "Refresh token missing",
@@ -94,7 +92,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const tokens = await refreshSession(refreshToken);
 
     res.cookie(
-        "refresh_token",
+        "refreshToken",
         tokens.refreshToken,
         refreshCookieOptions
     );
@@ -105,18 +103,17 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 }
 
 export const logoutAllUserSessions = async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies.refreshToken;
 
     await logoutAllSessionsForUser(refreshToken);
 
-    res.clearCookie("refresh_token", refreshCookieOptions);
+    res.clearCookie("refreshToken", refreshCookieOptions);
 
     res.status(204).send();
 }
 
 export async function redirectToGoogleAuth(req: Request, res: Response) {
     const url = getGoogleAuthUrl();
-    console.log("Redirecting to Google OAuth URL:", url);
     res.redirect(url);
 }
 

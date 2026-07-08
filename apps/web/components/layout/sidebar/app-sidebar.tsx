@@ -5,21 +5,35 @@ import {
 } from "@/components/ui/sidebar"
 import SidebarNav from "@/components/layout/sidebar/sidebar-nav";
 import SidebarFooterContent from "@/components/layout/sidebar/sidebar-footer";
+import { Separator } from "@/components/ui/separator";
+import { SidebarToggle } from "@/components/layout/sidebar/sidebar-toggle";
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon">
+        <Sidebar  collapsible="icon">
+            <SidebarToggle />
             <SidebarHeader className="px-3 py-4">
-                <div className="flex items-center gap-3 rounded-xl px-2 py-1.5">
-                    <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                        <span className="truncate text-base font-semibold">CertJs</span>
-                        <span className="truncate text-xs text-muted-foreground">Dashboard</span>
+                {/* Expanded */}
+                <div className="group-data-[collapsible=icon]:hidden">
+                    <span className="text-base font-semibold">
+                        CertJs
+                    </span>
+                    <br />
+                    <span className="text-xs text-muted-foreground">
+                        Dashboard
+                    </span>
+                </div>
+
+                {/* Collapsed */}
+                <div className="hidden group-data-[collapsible=icon]:flex">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                        CJ
                     </div>
                 </div>
             </SidebarHeader>
-
+            <Separator />
             <SidebarNav />
-
+            <Separator />
             <SidebarFooter className="px-3 pb-3">
                 <SidebarFooterContent />
             </SidebarFooter>

@@ -25,7 +25,7 @@ export function setupInterceptors(clientApi: AxiosInstance) {
             }
 
             const originalRequest = error.config as RetryRequest;
-
+          
             const code = (error.response.data as any)?.code;
 
             if (

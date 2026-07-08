@@ -11,8 +11,8 @@ import UserNav from "@/components/layout/sidebar/user-nav";
 
 function SidebarFooterContent() {
     return (
-        <div className="space-y-1.5">
-            <SidebarMenu>
+        <SidebarMenu className="space-y-1.5">
+            {/* <SidebarMenu> */}
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
@@ -25,20 +25,20 @@ function SidebarFooterContent() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-            </SidebarMenu>
+            {/* </SidebarMenu> */}
 
-            <SidebarMenu>
+            {/* <SidebarMenu> */}
                 <SidebarMenuItem>
                     <ThemeButton />
                 </SidebarMenuItem>
-            </SidebarMenu>
+            {/* </SidebarMenu> */}
 
-            <SidebarMenu>
+            {/* <SidebarMenu> */}
                 <SidebarMenuItem>
                     <UserNav />
                 </SidebarMenuItem>
-            </SidebarMenu>
-        </div>
+            {/* </SidebarMenu> */}
+        </SidebarMenu>
     )
 }
 

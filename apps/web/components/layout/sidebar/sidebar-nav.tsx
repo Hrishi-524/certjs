@@ -9,12 +9,13 @@ import {
 } from "@/components/ui/sidebar"
 import { sidebarGroups } from "@/components/data/sidebar-items";
 import { AppIcon } from "@/components/shared/app-icon";
+import { Separator } from "@/components/ui/separator";
 
 function SidebarNav() {
     return (
-        <SidebarContent className="gap-1 px-1">
+        <SidebarContent className="w-full gap-1 px-1">
             {sidebarGroups.map((group) => (
-                <SidebarGroup key={group.label} className="px-2 py-3">
+                <SidebarGroup key={group.label} className="border-b pb-3 last:border-none first:my-3">
                     <SidebarGroupLabel className="h-7 px-2 text-sm text-sidebar-foreground/65">
                         {group.label}
                     </SidebarGroupLabel>
@@ -25,7 +26,7 @@ function SidebarNav() {
                                 <SidebarMenuButton
                                     asChild
                                     tooltip={item.title}
-                                    className="h-10 rounded-lg px-2.5 text-[14px] font-medium [&_svg]:size-5"
+                                    className="h-10 rounded-lg text-[14px] font-medium [&_svg]:size-5"
                                 >
                                     <Link href={item.href}>
                                         <AppIcon icon={item.icon} />
@@ -35,6 +36,7 @@ function SidebarNav() {
                             </SidebarMenuItem>
                         ))}
                     </SidebarMenu>
+                    {/* <Separator/> */}
                 </SidebarGroup>
             ))}
         </SidebarContent>

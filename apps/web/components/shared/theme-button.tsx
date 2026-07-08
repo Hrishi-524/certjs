@@ -29,6 +29,7 @@ export function ThemeButton() {
         <SidebarMenuButton
             size="sm"
             className="h-10 rounded-lg px-2.5 text-[15px] font-medium [&_svg]:size-5"
+            onClick={toggleTheme}
         >
             <AppIcon icon={icon} />
             <span>{label}</span>
