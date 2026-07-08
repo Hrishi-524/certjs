@@ -29,12 +29,7 @@ function SidebarFooterContent() {
 
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton
-                        size="sm"
-                        className="h-10 rounded-lg px-2.5 text-[15px] font-medium [&_svg]:size-5"
-                    >
-                        <ThemeButton />
-                    </SidebarMenuButton>
+                    <ThemeButton />
                 </SidebarMenuItem>
             </SidebarMenu>
 

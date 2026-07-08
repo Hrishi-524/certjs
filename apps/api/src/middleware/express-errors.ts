@@ -1,7 +1,8 @@
 export class AppError extends Error {
     constructor(
         message: string,
-        public statusCode: number
+        public statusCode: number,
+        public code = "APP_ERROR"
     ) {
         super(message);
         this.name = this.constructor.name;
@@ -9,37 +10,37 @@ export class AppError extends Error {
 }
 
 export class BadRequestError extends AppError {
-    constructor(message = "Bad request") {
-        super(message, 400);
+    constructor(message = "Bad request", code="BAD_REQUEST") {
+        super(message, 400, code);
     }
 }
 
 export class UnauthorizedError extends AppError {
-    constructor(message = "Unauthorized") {
-        super(message, 401);
+    constructor(message = "Unauthorized", code="UNAUTHORIZED") {
+        super(message, 401, code);
     }
 }
 
 export class ForbiddenError extends AppError {
-    constructor(message = "Forbidden") {
-        super(message, 403);
+    constructor(message = "Forbidden", code="FORBIDDEN") {
+        super(message, 403, code);
     }
 }
-
+    
 export class NotFoundError extends AppError {
-    constructor(message = "Not found") {
-        super(message, 404);
+    constructor(message = "Not found", code="NOT_FOUND") {
+        super(message, 404, code);
     }
 }
 
 export class ConflictError extends AppError {
-    constructor(message = "Conflict") {
-        super(message, 409);
+    constructor(message = "Conflict", code="CONFLICT") {
+        super(message, 409, code);
     }
 }
 
 export class InternalServerError extends AppError {
-    constructor(message = "Internal server error") {
-        super(message, 500);
+    constructor(message = "Internal server error", code="INTERNAL_SERVER_ERROR") {
+        super(message, 500, code);
     }
 }

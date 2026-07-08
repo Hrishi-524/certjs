@@ -9,13 +9,13 @@ import { QueryProvider } from "@/lib/query/query-provider";
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -23,23 +23,19 @@ export const metadata: Metadata = {
     description: "CertJs is a certificate management system that allows users to create, manage, and verify digital certificates. It provides a secure and user-friendly platform for organizations and individuals to handle their certification needs.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)} suppressHydrationWarning>
-        <body className="min-h-full flex flex-col">
-            <TooltipProvider>
-                <QueryProvider>
-                    <ThemeProvider>
-                        {children}
-                        <Toaster richColors position="top-center"/>
-                    </ThemeProvider>
-                </QueryProvider>
-            </TooltipProvider>
-        </body>
-    </html>
-  );
+export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
+    return (
+        <html lang="en" className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)} suppressHydrationWarning>
+            <body className="min-h-full flex flex-col">
+                <TooltipProvider>
+                    <QueryProvider>
+                        <ThemeProvider>
+                            {children}
+                            <Toaster richColors position="top-center"/>
+                        </ThemeProvider>
+                    </QueryProvider>
+                </TooltipProvider>
+            </body>
+        </html>
+    );
 }

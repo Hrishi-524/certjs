@@ -3,6 +3,7 @@ import { registerWithPassword, loginWithPassword, logout, getCurrentUserService,
 import { UnauthorizedError } from "@/middleware/express-errors";
 import { getGoogleAuthUrl, loginWithGoogle } from "@/services/auth/oauth.servcie";
 import { googleOAuthClient } from "@/config/google-oauth";
+import { ErrorCode } from "@/types/auth-types";
 
 // helpers
 const refreshCookieOptions = {
@@ -69,9 +70,6 @@ export const logoutUser = async ( req: Request, res: Response ) => {
 };
 
 export const getCurrentUser = async (req: Request, res: Response) => {
-    if(!req.user) {
-        throw new UnauthorizedError("User not authenticated");
-    }
     const user = await getCurrentUserService(req.user.id);
     res.status(200).json({
         user: {
@@ -88,7 +86,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
         throw new UnauthorizedError(
-            "Refresh token missing"
+            "Refresh token missing",
+            ErrorCode.REFRESH_TOKEN_MISSING
         );
     }
     

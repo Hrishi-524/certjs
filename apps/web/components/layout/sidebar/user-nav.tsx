@@ -35,6 +35,7 @@ function UserNav() {
     }
 
     const { user } = data
+    console.log(user)
     const fallback = user.name?.charAt(0)?.toUpperCase() ?? "U"
 
     return (
@@ -45,7 +46,7 @@ function UserNav() {
                     className="h-14 rounded-lg px-2.5 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground [&_svg]:size-4"
                 >
                     <Avatar className="size-9 rounded-lg">
-                        <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
+                        <AvatarImage src={user.avatarUrl === null ? undefined : user.avatarUrl} alt={user.name} />
                         <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                             {fallback}
                         </AvatarFallback>

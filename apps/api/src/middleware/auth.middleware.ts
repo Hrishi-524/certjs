@@ -1,23 +1,20 @@
-import type {
-    Request,
-    Response,
-    NextFunction
-} from "express";
-
+import type { Request, Response, NextFunction } from "express";
 import { UnauthorizedError } from "./express-errors";
 import { verifyAccessToken } from "@/services/auth/token.service";
+import { ErrorCode } from "@/types/auth-types";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
 export async function requireAuth( req: Request, res: Response, next: NextFunction ) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return next(new UnauthorizedError( "Missing authorization header" ));
+        return next(new UnauthorizedError( "Missing authorization header", ErrorCode.ACCESS_TOKEN_MISSING));
     }
 
     const [scheme, token] = authHeader.split(" ");
 
     if ( scheme !== "Bearer" || !token ) {
-        return next(new UnauthorizedError("Invalid authorization header"));
+        return next(new UnauthorizedError("Invalid authorization header", ErrorCode.INVALID_AUTH_HEADER));
     }
 
     try {
@@ -29,7 +26,13 @@ export async function requireAuth( req: Request, res: Response, next: NextFuncti
         };
 
         next();
-    } catch {
-        next(new UnauthorizedError("Invalid access token"));
+    } catch(error) {
+        if(error instanceof TokenExpiredError) {
+            return next(new UnauthorizedError("Access token expired", ErrorCode.ACCESS_TOKEN_EXPIRED));
+        } 
+        if (error instanceof JsonWebTokenError) {
+            return next(new UnauthorizedError("Invalid access token", ErrorCode.INVALID_ACCESS_TOKEN));
+        }
+        return next(error);
     }
 }
