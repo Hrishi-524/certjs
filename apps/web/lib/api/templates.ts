@@ -7,6 +7,12 @@ export async function uploadTemplate(input: UploadTemplateInput): Promise<Upload
     formData.append("name", input.name);
     formData.append("width", String(input.width));
     formData.append("height", String(input.height));
+    console.log("Uploading template with the following data:", {
+        name: input.name,
+        width: input.width,
+        height: input.height,
+        template: input.template,
+    }); 
     const { data } = await clientApi.post<UploadTemplateResponse>("/dashboard/templates", formData);
     return data;
 }

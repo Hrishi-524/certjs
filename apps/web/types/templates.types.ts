@@ -12,6 +12,18 @@ export type Template = {
     createdAt: string;
 };
 
+export type GetDimensionsResponse = {
+    width: number;
+    height: number;
+}
+
+export type ImageInfo = {
+    width: number;
+    height: number;
+    mimeType: string;
+    previewUrl: string;
+};
+
 export type UploadTemplateInput = {
     template: File; // field name must be "template"; PNG, JPEG, or WebP; max 5 MB
     name: string;   // 1-100 chars

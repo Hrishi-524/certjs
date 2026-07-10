@@ -1,13 +1,7 @@
-/**
- * uplaod template page
- */
-
-import React from 'react'
-
+"use client"
+import UploadBox from "@/components/templates/create-template"
 function page() {
-  return (
-    <div>page</div>
-  )
+    return <UploadBox />
 }
 
 export default page

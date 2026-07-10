@@ -37,6 +37,11 @@ export const sidebarGroups: SidebarGroup[] = [
                 href: "/dashboard/api-keys",
                 icon: Key01Icon,
             },
+            {
+                title: "Create Template",
+                href: "/dashboard/templates/new",
+                icon: File01Icon,
+            }
         ]
     },
     {
