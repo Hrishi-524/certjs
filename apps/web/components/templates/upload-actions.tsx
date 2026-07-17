@@ -9,10 +9,11 @@ type UploadActionsProps = {
     onTemplateNameChange: (name: string) => void;
     onCreate: () => void;
     dimensions: GetDimensionsResponse
-    templateType: string
+    templateType: string,
+    creating: boolean
 };
 
-function UploadActions({ templateName, onTemplateNameChange, onCreate, dimensions, templateType }: UploadActionsProps) {
+function UploadActions({ templateName, onTemplateNameChange, onCreate, dimensions, templateType, creating }: UploadActionsProps) {
     return (
         <Card className="h-full flex flex-col">
             <CardHeader>
@@ -50,10 +51,11 @@ function UploadActions({ templateName, onTemplateNameChange, onCreate, dimension
                     </div>
                 </div>
 
-                <Button className="mt-auto" onClick={onCreate}>Create Template</Button>
+                <Button className="mt-auto" onClick={onCreate} disabled={creating}>
+                    {creating ? "Creating..." : "Create Template"}
+                </Button>
             </CardContent>
         </Card>
     ) 
 }
-
 export default UploadActions

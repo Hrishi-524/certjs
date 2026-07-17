@@ -27,11 +27,12 @@ export function setupInterceptors(clientApi: AxiosInstance) {
             const originalRequest = error.config as RetryRequest;
           
             const code = (error.response.data as any)?.code;
+            
+            const shouldRefresh = 
+                code === ErrorCode.ACCESS_TOKEN_EXPIRED ||
+                code === ErrorCode.ACCESS_TOKEN_MISSING;
 
-            if (
-                code === ErrorCode.ACCESS_TOKEN_EXPIRED &&
-                !originalRequest._retry
-            ) {
+            if (shouldRefresh && !originalRequest._retry) {
                 originalRequest._retry = true;
 
                 try {

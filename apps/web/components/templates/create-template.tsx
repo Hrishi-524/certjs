@@ -31,6 +31,7 @@ function CreateTemplate() {
     const [file, setFile] = useState<File | null>(null);
     const [uploaded, setUploaded] = useState<boolean>(false)
     const [dimensions, setDimensions] = useState<GetDimensionsResponse | null>(null);
+    const [creating, setCreating] = useState<boolean>(false)
 
     async function handleDrop(files: File[]) {
         const file = files[0];
@@ -56,10 +57,11 @@ function CreateTemplate() {
     }
 
     async function handleCreate() {
-       if (!file || !dimensions) {
+        if (!file || !dimensions) {
             toast.error("Please upload a template first");
             return;
         }
+        setCreating(true);
 
         if (!templateName.trim()) {
             toast.error("Please enter a template name");
@@ -75,6 +77,7 @@ function CreateTemplate() {
 
         const response: UploadTemplateResponse = await uploadTemplate(input)
 
+        setCreating(false);
         console.log("Template created successfully, following is the response")
         console.log(response)
 
@@ -100,6 +103,7 @@ function CreateTemplate() {
                         onCreate={handleCreate}
                         dimensions={dimensions!}
                         templateType={file.type}
+                        creating={creating}
                     />
                 </div>
             )}

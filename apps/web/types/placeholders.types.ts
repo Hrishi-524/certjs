@@ -1,18 +1,18 @@
 export type Placeholder = {
-  id: string;
-  templateId: string;
-  name: string;
-  key: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  strategy: "shrink" | "ellipsis" | "wrap";
-  minFontSize: number | null;
-  align: "left" | "center" | "right";
-  fontSize: number;
-  fontColor: string;
-  fontFamily: string;
+    id: string;
+    templateId: string;
+    name: string;
+    key: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    strategy: "shrink" | "ellipsis" | "wrap";
+    minFontSize: number | null;
+    align: "left" | "center" | "right";
+    fontSize: number;
+    fontColor: string;
+    fontFamily: string;
 };
 
 export type SinglePlaceholderInput = {

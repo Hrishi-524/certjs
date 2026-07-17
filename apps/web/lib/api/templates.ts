@@ -23,7 +23,9 @@ export async function listTemplates(): Promise<ListTemplatesResponse> {
 }
 
 export async function getTemplate(id: string): Promise<GetTemplateResponse> {
+    console.log(`Fetching template with ID: ${id}`);
     const { data } = await clientApi.get<GetTemplateResponse>(`/dashboard/templates/${id}`);
+    console.log(`Fetched template data:`, data);
     return data
 }
 

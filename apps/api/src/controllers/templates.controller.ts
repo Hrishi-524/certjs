@@ -5,6 +5,8 @@ import { uploadTemplateImage } from "@/services/templates/storage.service";
 import crypto from "crypto";
 import { BadRequestError, NotFoundError } from "@/middleware/express-errors";
 import { createTemplateSchema, templateIdParamSchema, updateTemplateSchema } from "@/schema/templates.schema";
+import generatePresignedUrl from "@/services/documents/get-signed-url";
+import { getKeyForS3Url } from "@/services/templates/get-key";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
     if (!req.file) {
@@ -47,10 +49,13 @@ export async function getTemplate(req: Request<IdParam>, res: Response, next: Ne
         throw new NotFoundError("Template not found");
     }
 
+    const key = getKeyForS3Url(template.s3_url)
+    const presignedUrl = await generatePresignedUrl(key);
+
     res.status(200).json({
         templateId: template.id,
         userId: template.user_id,
-        s3Url: template.s3_url,
+        presignedUrl: presignedUrl,
         name: template.name,
         width: template.width,
         height: template.height,

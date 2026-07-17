@@ -7,8 +7,8 @@ export type Template = {
     s3Key?: string;
     version?: number;
     isActive?: boolean;
-    width: number | null;
-    height: number | null;
+    width: number;
+    height: number;
     createdAt: string;
 };
 
@@ -49,18 +49,18 @@ export type ListTemplatesResponse = Array<{
     s3Url: string;
     version: number;
     isActive: boolean;
-    width: number | null;
-    height: number | null;
+    width: number;
+    height: number;
     createdAt: string;
 }>
 
 export type GetTemplateResponse = {
     templateId: string;
     userId: string;
-    s3Url: string;
+    presignedUrl: string;
     name: string;
-    width: number | null;
-    height: number | null;
+    width: number;
+    height: number;
     createdAt: string;
 }
 
@@ -69,7 +69,7 @@ export type UpdateTemplateNameResponse = {
     userId: string;
     s3Url: string;
     name: string;
-    width: number | null;
-    height: number | null;
+    width: number;
+    height: number;
     createdAt: string;
 }
