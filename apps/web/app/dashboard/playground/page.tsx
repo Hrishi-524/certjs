@@ -1,8 +1,9 @@
 import React from 'react'
+import PlaygroundTemplates from '@/components/playground/playground-templates'
 
 function page() {
   return (
-    <div>page</div>
+    <PlaygroundTemplates/>
   )
 }
 

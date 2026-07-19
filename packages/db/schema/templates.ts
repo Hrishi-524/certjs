@@ -15,7 +15,8 @@ export const templates = pgTable("templates", {
     is_active: boolean("is_active").notNull().default(true), 
     width: integer("width"),
     height: integer("height"),
-    created_at: timestamp("created_at").defaultNow().notNull()
+    created_at: timestamp("created_at").defaultNow().notNull(),
+    updated_at: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
     index("templates_user_id_index").on(table.user_id)
 ]);

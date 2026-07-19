@@ -6,16 +6,7 @@ export async function listPlaceholders(templateId: string): Promise<ListPlacehol
     return data
 }
 
-export async function createPlaceholders(templateId: string, input: CreatePlaceholdersInput): Promise<CreatePlaceholdersResponse> {
-    const { data } = await clientApi.post<CreatePlaceholdersResponse>(`/dashboard/templates/${templateId}/placeholders`, input)
+export async function syncPlaceholders(templateId: string, input: CreatePlaceholdersInput): Promise<CreatePlaceholdersResponse> {
+    const { data } = await clientApi.put<CreatePlaceholdersResponse>(`/dashboard/templates/${templateId}/placeholders`, input)
     return data
 }
-
-export async function updatePlaceholder(templateId: string, placeholderId: string, input: UpdatePlaceholderInput): Promise<UpdatePlaceholderResponse> {
-    const { data } = await clientApi.put<UpdatePlaceholderResponse>(`/dashboard/templates/${templateId}/placeholders/${placeholderId}`, input)
-    return data
-}
-
-export async function deletePlaceholder(templateId: string, placeholderId: string): Promise<void> {
-    await clientApi.delete(`/dashboard/templates/${templateId}/placeholders/${placeholderId}`)
-}   

@@ -1,15 +1,14 @@
 export type Template = {
-    id?: string;
-    templateId?: string;
+    templateId: string;
     userId: string;
     name: string;
-    s3Url: string;
-    s3Key?: string;
-    version?: number;
-    isActive?: boolean;
+    presignedUrl: string;
+    version: number;
+    isActive: boolean;
     width: number;
     height: number;
     createdAt: string;
+    updatedAt: string;
 };
 
 export type GetDimensionsResponse = {
@@ -34,24 +33,24 @@ export type UploadTemplateInput = {
 export type UploadTemplateResponse = {
     templateId: string;
     userId: string;
-    s3Key: string;
-    s3Url: string;
     name: string;
     width: number;
     height: number;
     createdAt: string;
+    updatedAt: string;
 }
 
 export type ListTemplatesResponse = Array<{
-    id: string;
+    templateId: string;
     userId: string;
     name: string;
-    s3Url: string;
+    presignedUrl: string;
     version: number;
     isActive: boolean;
     width: number;
     height: number;
     createdAt: string;
+    updatedAt: string;
 }>
 
 export type GetTemplateResponse = {
@@ -62,14 +61,13 @@ export type GetTemplateResponse = {
     width: number;
     height: number;
     createdAt: string;
+    updatedAt: string;
 }
 
 export type UpdateTemplateNameResponse = {
     templateId: string;
     userId: string;
-    s3Url: string;
     name: string;
-    width: number;
-    height: number;
     createdAt: string;
+    updatedAt: string;
 }

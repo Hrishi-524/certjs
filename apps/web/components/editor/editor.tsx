@@ -9,9 +9,11 @@ import createPlaceholder from "@/lib/helpers/create-placeholder";
 import Layers from "@/components/editor/layers";
 import PropertiesPanel from "@/components/editor/properties-panel";
 import Toolbar from "./toolbar";
-import { createPlaceholders } from "@/lib/api/placeholders";
-import { toNormalizedRect } from "@/lib/helpers/dimensions-conversions";
+import { syncPlaceholders } from "@/lib/api/placeholders";
+import { toNormalizedRect, toCanvasRect } from "@/lib/helpers/dimensions-conversions";
 import { usePlaceholders } from "@/hooks/use-placeholders";
+import { handleApiError } from "@/lib/errors/handle-api-errors";
+import { toast } from "sonner"
 
 export default function Editor({ templateId }: { templateId: string; }) {
     const { data: template, isLoading } = useTemplate(templateId);
@@ -57,7 +59,6 @@ export default function Editor({ templateId }: { templateId: string; }) {
 
         setIsSaving(true);
 
-        
 
         const input: CreatePlaceholdersInput = placeholders.map(p => {
             const rect = toNormalizedRect(
@@ -82,46 +83,74 @@ export default function Editor({ templateId }: { templateId: string; }) {
 
         try {
             console.log("Saving placeholders:", input);
-            const response: CreatePlaceholdersResponse = await createPlaceholders(template.templateId, input);
-            console.log("Placeholders saved:", response);
+            const updated: CreatePlaceholdersResponse = await syncPlaceholders(template.templateId, input);
+            console.log("Placeholders saved:", updated);
+            const editorPlaceholders = updated.map((p) => {
+                const rect = toCanvasRect(
+                    p.x,
+                    p.y,
+                    p.width,
+                    p.height,
+                    template.width,
+                    template.height
+                );
+
+                return {
+                    ...p,
+                    ...rect,
+                };
+            });
+
+            setPlaceholders(editorPlaceholders);
+            toast.success("Placeholders saved successfully!");
+        } catch(err) {
+            handleApiError(err);
         } finally {
             setIsSaving(false);
         }
     }
     
     return (
-    <div className="flex h-screen flex-col">
-        <Toolbar
-            onSave={savePlaceholders}
-            isSaving={isSaving}
-            templateName={template.name}
-        />
-
-        <div className="flex flex-1 overflow-hidden">
-            <Layers
-                placeholders={placeholders}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onAddPlaceholder={addPlaceholder}
-                onDeletePlaceholder={deletePlaceholder}
+    <div className="flex h-full flex-col overflow-hidden bg-background">
+        <div className="sticky top-0 z-20 shrink-0">
+            <Toolbar
+                onSave={savePlaceholders}
+                isSaving={isSaving}
+                templateName={template.name}
             />
+        </div>
 
-            <Canvas
-                template={template}
-                placeholders={placeholders}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onUpdatePlaceholder={updatePlaceholder}
-            />
+        <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+            <aside className="h-full min-h-0 w-60 shrink-0 overflow-y-auto border-r bg-background p-4">
+                <Layers
+                    placeholders={placeholders}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    onAddPlaceholder={addPlaceholder}
+                    onDeletePlaceholder={deletePlaceholder}
+                />
+            </aside>
 
-            <PropertiesPanel
-                placeholder={
-                    placeholders.find(
-                        (p) => p.id === selectedId
-                    )
-                }
-                onUpdate={updatePlaceholder}
-            />
+            <main className="h-full min-h-0 min-w-0 flex-1 overflow-hidden [&>*]:h-full [&>*]:w-full">
+                <Canvas
+                    template={template}
+                    placeholders={placeholders}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    onUpdatePlaceholder={updatePlaceholder}
+                />
+            </main>
+
+            <aside className="h-full min-h-0 w-80 shrink-0 overflow-y-auto bg-background [&>*]:min-h-full [&>*]:w-full">
+                <PropertiesPanel
+                    placeholder={
+                        placeholders.find(
+                            (p) => p.id === selectedId
+                        )
+                    }
+                    onUpdate={updatePlaceholder}
+                />
+            </aside>
         </div>
     </div>
 );

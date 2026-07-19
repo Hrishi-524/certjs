@@ -30,12 +30,11 @@ export const uploadTemplate = async (req: Request, res: Response) => {
     res.status(201).json({
         templateId: template.id,
         userId: template.user_id,
-        s3Key: key,
-        s3Url: url,
         name: template.name,
         width: template.width,
         height: template.height,
-        createdAt: template.created_at
+        createdAt: template.created_at,
+        updatedAt: template.updated_at
     });
 };
 
@@ -59,7 +58,8 @@ export async function getTemplate(req: Request<IdParam>, res: Response, next: Ne
         name: template.name,
         width: template.width,
         height: template.height,
-        createdAt: template.created_at
+        createdAt: template.created_at,
+        updatedAt: template.updated_at
     });
 }
 
@@ -92,11 +92,9 @@ export async function updateTemplateName(req: Request<IdParam>, res: Response, n
     return res.status(200).json({
         templateId: template.id,
         userId: template.user_id,
-        s3Url: template.s3_url,
         name: template.name,
-        width: template.width,
-        height: template.height,
-        createdAt: template.created_at
+        createdAt: template.created_at,
+        updatedAt: template.updated_at
     })
 }
 
@@ -104,15 +102,16 @@ export async function deactivateTemplate(req: Request<IdParam>, res: Response, n
     const { templateId } = templateIdParamSchema.parse(req.params)
     const userId = req.user!.id
 
-    const template = await deactivateTemplateService(templateId, userId)
+    const {template, presignedUrl} = await deactivateTemplateService(templateId, userId)
 
     return res.status(200).json({
         templateId: template.id,
         userId: template.user_id,
-        s3Url: template.s3_url,
+        presignedUrl,
         name: template.name,
         width: template.width,
         height: template.height,
-        createdAt: template.created_at
+        createdAt: template.created_at,
+        updatedAt: template.updated_at
     })
 }

@@ -15,6 +15,6 @@ export default async function generatePresignedUrl(key: string) {
     return getSignedUrl(
         s3,
         command,
-        { expiresIn: 300 } // 5 min
+        { expiresIn: 3600 } // 1 hour expiration
     );
 }

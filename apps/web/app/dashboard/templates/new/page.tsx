@@ -1,7 +1,7 @@
 "use client"
-import UploadBox from "@/components/templates/create-template"
+import CreateTemplate from "@/components/templates/create-template"
 function page() {
-    return <UploadBox />
+    return <CreateTemplate/>
 }
 
 export default page

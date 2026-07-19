@@ -15,8 +15,7 @@ function DashboardHeader() {
     const { user } = data
 
     return (
-        <div>Hi, {user.name}!,
-        Manage templates, monitor jobs and issue certificates.</div>
+        <></>
     )
 }
 

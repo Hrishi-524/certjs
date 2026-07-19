@@ -1,10 +1,6 @@
 import { pgTable, uuid, text, integer, unique, real, index } from "drizzle-orm/pg-core";
 import { templates } from "./templates"
 
-/*
-placeholders schema:
-id, template_id (FK), name, x, y, width, strategy, min_font_size, align, font_size, font_color, font_family
-*/
 export const placeholders = pgTable("placeholders", {
     id: uuid("id").defaultRandom().primaryKey(),
     template_id: uuid("template_id").notNull().references(() => templates.id),

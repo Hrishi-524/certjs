@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldGroup } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
@@ -42,24 +42,46 @@ export function AddPlaceholderDialog({ onCreate }: AddPlaceholderDialogProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>+ Add placeholder</Button>
+                <Button className="w-full justify-center">
+                    Add placeholder
+                </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-sm">
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <DialogContent className="sm:max-w-md">
+                <form onSubmit={handleSubmit} className="space-y-5">
                         <DialogHeader>
-                            <DialogTitle>Add Placeholder</DialogTitle>
-                            <DialogDescription>
-                                The key is unique identefier for placeholder. If you have data, name it exactly as the column name for easy integration.
+                            <DialogTitle>
+                                Add placeholder
+                            </DialogTitle>
+                            <DialogDescription className="leading-6">
+                                Create a layer that can be positioned on the certificate canvas and mapped to incoming data.
                             </DialogDescription>
                         </DialogHeader>
-                        <FieldGroup>
+                        <FieldGroup className="gap-4">
                             <Field>
-                                <Label htmlFor="name-1">Name</Label>
-                                <Input id="name-1" name="name" value={name} onChange={(e) => setName(e.target.value)} />
+                                <Label htmlFor="name-1">Display name</Label>
+                                <Input
+                                    id="name-1"
+                                    name="name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Recipient name"
+                                />
+                                <FieldDescription>
+                                    Shown in the Layers panel.
+                                </FieldDescription>
                             </Field>
                             <Field>
-                                <Label htmlFor="username-1">Key</Label>
-                                <Input id="username-1" name="key" value={key} onChange={(e) => setKey(e.target.value)} />
+                                <Label htmlFor="username-1">Data key</Label>
+                                <Input
+                                    id="username-1"
+                                    name="key"
+                                    value={key}
+                                    onChange={(e) => setKey(e.target.value)}
+                                    placeholder="recipient_name"
+                                />
+                                <FieldDescription>
+                                    Use the matching column or field name when importing data.
+                                </FieldDescription>
                             </Field>
                         </FieldGroup>
                         <DialogFooter>
@@ -67,7 +89,7 @@ export function AddPlaceholderDialog({ onCreate }: AddPlaceholderDialogProps) {
                             <Button variant="outline">Cancel</Button>
                             </DialogClose>
                             <Button type="submit">
-                                Save changes
+                                Add placeholder
                             </Button>
                         </DialogFooter>
                 </form>

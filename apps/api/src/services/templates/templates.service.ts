@@ -1,7 +1,9 @@
-import { templates } from "@certjs/db/schema/templates"
-import { db, users } from "@certjs/db/index";
+import { db, placeholders, templates } from "@certjs/db/index";
 import { eq, desc, and } from "drizzle-orm";
 import { NotFoundError } from "@/middleware/express-errors";
+import generatePresignedUrl from "@/services/documents/get-signed-url";
+import { getKeyForS3Url } from "@/services/templates/get-key";
+import { deleteS3Object } from "@/services/templates/storage.service";
 
 export async function createTemplate(template_id: string, s3_url: string, userId: string, name: string, width: number, height: number) {
     const [template] = await db.insert(templates).values({ 
@@ -34,39 +36,61 @@ export async function getAllTemplates(userId: string) {
         desc(templates.created_at)
     );
 
-    const normalizedTemplatesList = templatesList.map(template => ({
-        templateId: template.id,
-        userId: template.user_id,
-        name: template.name,
-        s3Url: template.s3_url,
-        version: template.version,
-        isActive: template.is_active,
-        width: template.width,
-        height: template.height,
-        createdAt: template.created_at
-    }));
+    
+   const normalizedTemplatesList = await Promise.all(
+        templatesList.map(async (template) => {
+            const key = getKeyForS3Url(template.s3_url);
+            const presignedUrl = await generatePresignedUrl(key);
+
+            return {
+                templateId: template.id,
+                userId: template.user_id,
+                name: template.name,
+                presignedUrl,
+                version: template.version,
+                isActive: template.is_active,
+                width: template.width,
+                height: template.height,
+                createdAt: template.created_at,
+                updatedAt: template.updated_at,
+            };
+        })
+    );
 
     return normalizedTemplatesList;
 }
 
 export async function deleteTemplateById(templateId: string, userId: string){
-    await db.delete(templates).where(
+    const [template] = await db.select().from(templates).where(
         and(
             eq(templates.id, templateId),
             eq(templates.user_id, userId)
         )
     );
-}
 
-export async function updateTemplateById(templateId: string, userId: string) {
-    await db.update(templates).set({
+    if (!template) throw new NotFoundError("Template not found");
 
-    })
+    const key = getKeyForS3Url(template.s3_url);
+    await deleteS3Object(key);
+
+    await db.transaction(async (tx) => {
+        await tx.delete(placeholders).where(
+            eq(placeholders.template_id, templateId)
+        );
+
+        await tx.delete(templates).where(
+            and(
+                eq(templates.id, templateId),
+                eq(templates.user_id, userId)
+            )
+        );
+    });
 }
 
 export async function updateTemplateNameService( templateId: string, userId: string, name: string ) {
     const [template] = await db.update(templates).set({
-        name
+        name,
+        updated_at: new Date()
     }).where(
         and(
             eq(templates.id, templateId),
@@ -84,7 +108,8 @@ export async function updateTemplateNameService( templateId: string, userId: str
 
 export async function deactivateTemplateService(templateId: string, userId: string) {
     const [template] = await db.update(templates).set({
-        is_active: false
+        is_active: false,
+        updated_at: new Date()
     }).where(
         and(
             eq(templates.id, templateId),
@@ -92,5 +117,8 @@ export async function deactivateTemplateService(templateId: string, userId: stri
         )
     ).returning();
 
-    return template;
+    const key = getKeyForS3Url(template.s3_url)
+    const presignedUrl = await generatePresignedUrl(key);
+
+    return {template, presignedUrl};
 }
