@@ -3,6 +3,7 @@ import { CreatePlaceholdersInput, CreatePlaceholdersResponse, ListPlaceholdersRe
 
 export async function listPlaceholders(templateId: string): Promise<ListPlaceholdersResponse> {
     const { data } = await clientApi.get<ListPlaceholdersResponse>(`/dashboard/templates/${templateId}/placeholders`)
+    console.log("listPlaceholders data:", data) // Add this line to log the data
     return data
 }
 

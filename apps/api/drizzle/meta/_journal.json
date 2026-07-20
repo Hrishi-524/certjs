@@ -78,6 +78,13 @@
       "when": 1784454143066,
       "tag": "0010_sharp_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784544149176,
+      "tag": "0011_luxuriant_the_anarchist",
+      "breakpoints": true
     }
   ]
 }

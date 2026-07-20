@@ -10,14 +10,14 @@ import Layers from "@/components/editor/layers";
 import PropertiesPanel from "@/components/editor/properties-panel";
 import Toolbar from "./toolbar";
 import { syncPlaceholders } from "@/lib/api/placeholders";
-import { toNormalizedRect, toCanvasRect } from "@/lib/helpers/dimensions-conversions";
+import { toNormalizedRect, toAbsoluteRect } from "@/lib/helpers/dimensions-conversions";
 import { usePlaceholders } from "@/hooks/use-placeholders";
 import { handleApiError } from "@/lib/errors/handle-api-errors";
 import { toast } from "sonner"
 
 export default function Editor({ templateId }: { templateId: string; }) {
     const { data: template, isLoading } = useTemplate(templateId);
-    const { data: loadedPlaceholders, isLoading: isPlaceholdersLoading } = usePlaceholders(template);
+    const { data: loadedPlaceholders, isLoading: isPlaceholdersLoading } = usePlaceholders(templateId);
 
     const [placeholders, setPlaceholders] = useState<Placeholder[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -26,7 +26,21 @@ export default function Editor({ templateId }: { templateId: string; }) {
     
     useEffect(() => {
         if (loadedPlaceholders) {
-            setPlaceholders(loadedPlaceholders);
+            if (!template || !loadedPlaceholders) return;
+
+            const editorPlaceholders = loadedPlaceholders.map((p) => ({
+                ...p,
+                ...toAbsoluteRect(
+                    p.x,
+                    p.y,
+                    p.width,
+                    p.height,
+                    template.width,
+                    template.height
+                ),
+            }));
+
+            setPlaceholders(editorPlaceholders);
         }
     }, [loadedPlaceholders]);
 
@@ -86,7 +100,7 @@ export default function Editor({ templateId }: { templateId: string; }) {
             const updated: CreatePlaceholdersResponse = await syncPlaceholders(template.templateId, input);
             console.log("Placeholders saved:", updated);
             const editorPlaceholders = updated.map((p) => {
-                const rect = toCanvasRect(
+                const rect = toAbsoluteRect(
                     p.x,
                     p.y,
                     p.width,

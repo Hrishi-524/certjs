@@ -1,4 +1,4 @@
-export function toCanvasRect(
+export function toAbsoluteRect(
     x: number,
     y: number,
     width: number,

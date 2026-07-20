@@ -3,6 +3,7 @@ export type Placeholder = {
     templateId: string;
     name: string;
     key: string;
+    type: PlaceholderType;
     x: number;
     y: number;
     width: number;
@@ -15,9 +16,22 @@ export type Placeholder = {
     fontFamily: string;
 };
 
+export type PlaceholderType =
+    | "text"
+    | "image"
+    | "date"
+    | "number"
+    | "qr"
+    | "signature"
+    | "barcode"
+    | "url"
+    | "email";
+
+
 export type SinglePlaceholderInput = {
     name: string;
     key: string;
+    type?: PlaceholderType;
     x: number;
     y: number;
     width: number;

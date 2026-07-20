@@ -1,11 +1,13 @@
 import { pgTable, uuid, text, integer, unique, real, index } from "drizzle-orm/pg-core";
 import { templates } from "./templates"
+import { placeholderTypeEnum } from "./enum";
 
 export const placeholders = pgTable("placeholders", {
     id: uuid("id").defaultRandom().primaryKey(),
     template_id: uuid("template_id").notNull().references(() => templates.id),
     name: text("name").notNull(),
     key: text("key").notNull(),
+    type: placeholderTypeEnum("type").$default(() => "text").notNull(),
     x: real("x").notNull(),
     y: real("y").notNull(),
     width: real("width").notNull(),
