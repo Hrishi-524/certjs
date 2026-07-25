@@ -7,12 +7,6 @@ export async function uploadTemplate(input: UploadTemplateInput): Promise<Upload
     formData.append("name", input.name);
     formData.append("width", String(input.width));
     formData.append("height", String(input.height));
-    console.log("Uploading template with the following data:", {
-        name: input.name,
-        width: input.width,
-        height: input.height,
-        template: input.template,
-    }); 
     const { data } = await clientApi.post<UploadTemplateResponse>("/dashboard/templates", formData);
     return data;
 }
@@ -23,9 +17,7 @@ export async function listTemplates(): Promise<ListTemplatesResponse> {
 }
 
 export async function getTemplate(id: string): Promise<GetTemplateResponse> {
-    console.log(`Fetching template with ID: ${id}`);
     const { data } = await clientApi.get<GetTemplateResponse>(`/dashboard/templates/${id}`);
-    console.log(`Fetched template data:`, data);
     return data
 }
 

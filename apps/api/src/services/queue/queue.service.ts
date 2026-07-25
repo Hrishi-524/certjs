@@ -6,7 +6,6 @@ import { jobs } from "@certjs/db/schema";
 
 export async function enqueueDocument(documents: Document[], jobId: string) {
     try {
-        console.log("File:apps/api/src/services/queue/queue.service.ts - enqueueDocument: Enqueuing documents for jobId:", jobId, "Documents:", documents.map(doc => doc.id));
         await Promise.all(documents.map(doc =>
                 certificateQueue.add(
                     "generate_document",

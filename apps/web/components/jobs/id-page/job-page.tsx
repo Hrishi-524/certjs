@@ -7,13 +7,14 @@ import JobHeader from './job-header';
 import JobProgress from './job-progress';
 import JobStatistics from './job-statistics';
 import DownloadCard from './download-card';
+import JobDocumentsTable from './job-documents-table';
 
 export default function JobPage({ jobId }: { jobId: string }) {
     const { data: job, isLoading: isJobLoading, error: jobError } = useBatchJob(jobId);
     const { data: documents, isLoading: isDocumentsLoading, error: documentsError } = useBatchJobDocuments(jobId);
     const isCompleted = job?.status === "completed";
-    const isProcessing = job?.status === "processing" || job?.status === "pending";
-    const isFailed = job?.status === "failed";
+    // const _isProcessing = job?.status === "processing" || job?.status === "pending";
+    // const _isFailed = job?.status === "failed";
 
     if(isJobLoading || isDocumentsLoading) return <JobPageSketon />;
     
@@ -31,13 +32,11 @@ export default function JobPage({ jobId }: { jobId: string }) {
             {isCompleted && (
                 <DownloadCard job={job} />
             )}
-            {/* 
-
-
+            
             <JobDocumentsTable
-                documents={documents}
-                isLoading={isDocumentsLoading}
-            /> */}
+                count={documents.count}
+                documents={documents.documents}
+            />
         </div>
     );
 }

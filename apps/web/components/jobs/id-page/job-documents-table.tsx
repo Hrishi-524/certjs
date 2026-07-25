@@ -28,12 +28,13 @@ import {
     TableHeader,
     TableRow,
 } from "./table";
-
-import type { Document } from "@/types/documents.types";
+import { Document } from "@/types/documents.types";
+import { ListBatchJobDocumentsResponse } from "@/types/jobs.types";
 
 type JobDocumentsTableProps = {
+    count: number;
     documents: Document[];
-};
+} 
 
 const statusConfig = {
     pending: {
@@ -108,15 +109,12 @@ export default function JobDocumentsTable({
                             const status =
                                 statusConfig[document.status];
 
-                            const recipient = useMemo(() => {
-                                const values = Object.values(
-                                    document.recipientData
-                                );
+                            const values = Object.values(document.recipientData);
 
-                                return values.length > 0
+                            const recipient =
+                                values.length > 0
                                     ? String(values[0])
                                     : `Recipient #${index + 1}`;
-                            }, [document, index]);
 
                             return (
                                 <TableRow key={document.id}>

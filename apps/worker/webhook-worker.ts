@@ -15,7 +15,6 @@ const connection = new IORedis({
 })
 
 export const webhookWorker = new Worker("webhook", async (job) => {
-    console.log(`Processing webhook job ${job.id} with data:`, job.data);
     const { batchJobId } = job.data
 
     const [batchJob] = await db.select().from(jobs).where(eq(jobs.id, batchJobId));
@@ -25,17 +24,14 @@ export const webhookWorker = new Worker("webhook", async (job) => {
     }
 
     if (!batchJob.webhook_url) {
-        console.log(`No webhook URL for batch job ${batchJob.id}, skipping webhook delivery.`);
         return;
     }
-    console.log(`Sending webhook for batch job ${batchJob.id} to ${batchJob.webhook_url}`);
-
+   
     if (!batchJob.zip_s3_url) {
         throw new Error("ZIP not available");
     }
 
     if (batchJob.status !== "completed" || !batchJob.zip_s3_url) {
-        console.log(`Batch job ${batchJob.id} is not ready for webhook delivery.`);
         throw new Error("Batch job not ready for webhook delivery");
     }
 
@@ -60,21 +56,16 @@ export const webhookWorker = new Worker("webhook", async (job) => {
     };
 
     try {
-        console.log(`Sending POST request to ${batchJob.webhook_url} with payload:`, payload);
         const response = await fetch(batchJob.webhook_url, {
             method: "POST",
             headers, 
             body
         });
             
-        console.log(await response.text());
         if (!response.ok) {
             throw new Error(`Failed to send webhook: ${response.statusText}`);
         }
-            
-        console.log(`Webhook sent successfully for job ${batchJob.id}`);
     } catch (error) {
-        console.error(`Webhook failed for batch ${batchJob.id}`, error);
         throw error;
     }
 }, { connection });

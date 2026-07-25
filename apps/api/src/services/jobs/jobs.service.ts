@@ -113,7 +113,6 @@ export async function createBatchJobService(params: CreateJobParams) {
     }
 
     // 13. Enqueue BullMQ Child Jobs
-    console.log(`Enqueuing ${createdDocuments.length} documents for job ${job.id}`);
     await enqueueDocument(createdDocuments, job.id);
 
     // 14. Return Summary
@@ -235,12 +234,9 @@ export async function playgroundPreviewService(
         showCenters: true,
         showBaselines: true
     };
-    console.log("playgroundPreviewService: Rendering with input:", input);
-    console.log("playgroundPreviewService: Debug options:", debugOptions);
 
     const renderedBuffer = await renderCertificate(input, debugOptions);
 
-    console.log("playgroundPreviewService: Rendered buffer size:", renderedBuffer.length);
     // 8. Return PNG buffer
     return renderedBuffer;
 }

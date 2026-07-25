@@ -21,6 +21,10 @@ export async function getDocumentService(docId: string, userId: string) {
         throw new UnauthorizedError("Unauthorized");
     }
 
+    let presignedUrl = null;
+    if(doc.status === "completed" && doc.s3_url) {
+        presignedUrl = await generatePresignedUrl(doc.s3_url.split(".amazonaws.com/")[1]);
+    }
     const normalizedDoc = {
         id: doc.id,
         jobId: doc.job_id,
@@ -28,7 +32,7 @@ export async function getDocumentService(docId: string, userId: string) {
         status: doc.status,
         error: doc.error,
         verifyToken: doc.verify_token,
-        s3Url: doc.s3_url,
+        presignedUrl: presignedUrl,
         createdAt: doc.created_at,
         jobStatus: job.status,
         templateId: job.template_id,
@@ -39,17 +43,9 @@ export async function getDocumentService(docId: string, userId: string) {
 export async function downloadDocumentService(docId: string, userId: string) {
     const normalizedDoc = await getDocumentService(docId, userId);
 
-    if(normalizedDoc.status !== "completed" || !normalizedDoc.s3Url) {
+    if(normalizedDoc.status !== "completed" || normalizedDoc.presignedUrl === null) {
         throw new NotFoundError("Document not available for download");
     }
 
-    const s3Key = normalizedDoc.s3Url.split(".amazonaws.com/")[1];
-
-    if(!s3Key) {
-        throw new NotFoundError("Invalid S3 URL stored for document");
-    }
-
-    const presignedUrl = await generatePresignedUrl(s3Key);
-
-    return presignedUrl;
+    return normalizedDoc.presignedUrl;
 }

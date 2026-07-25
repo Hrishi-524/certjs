@@ -20,14 +20,12 @@ const connection = new IORedis({
 })
 
 export const finalizerWorker = new Worker("finalizer", async (job) => {
-    console.log(`Processing finalizer job ${job.id} with data:`, job.data)
 
     const { batchJobId } = job.data
 
     const [batch_job] = await db.select().from(jobs).where(eq(jobs.id, batchJobId));
 
     if (batch_job?.status === "completed" && batch_job.zip_s3_url) {
-        console.log(`Batch job ${batchJobId} is already completed with zip url: ${batch_job.zip_s3_url}. Skipping finalization.`);
         return;
     }
 
@@ -78,11 +76,7 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
             completed_at: new Date()
         }).where(eq(jobs.id, batchJobId))
 
-        console.log(`Finalizer job ${job.id} completed successfully for batch job ${batchJobId}`);
-
         await enqueueWebhookQueue(batchJobId);
-
-        console.log(`Webhook job enqueued for batch job ${batchJobId}`);
     } catch(error) {
         console.error(`Finalizer job ${job.id} failed`, error);
 

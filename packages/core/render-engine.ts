@@ -8,7 +8,6 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
     let image: sharp.Sharp;
     let meta: sharp.Metadata;
 
-    console.log("renderCertificate: Starting rendering process with input:", input);
     // Step 1. Load the template image and read its dimensions.
     try {
         image = sharp(input.templateBuffer);
@@ -42,9 +41,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
 
         // Get Placeholder metadata and use defaults where necessary
         const content = input.data[ph.key];
-        console.log(`Rendering placeholder "${ph.name}" with content (raw):`, content);
-
-        
+     
         const strategy : "shrink" | "ellipsis" | "wrap" = ph.strategy ?? "shrink";
         const fontSize : number = ph.font_size ?? 40;
         const color = ph.font_color ?? "#000000";

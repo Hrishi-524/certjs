@@ -50,7 +50,6 @@ export default function Editor({ templateId }: { templateId: string; }) {
     function addPlaceholder(name: string, key: string) {
         if(!template) return;
         const placeholder: Placeholder = createPlaceholder(template.templateId, name, key);
-        console.log("Adding placeholder:", placeholder);
         setPlaceholders((prev) => [...prev, placeholder]);
     }
 
@@ -75,8 +74,6 @@ export default function Editor({ templateId }: { templateId: string; }) {
 
 
         const input: CreatePlaceholdersInput = placeholders.map(p => {
-            console.log(`saving placeholder, values of x: ${p.x} y:  ${p.y} width: ${p.width} height: ${p.height}`);
-            console.log(`using template width: ${template.width} and height: ${template.height} for canvas conversions`);
             const rect = toNormalizedRect(
                 p.x,
                 p.y,
@@ -85,7 +82,6 @@ export default function Editor({ templateId }: { templateId: string; }) {
                 template.width,
                 template.height
             );
-            console.log(`normalized rect values: x: ${rect.x} y: ${rect.y} width: ${rect.width} height: ${rect.height}`);
             return {
             name: p.name,
             key: p.key,
@@ -99,9 +95,7 @@ export default function Editor({ templateId }: { templateId: string; }) {
         }});
 
         try {
-            console.log("Saving placeholders:", input);
             const updated: CreatePlaceholdersResponse = await syncPlaceholders(template.templateId, input);
-            console.log("Placeholders saved:", updated);
             const editorPlaceholders = updated.map((p) => {
                 const rect = toAbsoluteRect(
                     p.x,

@@ -7,7 +7,6 @@ export async function createBatchJob(input: CreateBatchJobInput): Promise<Create
 }   
 
 export async function getPlaygroundPreview(input: PlaygroundPreviewInput): Promise<string> {
-    console.log("getPlaygroundPreview input:", input);
     const blob = await clientApi.post("/dashboard/playground/preview", input, { responseType: "blob"});
     const previewUrl = URL.createObjectURL(blob.data);
     return previewUrl;

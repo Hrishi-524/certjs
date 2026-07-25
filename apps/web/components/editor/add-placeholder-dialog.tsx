@@ -25,7 +25,6 @@ export function AddPlaceholderDialog({ onCreate }: AddPlaceholderDialogProps) {
 
     function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        console.log("Creating placeholder with name:", name, "and key:", key);
 
         if (!name.trim() || !key.trim()) {
             return;

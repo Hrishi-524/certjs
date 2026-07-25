@@ -36,11 +36,6 @@ function CreateTemplate() {
             setTemplateName(getTemplateName(file.name))
         }
 
-        console.log("Template uplaoded, following is the information")
-        console.log("templateName", templateName)
-        console.log("dimensions", dimensions)
-        console.log("file", file)
-
         setUploaded(true)
     }
 
@@ -66,8 +61,6 @@ function CreateTemplate() {
         const response: UploadTemplateResponse = await uploadTemplate(input)
 
         setCreating(false);
-        console.log("Template created successfully, following is the response")
-        console.log(response)
 
         toast.success("Template created successfully")
         router.push(`/dashboard/templates/${response.templateId}`);

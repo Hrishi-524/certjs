@@ -24,8 +24,7 @@ export async function playgroundPreview(req: Request, res: Response) {
 export async function createBatchJob( req: Request, res: Response ) {
     const data = CreateJobSchema.parse(req.body);
     const userId = req.user.id
-    
-    console.log("createBatchJob: Received request with data:", data, "and userId:", userId);
+
     const jobMeta = await createBatchJobService({
         userId: userId,
         ...data
@@ -83,9 +82,9 @@ export async function downloadJobZip(req: Request, res: Response) {
     
     const url = new URL(zipUrl);
 
-const key = url.pathname.slice(1); // removes leading '/'
+    const key = url.pathname.slice(1); // removes leading '/'
 
-const presignedZipUrl = await generatePresignedUrl(key);
+    const presignedZipUrl = await generatePresignedUrl(key);
 
     return res.status(200).json({presignedZipUrl})
 }

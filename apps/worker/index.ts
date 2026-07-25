@@ -1,4 +1,3 @@
-console.log("REDIS_URL =", process.env.REDIS_URL);
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { renderCertificate } from "@certjs/core/render-engine"
@@ -24,21 +23,7 @@ const connection = new IORedis({
     maxRetriesPerRequest: null,
 })
 
-console.log("Creating Redis connection...");
-
-async function testRedis() {
-    try {
-        console.log(await connection.ping());
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-testRedis();
-
 export const worker = new Worker( "certificates", async (job) => {
-    console.log(`Processing job ${job.id} with data:`, job.data);
-
     const { document_id } = job.data;
 
     // 1. Fetch document
@@ -144,8 +129,6 @@ export const worker = new Worker( "certificates", async (job) => {
             processed_count: sql`${jobs.processed_count} + 1`
         }).where(eq(jobs.id, batchJob.id));
 
-        console.log(`Job ${job.id} completed successfully`);
-
         // 12. Mark Parent Job as completed if all documents are processed
         const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batchJob.id));
 
@@ -153,8 +136,6 @@ export const worker = new Worker( "certificates", async (job) => {
             const failedStatus = updatedJob.failed_count > 0 ? "failed" : "completed";
     
             if(failedStatus === "completed") {
-                console.log(`Batch Job ${batchJob.id} completed successfully`);
-                console.log("Enquiung deterministic finalizer job for zip creation")
                 await enqueueFinalizeQueue(batchJob.id);
             } else {
                 await db.update(jobs).set({ 
@@ -191,75 +172,3 @@ export const worker = new Worker( "certificates", async (job) => {
         throw error; 
     }
 }, { connection, concurrency: 5 });
-
-worker.on("ready", () => {
-  console.log("✅ Worker ready");
-});
-
-worker.on("error", (err) => {
-  console.error("❌ Worker error:", err);
-});
-
-worker.on("active", (job) => {
-  console.log("▶ Active:", job.id);
-});
-
-/** 
-    Function renderCertificate() Input Params expects this in json
-    rendercertificate(input : RenderInput{
-        templateBuffer: Buffer;
-        placeholders: Placeholder[];
-        data: Record<string, string>;
-    }   
-    debugOptions?: {
-        enabled?: boolean;
-        showBoxes?: boolean;
-        showCenters?: boolean;
-        showBaselines?: boolean;
-    }   // optionol params - no need in producion);
-*/
-/**
-        
-        actual schema ==>
-        const placeholders_definations: {
-            id: string;
-            template_id: string;
-            name: string;
-            x: string;
-            y: string;
-            key: string;
-            width: string;
-            strategy: "shrink" | "ellipsis" | "wrap";
-            min_font_size: number | null;
-            align: "left" | "center" | "right";
-            font_size: number;
-            font_color: string;
-            font_family: string;
-            height: number;
-        }[]
-
-        core render engine expects this schema ==>
-        export interface Placeholder {
-            id: string;
-            template_id: string;
-            name: string;
-            x: number;      
-            y: number;
-            key: string;
-            width: number;
-            strategy: "shrink" | "ellipsis" | "wrap";
-            min_font_size?: number;
-            align: "left" | "center" | "right";
-            font_size: number;
-            font_color: string;
-            font_family: string;
-            height: number;
-        }
-
-        export interface RenderInput {
-            templateBuffer: Buffer;
-            placeholders: Placeholder[];
-            data: Record<string, string>;
-        }
-
-*/
