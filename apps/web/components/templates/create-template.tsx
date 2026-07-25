@@ -1,26 +1,14 @@
 "use client"
-import Dropzone from 'react-dropzone'
-import { Upload, UploadIcon } from '@hugeicons/core-free-icons';
-import { AppIcon } from '../shared/app-icon';
+
 import { getDimensions } from '@/lib/upload/get-dimensions';
 import { uploadTemplate } from '@/lib/api/templates';
 import { useState } from 'react';
 import { GetDimensionsResponse, UploadTemplateInput, UploadTemplateResponse } from '@/types/templates.types';
 import { getTemplateName } from '@/lib/upload/get-template-name';
-import UploadDropzone from '@/components/templates/upload-dropzone';
+import FileDropzone from '@/components/shared/file-dropzone';
 import UploadPreview from '@/components/templates/upload-preview';
 import UploadActions from '@/components/templates/upload-actions';
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {Input} from '@/components/ui/input'
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { UploadIcon } from '@hugeicons/core-free-icons';
 import { toast } from "sonner"
 import { useRouter } from "next/navigation";
 
@@ -89,8 +77,15 @@ function CreateTemplate() {
         <div className="mx-auto w-full max-w-7xl px-8 py-8 space-y-8">
 
             <div className="w-[1000px]">
-                <UploadDropzone
-                    handleDrop={handleDrop}
+                <FileDropzone
+                    title="Upload a template"
+                    description="Drag and drop a template file here, or click to select a file."
+                    icon={UploadIcon}
+                    accept={{
+                        "image/*": [".png", ".jpg", ".jpeg", ".svg"],
+                        "application/pdf": [".pdf"],
+                    }}
+                    onDrop={handleDrop}
                 />
             </div>
             {file && uploaded && (

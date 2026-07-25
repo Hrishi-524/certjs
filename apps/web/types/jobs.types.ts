@@ -4,11 +4,20 @@ export type JobStatus = "pending" | "processing" | "completed" | "failed";
 
 export type RecipientData = Record<string, string | number>;
 
+export type PlaygroundPreviewInput = {
+    templateId: string;
+    recipient: Record<string, string | number>;
+};
+
 export type CreateBatchJobInput = {
     templateId: string;
     recipients: RecipientData[]; // min 1
     idempotencyKey: string;
     webhookUrl?: string;
+}
+
+export type GetPlaygroundPreviewResponse = {
+    previewUrl: string;
 }
 
 export type CreateBatchJobResponse = {
@@ -21,10 +30,20 @@ export type CreateBatchJobResponse = {
 export type GetBatchJobStatusResponse = {
     status: JobStatus;
     meta: {
+        jobType: "CERTIFICATE_BATCH";
         totalCount: number;
         processedCount: number;
         failedCount: number;
         lastError: string | null;
+        jobId: string;
+        retryCount: number;
+        maxRetries: number;
+        failedAt: Date | null;
+        presignedZipUrl: string | null;
+        webhookUrl: string | null;
+        webhookSecret: string | null;
+        createdAt: Date;
+        completedAt: Date | null;
     }
 }
 
@@ -41,5 +60,5 @@ export type RetryFailedDocumentsResponse = {
 }
 
 export type DownloadBatchJobDocumentsResponse = {
-    zipUrl: string;
+    presignedZipUrl: string;
 }

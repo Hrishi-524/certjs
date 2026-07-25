@@ -3,6 +3,11 @@ export type RecipientData = Record<
     string | number
 >;
 
+export type PlaygroundPreviewInput = {
+    templateId: string;
+    recipient: Record<string, string | number>;
+};
+
 export type CreateJobParams = {
     userId: string;
 

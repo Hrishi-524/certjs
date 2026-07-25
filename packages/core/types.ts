@@ -1,25 +1,7 @@
-export interface Placeholder {
-    id: string;
-    template_id: string;
+import type { InferSelectModel } from "drizzle-orm";
+import { placeholders } from "@certjs/db/schema/placeholders";
 
-    name: string;
-    key: string | number;
-
-    x: number;      
-    y: number;
-    width: number;
-    height: number;
-
-    strategy: "shrink" | "ellipsis" | "wrap";
-
-    min_font_size?: number;
-
-    align: "left" | "center" | "right";
-
-    font_size: number;
-    font_color: string;
-    font_family: string;
-}
+export type Placeholder = InferSelectModel<typeof placeholders>;
 
 export interface RenderInput {
     templateBuffer: Buffer;

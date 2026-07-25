@@ -8,6 +8,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
     let image: sharp.Sharp;
     let meta: sharp.Metadata;
 
+    console.log("renderCertificate: Starting rendering process with input:", input);
     // Step 1. Load the template image and read its dimensions.
     try {
         image = sharp(input.templateBuffer);
@@ -30,12 +31,20 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
     // Step 2. For each placeholder, create an SVG <text> element with absolute pixel coordinates.
     const svgElements = input.placeholders.map((ph) => {
         // Convert relative coordinates to absolute pixels
-        const absX = Math.round(ph.x * width);
-        const absY = Math.round(ph.y * height);
+        const absX = ph.x * width;
+        const absY = ph.y * height;
+        const absWidth = ph.width * width;
+        const absHeight = ph.height * height;
+
+        // Derive the center since x and y are start of placeholder rectangle
+        const centerX = absX + absWidth / 2;
+        const centerY = absY + absHeight / 2;
 
         // Get Placeholder metadata and use defaults where necessary
         const content = input.data[ph.key];
         console.log(`Rendering placeholder "${ph.name}" with content (raw):`, content);
+
+        
         const strategy : "shrink" | "ellipsis" | "wrap" = ph.strategy ?? "shrink";
         const fontSize : number = ph.font_size ?? 40;
         const color = ph.font_color ?? "#000000";
@@ -46,7 +55,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
         // Get Placeholder text and apply strategy if needed
         let result : LayoutResult = strategyFn(
             String(content),
-            min_font_size,
+            min_font_size? min_font_size : 10,
             width,
             ph_width,
             fontSize,
@@ -54,34 +63,33 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
             strategy
         );
         
+        
         // strategyFn will return the processed text and font size based on the strategy
         // If no processing is needed, it will return the original content and font size
-        const lineHeight = fontSize * 1.2;
-        const totalHeight = (result.lines.length - 1) * lineHeight;
-
-        const startY = absY - totalHeight / 2;
-
         const correctedFontSize = result.font_size;
+        const lineHeight = correctedFontSize * 1.2;
+        const totalHeight = (result.lines.length - 1) * lineHeight;
+        const startY = centerY - totalHeight / 2;
         const correctedContent = result.lines.map((line, i) => `
             <tspan
-                x="${absX}"
+                x="${centerX}"
                 y="${startY + i * lineHeight}"
-            >${escapeXml(line)}
+            >
+                ${escapeXml(line)}
             </tspan>
         `).join("");
-        
         const anchorMap = { center: "middle", right: "end", left: "start" } as const;
         const anchor = anchorMap[ph.align ?? "left"];
         
         return `
             <text
-                x="${absX}"
-                y="${absY}"
+                x="${centerX}"
+                y="${centerY}"
                 font-size="${correctedFontSize}"
                 fill="${color}"
                 text-anchor="${anchor}"
                 font-family="${escapeXml(family)}"
-                
+                dominant-baseline="middle"
             >
                 ${correctedContent}
             </text>

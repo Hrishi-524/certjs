@@ -6,6 +6,9 @@ import type { CreateJobParams } from "@/types/jobs-types";
 import crypto from "crypto";
 import { sql } from "drizzle-orm";
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "@/middleware/express-errors";
+import fetchFileBuffer from "@/utils/fetch-file-buffer"
+import{ renderCertificate} from "@certjs/core/render-engine"
+import generatePresignedUrl from "../documents/get-signed-url";
 
 export async function createBatchJobService(params: CreateJobParams) {
     // 1. Validate template exists
@@ -110,6 +113,7 @@ export async function createBatchJobService(params: CreateJobParams) {
     }
 
     // 13. Enqueue BullMQ Child Jobs
+    console.log(`Enqueuing ${createdDocuments.length} documents for job ${job.id}`);
     await enqueueDocument(createdDocuments, job.id);
 
     // 14. Return Summary
@@ -136,15 +140,109 @@ export async function getJobStatusService(jobId: string, userId: string) {
         throw new NotFoundError("Job with given job_id not found")
     }
 
+    if(job.status === "completed" && !job.zip_s3_url) {
+        throw new InternalServerError("Job is completed but zip_s3_url is missing")
+    }
+
+    let presignedZipUrl: string | null = null;
+
+    if(job.status === "completed" && job.zip_s3_url) {
+        presignedZipUrl = await generatePresignedUrl(job.zip_s3_url);
+    }
+
     return {
         status: job.status,
         meta: {
+            jobType: job.job_type,
             totalCount: job.total_count,
             processedCount: job.processed_count,
             failedCount: job.failed_count,
-            lastError: job.last_error
+            lastError: job.last_error,
+            jobId: job.id,
+            retryCount: job.retry_count,
+            maxRetries: job.max_retries,
+            failedAt: job.failed_at,
+            presignedZipUrl: presignedZipUrl,
+            webhookUrl: job.webhook_url,
+            webhookSecret: job.webhook_secret,
+            createdAt: job.created_at,
+            completedAt: job.completed_at
         }
     }
+}
+
+export async function playgroundPreviewService(
+    templateId: string,
+    recipient: Record<string, string | number>,
+    userId: string
+) {
+    // 1. Validate template exists
+    const [template] = await db
+        .select()
+        .from(templates)
+        .where(eq(templates.id, templateId));
+
+    if (!template) {
+        throw new NotFoundError("Template not found");
+    }
+
+    // 2. Validate ownership
+    if (template.user_id !== userId) {
+        throw new ForbiddenError("You don't own this template");
+    }
+
+    // 3. Validate template active
+    if (!template.is_active) {
+        throw new BadRequestError("Template is inactive");
+    }
+
+    // 4. Load placeholders
+    const placeholdersList = await db
+        .select()
+        .from(placeholders)
+        .where(eq(placeholders.template_id, template.id));
+
+    if (placeholdersList.length === 0) {
+        throw new BadRequestError("Template has no placeholders");
+    }
+
+    // 5. Validate recipient data
+    for (const placeholder of placeholdersList) {
+        if (recipient[placeholder.key] === undefined) {
+            throw new BadRequestError(
+                `Missing placeholder key: ${placeholder.key}`
+            );
+        }
+    }
+
+    // 6. Download template image
+    const templateBuffer = await fetchFileBuffer(template.s3_url);
+
+    if (!templateBuffer) {
+        throw new InternalServerError("Unable to load template image");
+    }
+
+    // 7. Render
+    const input = {
+        templateBuffer,
+        placeholders: placeholdersList,
+        data: recipient
+    };
+
+    const debugOptions = {
+        enabled: true,
+        showBoxes: true,
+        showCenters: true,
+        showBaselines: true
+    };
+    console.log("playgroundPreviewService: Rendering with input:", input);
+    console.log("playgroundPreviewService: Debug options:", debugOptions);
+
+    const renderedBuffer = await renderCertificate(input, debugOptions);
+
+    console.log("playgroundPreviewService: Rendered buffer size:", renderedBuffer.length);
+    // 8. Return PNG buffer
+    return renderedBuffer;
 }
 
 export async function getZip(jobId: string, userId: string) {

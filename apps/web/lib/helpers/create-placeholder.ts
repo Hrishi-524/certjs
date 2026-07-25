@@ -6,6 +6,7 @@ export default function createPlaceholder( templateId: string, name: string, key
         id: crypto.randomUUID(),
         templateId,
         name: name,
+        type: "text",
         key,
         x: 0.5,
         y: 0.5,

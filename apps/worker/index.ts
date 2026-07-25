@@ -1,3 +1,4 @@
+console.log("REDIS_URL =", process.env.REDIS_URL);
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { renderCertificate } from "@certjs/core/render-engine"
@@ -11,11 +12,29 @@ import { enqueueFinalizeQueue } from "./finlaize-queue";
 import "./finalizer-worker"
 import "./webhook-worker"
 
+// apps/worker/index.ts
+
+// const connection = new IORedis(process.env.REDIS_URL!, {
+//     maxRetriesPerRequest: null,
+// });
+
 const connection = new IORedis({
     host: "127.0.0.1",
     port: 6379,
     maxRetriesPerRequest: null,
-});
+})
+
+console.log("Creating Redis connection...");
+
+async function testRedis() {
+    try {
+        console.log(await connection.ping());
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+testRedis();
 
 export const worker = new Worker( "certificates", async (job) => {
     console.log(`Processing job ${job.id} with data:`, job.data);
@@ -77,7 +96,7 @@ export const worker = new Worker( "certificates", async (job) => {
             x: Number(p.x),
             y: Number(p.y),
             width: Number(p.width),
-            min_font_size:  p.min_font_size ? Number(p.min_font_size) : undefined,
+            min_font_size:  p.min_font_size ? Number(p.min_font_size) : null,
         }));
 
         // 7. Fetch template buffer from S3
@@ -96,11 +115,20 @@ export const worker = new Worker( "certificates", async (job) => {
         }
 
         // 9 Upload
-        const renderedBuffer = await renderCertificate({
+
+        const input = {
             templateBuffer,
             placeholders: formattedPlaceholders,
-            data,
-        });
+            data
+        };
+
+        const debugOptions = {
+            enabled: true,
+            showBoxes: true,
+            showCenters: true,
+            showBaselines: true
+        };
+        const renderedBuffer = await renderCertificate(input, debugOptions);
 
         // 9.5 Upload to S3 and get URL
         const response = await uploadGeneratedCertificate(renderedBuffer, document_id);
@@ -163,6 +191,18 @@ export const worker = new Worker( "certificates", async (job) => {
         throw error; 
     }
 }, { connection, concurrency: 5 });
+
+worker.on("ready", () => {
+  console.log("✅ Worker ready");
+});
+
+worker.on("error", (err) => {
+  console.error("❌ Worker error:", err);
+});
+
+worker.on("active", (job) => {
+  console.log("▶ Active:", job.id);
+});
 
 /** 
     Function renderCertificate() Input Params expects this in json

@@ -11,3 +11,8 @@ export const CreateJobSchema = z.object({
     idempotencyKey: z.string(),
     webhookUrl: z.url().optional()
 });
+
+export const playgroundPreviewSchema = z.object({
+    templateId: z.uuid(),
+    recipient: z.record(z.string(),z.union([z.string(),z.number()]))
+});

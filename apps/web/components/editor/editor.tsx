@@ -75,6 +75,8 @@ export default function Editor({ templateId }: { templateId: string; }) {
 
 
         const input: CreatePlaceholdersInput = placeholders.map(p => {
+            console.log(`saving placeholder, values of x: ${p.x} y:  ${p.y} width: ${p.width} height: ${p.height}`);
+            console.log(`using template width: ${template.width} and height: ${template.height} for canvas conversions`);
             const rect = toNormalizedRect(
                 p.x,
                 p.y,
@@ -83,6 +85,7 @@ export default function Editor({ templateId }: { templateId: string; }) {
                 template.width,
                 template.height
             );
+            console.log(`normalized rect values: x: ${rect.x} y: ${rect.y} width: ${rect.width} height: ${rect.height}`);
             return {
             name: p.name,
             key: p.key,

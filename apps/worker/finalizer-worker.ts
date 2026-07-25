@@ -9,11 +9,15 @@ import { uploadZip } from "./upload-zip";
 import { enqueueWebhookQueue } from "./webhook-queue";
 import "./webhook-worker"
 
+// const connection = new IORedis(process.env.REDIS_URL!, {
+//     maxRetriesPerRequest: null,
+// });
+
 const connection = new IORedis({
     host: "127.0.0.1",
     port: 6379,
     maxRetriesPerRequest: null,
-});
+})
 
 export const finalizerWorker = new Worker("finalizer", async (job) => {
     console.log(`Processing finalizer job ${job.id} with data:`, job.data)

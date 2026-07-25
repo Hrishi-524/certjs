@@ -8,6 +8,7 @@ export async function listPlaceholders(templateId: string): Promise<ListPlacehol
 }
 
 export async function syncPlaceholders(templateId: string, input: CreatePlaceholdersInput): Promise<CreatePlaceholdersResponse> {
+    console.log("syncPlaceholders input:", input) 
     const { data } = await clientApi.put<CreatePlaceholdersResponse>(`/dashboard/templates/${templateId}/placeholders`, input)
     return data
 }

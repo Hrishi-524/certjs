@@ -1,18 +1,31 @@
 import type { Request, Response } from "express";
-import { CreateJobSchema, JobIdParamSchema } from "@/schema/jobs.schema";
+import { CreateJobSchema, JobIdParamSchema, playgroundPreviewSchema } from "@/schema/jobs.schema";
 import {
     createBatchJobService,
+    playgroundPreviewService,
     getJobStatusService,
     getZip,
     retryJobService,
     getJobDocumentsService
 } from "@/services/jobs/jobs.service";
 import { UnauthorizedError } from "@/middleware/express-errors";
+import generatePresignedUrl from "@/services/documents/get-signed-url";
+
+export async function playgroundPreview(req: Request, res: Response) {
+    const data = playgroundPreviewSchema.parse(req.body);
+    const userId = req.user.id
+    
+    const buffer = await playgroundPreviewService(data.templateId, data.recipient, userId);
+
+    res.setHeader("Content-Type", "image/png");
+    res.send(buffer);
+}
 
 export async function createBatchJob( req: Request, res: Response ) {
     const data = CreateJobSchema.parse(req.body);
     const userId = req.user.id
     
+    console.log("createBatchJob: Received request with data:", data, "and userId:", userId);
     const jobMeta = await createBatchJobService({
         userId: userId,
         ...data
@@ -63,12 +76,18 @@ export async function downloadJobZip(req: Request, res: Response) {
     }
 
     const zipUrl = await getZip(jobId, userId)
-
+    
     if (!zipUrl) {
         return res.status(409).json({ message: "Job not completed yet" });
     }
+    
+    const url = new URL(zipUrl);
 
-    return res.status(200).json({zipUrl})
+const key = url.pathname.slice(1); // removes leading '/'
+
+const presignedZipUrl = await generatePresignedUrl(key);
+
+    return res.status(200).json({presignedZipUrl})
 }
 
 export async function retryJob(req: Request, res: Response) {
