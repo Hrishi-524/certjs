@@ -27,3 +27,8 @@ export type DeactivateApiKeyResponse = {
     name: string;
     prefix: string;
 }
+
+export type ActivateApiKeyResponse = {
+    name: string;
+    prefix: string;
+}

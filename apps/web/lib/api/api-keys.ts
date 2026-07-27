@@ -1,5 +1,5 @@
 import clientApi from "@/lib/api/client";
-import { CreateApiKeyInput, CreateApiKeyResponse, DeactivateApiKeyResponse, GetApiKeyPrefixResponse, ListApiKeysResponse } from "@/types/api-keys.types";
+import { CreateApiKeyInput, CreateApiKeyResponse, DeactivateApiKeyResponse, ActivateApiKeyResponse, GetApiKeyPrefixResponse, ListApiKeysResponse } from "@/types/api-keys.types";
 
 export async function createApiKey(input: CreateApiKeyInput): Promise<CreateApiKeyResponse> {
     const { data } = await clientApi.post<CreateApiKeyResponse>("dashboard/api-keys", input)
@@ -22,5 +22,10 @@ export async function deleteApiKey(apiKeyId: string): Promise<void> {
 
 export async function deactivateApiKey(apiKeyId: string): Promise<DeactivateApiKeyResponse> {
     const { data } = await clientApi.post<DeactivateApiKeyResponse>(`dashboard/api-keys/${apiKeyId}/deactivate`)
+    return data
+}
+
+export async function activateApiKey(apiKeyId: string): Promise<ActivateApiKeyResponse> {
+    const { data } = await clientApi.post<ActivateApiKeyResponse>(`dashboard/api-keys/${apiKeyId}/activate`)
     return data
 }
