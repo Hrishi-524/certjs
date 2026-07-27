@@ -1,10 +1,9 @@
-// lists all the jobs and their corrsponding templates preview
-import React from 'react'
-
+"use client"
+import JobsDashBoard from "@/components/jobs/jobs-dashboard/jobs-dashboard"
 function page() {
-  return (
-    <div>page</div>
-  )
+    return (
+        <JobsDashBoard />
+    )
 }
 
 export default page

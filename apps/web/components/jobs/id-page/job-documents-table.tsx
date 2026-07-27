@@ -27,7 +27,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "./table";
+} from "@/components/shared/table";
 import { Document } from "@/types/documents.types";
 import { ListBatchJobDocumentsResponse } from "@/types/jobs.types";
 

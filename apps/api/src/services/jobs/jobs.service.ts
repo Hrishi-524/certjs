@@ -9,6 +9,7 @@ import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } f
 import fetchFileBuffer from "@/utils/fetch-file-buffer"
 import{ renderCertificate} from "@certjs/core/render-engine"
 import generatePresignedUrl from "../documents/get-signed-url";
+import { getKeyForS3Url } from "../templates/get-key";
 
 export async function createBatchJobService(params: CreateJobParams) {
     // 1. Validate template exists
@@ -334,4 +335,33 @@ export async function getJobDocumentsService(jobId: string, userId: string) {
     }))
 
     return normalizedDocs;
+}
+
+export async function getJobsService(userId: string) {
+    const jobsList = await db.select({
+        id: jobs.id,
+
+        status: jobs.status,
+
+        totalCount: jobs.total_count,
+        processedCount: jobs.processed_count,
+        failedCount: jobs.failed_count,
+
+        retryCount: jobs.retry_count,
+        maxRetries: jobs.max_retries,
+
+        createdAt: jobs.created_at,
+        completedAt: jobs.completed_at,
+
+        template : {
+            id: templates.id,
+            name: templates.name,
+        }
+    }).from(jobs).leftJoin(templates, 
+        eq(jobs.template_id, templates.id)
+    ).where(
+        eq(jobs.user_id, userId)
+    );
+
+    return jobsList;
 }

@@ -50,7 +50,7 @@ function formatRelativeUpdatedTime(updatedAt: string) {
   return "Updated just now"
 }
 
-function TemplateCard({ template }: TemplateCardProps) {
+function PlaygroundTemplateCard({ template }: TemplateCardProps) {
   return (
     <Card className="w-full rounded-xl border border-border/70 pt-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
       {template.presignedUrl ? (
@@ -88,4 +88,4 @@ function TemplateCard({ template }: TemplateCardProps) {
   )
 }
 
-export default TemplateCard
+export default PlaygroundTemplateCard

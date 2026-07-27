@@ -2,8 +2,8 @@
 
 import { useTemplates } from '@/hooks/use-templates';
 import React, { useMemo, useState } from 'react'
-import TemplateCard from './template-card';
-import SearchTemplates from './search-templates';
+import PlaygroundTemplateCard from '@/components/templates/playground-template-card';
+import SearchTemplates from '@/components/templates/search-templates';
 import { FileSearchIcon, InboxIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -65,7 +65,7 @@ function PlaygroundTemplates() {
             ) : filteredTemplates.length > 0 ? (
                 <div className="grid gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                     {filteredTemplates.map((template) => (
-                        <TemplateCard key={template.templateId} template={template} />
+                        <PlaygroundTemplateCard key={template.templateId} template={template} />
                     ))}
                 </div>
             ) : (

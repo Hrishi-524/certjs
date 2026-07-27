@@ -29,3 +29,11 @@ export async function updateTemplateName(id: string, name: string): Promise<Upda
 export async function deleteTemplate(id: string): Promise<void> {
     await clientApi.delete(`/dashboard/templates/${id}`);
 }
+
+export async function activateTemplate(id: string): Promise<void> {
+    await clientApi.post(`/dashboard/templates/${id}/activate`);
+}
+
+export async function deactivateTemplate(id: string): Promise<void> {
+    await clientApi.post(`/dashboard/templates/${id}/deactivate`);
+}

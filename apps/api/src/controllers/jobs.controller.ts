@@ -6,7 +6,8 @@ import {
     getJobStatusService,
     getZip,
     retryJobService,
-    getJobDocumentsService
+    getJobDocumentsService,
+    getJobsService
 } from "@/services/jobs/jobs.service";
 import { UnauthorizedError } from "@/middleware/express-errors";
 import generatePresignedUrl from "@/services/documents/get-signed-url";
@@ -144,3 +145,18 @@ export async function getJobDocuments(req: Request, res: Response) {
     }[]
 */
 }   
+
+export async function getJobs(req: Request, res: Response) {
+    const userId = req.user.id;
+
+    if (!userId) {
+        throw new UnauthorizedError("Unauthorized - cannot access jobs");
+    }
+
+    const jobs = await getJobsService(userId);
+
+    return res.status(200).json({
+        total: jobs.length,
+        jobs
+    });
+}

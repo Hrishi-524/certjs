@@ -47,6 +47,32 @@ export type GetBatchJobStatusResponse = {
     }
 }
 
+export type JobSummary = {
+    id: string;
+
+    status: "pending" | "processing" | "completed" | "failed";
+
+    totalCount: number;
+    processedCount: number;
+    failedCount: number;
+
+    retryCount: number;
+    maxRetries: number;
+
+    createdAt: string;
+    completedAt: string | null;
+
+    template: {
+        id: string;
+        name: string;
+    } | null;
+};
+
+export type GetJobsResponse = {
+    total: number;
+    jobs: JobSummary[];
+};
+
 export type ListBatchJobDocumentsResponse = {
     count: number;
     documents: Document[];

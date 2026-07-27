@@ -1,14 +1,11 @@
-/*
-shows all your templates
-techically its not as unique because dashboard does similar thing
-*/
+"use client"
 
-import React from 'react'
+import DashboardTemplates from '@/components/templates/dashboard-templates';
 
 function page() {
-  return (
-    <div>page</div>
-  )
+    return (
+        <DashboardTemplates />
+    )
 }
 
 export default page
