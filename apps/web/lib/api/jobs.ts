@@ -8,7 +8,6 @@ export async function createBatchJob(input: CreateBatchJobInput): Promise<Create
 
 export async function getJobs(): Promise<GetJobsResponse> {
     const { data } = await clientApi.get<GetJobsResponse>("/dashboard/jobs");
-    console.log("lib/api/jobs.ts getJobs data: ", data);
     return data;
 }
 

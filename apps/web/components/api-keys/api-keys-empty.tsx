@@ -20,30 +20,29 @@ export default function ApiKeysEmpty({
     onCreate,
 }: ApiKeysEmptyProps) {
     return (
-        <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Card className="border-dashed bg-muted/20">
+            <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border bg-background text-primary">
                     <AppIcon
                         icon={Key01Icon}
-                        size={28}
+                        size={22}
                     />
                 </div>
 
-                <CardHeader className="space-y-2 p-0">
+                <CardHeader className="space-y-1 p-0">
                     <CardTitle>
-                        No API Keys
+                        No API keys yet
                     </CardTitle>
 
                     <CardDescription className="max-w-md">
-                        Create your first API key to authenticate
-                        requests to the CertJS API. You'll use this
-                        key in the <code>Authorization</code> header
-                        of your applications.
+                        Create a key to authenticate requests from your
+                        application.
                     </CardDescription>
                 </CardHeader>
 
                 <Button
-                    className="mt-8"
+                    className="mt-5"
+                    size="sm"
                     onClick={onCreate}
                 >
                     <AppIcon icon={Key01Icon} />

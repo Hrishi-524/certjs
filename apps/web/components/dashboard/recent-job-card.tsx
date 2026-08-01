@@ -1,124 +1,102 @@
 "use client";
 
+import type { ComponentProps } from "react";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 
 import {
     Alert02Icon,
     ArrowRight01Icon,
+    CheckmarkCircle02Icon,
     Clock01Icon,
     Loading03Icon,
-    TaskDone01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { AppIcon } from "@/components/shared/app-icon";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Card,
-    CardContent,
     CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 
-import type { JobSummary } from "@/types/jobs.types";
+import { DashboardRecentJob } from "@/types/dashboard.types";
 
-type JobCardProps = {
-    job: JobSummary;
+type RecentJobCardProps = {
+    job: DashboardRecentJob;
 };
+
+type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 
 const statusConfig = {
     pending: {
         label: "Pending",
         icon: Clock01Icon,
+        variant: "secondary",
     },
     processing: {
         label: "Processing",
         icon: Loading03Icon,
+        variant: "default",
     },
     completed: {
         label: "Completed",
-        icon: TaskDone01Icon,
+        icon: CheckmarkCircle02Icon,
+        variant: "default",
     },
     failed: {
         label: "Failed",
         icon: Alert02Icon,
+        variant: "destructive",
     },
-} satisfies Record<
-    JobSummary["status"],
-    {
-        label: string;
-        icon: unknown;
-    }
->;
+} satisfies Record<DashboardRecentJob["status"], {
+    label: string;
+    icon: typeof Clock01Icon;
+    variant: BadgeVariant;
+}>;
 
-export default function JobCard({
+export default function RecentJobCard({
     job,
-}: JobCardProps) {
+}: RecentJobCardProps) {
     const status = statusConfig[job.status];
-
-    const progress =
-        job.totalCount === 0
-            ? 0
-            : Math.round(
-                  (job.processedCount / job.totalCount) * 100
-              );
 
     return (
         <Card size="sm">
             <CardHeader className="flex flex-row items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1">
                     <CardTitle className="line-clamp-1 text-base">
-                        {job.template?.name ?? "Deleted Template"}
+                        {job.template.name}
                     </CardTitle>
 
                     <p className="text-xs text-muted-foreground">
-                        {new Date(
-                            job.createdAt
-                        ).toLocaleString()}
+                        Completed{" "}
+                        {formatDistanceToNow(new Date(job.completedAt), {
+                            addSuffix: true,
+                        })}
                     </p>
                 </div>
 
                 <Badge
-                    variant="secondary"
-                    className="shrink-0 gap-2"
+                    variant={status.variant}
+                    className="shrink-0"
                 >
                     <AppIcon
                         icon={status.icon}
-                        className={
-                            job.status === "processing"
-                                ? "animate-spin"
-                                : ""
-                        }
+                        size={14}
                     />
 
                     {status.label}
                 </Badge>
             </CardHeader>
 
-            <CardContent className="space-y-3">
-                <div>
-                    <div className="mb-2 flex justify-between text-xs text-muted-foreground">
-                        <span>
-                            {job.processedCount} / {job.totalCount}
-                        </span>
+            <CardFooter className="justify-between">
+                <p className="text-sm text-muted-foreground">
+                    {job.totalCount.toLocaleString()} documents
+                </p>
 
-                        <span>{progress}%</span>
-                    </div>
-
-                    <Progress value={progress} />
-                </div>
-
-                {job.failedCount > 0 && (
-                    <p className="text-sm text-destructive">
-                        {job.failedCount} certificate
-                        {job.failedCount > 1 ? "s" : ""} failed
-                    </p>
-                )}
-            </CardContent>
-
-            <CardFooter className="justify-end">
                 <Button
                     asChild
                     variant="ghost"

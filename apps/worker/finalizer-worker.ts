@@ -8,6 +8,9 @@ import fetchFileBuffer from "./fetch-file-buffer";
 import { uploadZip } from "./upload-zip";
 import { enqueueWebhookQueue } from "./webhook-queue";
 import "./webhook-worker"
+import pLimit from "p-limit";
+import { Profiler } from "./utils/profiler";
+import { getBatchBuffers, clearBatchBuffers } from "./utils/finalizer-buffer-cache";
 
 // const connection = new IORedis(process.env.REDIS_URL!, {
 //     maxRetriesPerRequest: null,
@@ -19,6 +22,8 @@ const connection = new IORedis({
     maxRetriesPerRequest: null,
 })
 
+const limit = pLimit(5);
+
 export const finalizerWorker = new Worker("finalizer", async (job) => {
 
     const { batchJobId } = job.data
@@ -29,52 +34,105 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
         return;
     }
 
+    const finalizerProfiler = new Profiler({
+        worker: "FinalizerWorker",
+        operation: "Total Finalizer",
+        batchJobId,
+    });
+
     try{
         // 1. Read all completed documents for the batch job
+        const dbProfiler = new Profiler({
+            worker: "FinalizerWorker",
+            operation: "Fetch Documents",
+            batchJobId
+        });
         const completed_docs = await db.select().from(documents).where(
             and(
                 eq(documents.job_id, batchJobId),
                 eq(documents.status, "completed")
             )
         )
+        dbProfiler.end();
 
         // 2. Downloads/streams rendered files from S3.
-        const urls = completed_docs.map(doc => doc.s3_url);
+        // const urls = completed_docs.map(doc => doc.s3_url);
 
-        const valid_urls = urls.filter(
-            (url): url is string => url !== null
-        )
+        // const valid_urls = urls.filter(
+        //     (url): url is string => url !== null
+        // )
 
-        if(valid_urls.length !== urls.length) {
-            throw new Error("All documents are not uploaded to s3");
-        }
+        // if(valid_urls.length !== urls.length) {
+        //     throw new Error("All documents are not uploaded to s3");
+        // }
 
-        const doc_files =  await Promise.all(valid_urls.map(async (document_url) => {
-            const buffer = await fetchFileBuffer(document_url)
-            const key = document_url.split(".amazonaws.com/")[1];
-            const name = key.split("/").pop();
+        const downloadProfiler = new Profiler({
+            worker: "FinalizerWorker",
+            operation: "Download Certificates",
+            batchJobId
+        });
 
-            if (!name) {
-                throw new Error("Invalid S3 key");
-            }
+        const doc_files = await Promise.all(
+            completed_docs.map(doc =>
+                limit(async () => {
 
-            return {
-                name,
-                buffer
-            }
-        }))
+                    if (!doc.s3_url)
+                        throw new Error("Doc not finished");
+
+                    const cached = getBatchBuffers(batchJobId)?.get(doc.id);
+
+                    if (cached) {
+                        console.log(`CACHE HIT: document ${doc.id} fetched from cache`);
+                        return cached;
+                    } else {
+                        console.log(`CACHE MISS: document ${doc.id} cached`);
+                    
+                        const buffer = await fetchFileBuffer(
+                            doc.s3_url,
+                            "FinalizerWorker"
+                        );
+
+                        return {
+                            name: `${doc.id}.png`,
+                            buffer
+                        };
+                    }
+                })
+            )
+        );
+        
+        downloadProfiler.end();
 
         // 3. Creates Zip
+        const zipProfiler = new Profiler({
+            worker: "FinalizerWorker",
+            operation: "Create ZIP",
+            batchJobId
+        });
         const zip_buffer = await createZip(doc_files)
+        zipProfiler.end();
 
         // 4. Uplaods Zip
+        const uploadProfiler = new Profiler({
+            worker: "FinalizerWorker",
+            operation: "Upload ZIP",
+            batchJobId
+        });
         const zip_s3_url = await uploadZip(zip_buffer, batchJobId);
+        uploadProfiler.end();
 
+
+        const updateProfiler = new Profiler({
+            worker: "FinalizerWorker",
+            operation: "Update Batch",
+            batchJobId
+        });
         await db.update(jobs).set({
             zip_s3_url: zip_s3_url,
             status: "completed",
             completed_at: new Date()
         }).where(eq(jobs.id, batchJobId))
+        updateProfiler.end();
 
         await enqueueWebhookQueue(batchJobId);
     } catch(error) {
@@ -90,5 +148,8 @@ export const finalizerWorker = new Worker("finalizer", async (job) => {
         }
 
         throw error;
+    } finally {
+        clearBatchBuffers(batchJobId);
+        finalizerProfiler.end();
     }
 }, { connection });

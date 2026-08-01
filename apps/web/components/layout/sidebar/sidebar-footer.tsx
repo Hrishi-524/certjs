@@ -11,33 +11,27 @@ import UserNav from "@/components/layout/sidebar/user-nav";
 
 function SidebarFooterContent() {
     return (
-        <SidebarMenu className="space-y-1.5">
-            {/* <SidebarMenu> */}
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        tooltip="Settings"
-                        className="h-10 rounded-lg px-2.5 text-[15px] font-medium [&_svg]:size-5"
-                    >
-                        <Link href="/dashboard/settings">
-                            <AppIcon icon={AiSettingIcon} />
-                            <span>Settings</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            {/* </SidebarMenu> */}
+        <SidebarMenu className="space-y-1">
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                    asChild
+                    tooltip="Settings"
+                    className="h-9 rounded-lg px-2.5 text-[13px] font-medium [&_svg]:size-4"
+                >
+                    <Link href="/dashboard/settings">
+                        <AppIcon icon={AiSettingIcon} />
+                        <span>Settings</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            {/* <SidebarMenu> */}
-                <SidebarMenuItem>
-                    <ThemeButton />
-                </SidebarMenuItem>
-            {/* </SidebarMenu> */}
+            <SidebarMenuItem>
+                <ThemeButton />
+            </SidebarMenuItem>
 
-            {/* <SidebarMenu> */}
-                <SidebarMenuItem>
-                    <UserNav />
-                </SidebarMenuItem>
-            {/* </SidebarMenu> */}
+            <SidebarMenuItem>
+                <UserNav />
+            </SidebarMenuItem>
         </SidebarMenu>
     )
 }

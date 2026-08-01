@@ -6,13 +6,15 @@
     "scripts": {
         "dev": "nodemon --exec tsx index.ts",
         "build": "tsc",
-        "start": "node dist/index.js"
+        "start": "node dist/index.js",
+        "benchmark:s3": "tsx scripts/s3-benchmark.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.1023.0",
         "bullmq": "^5.72.1",
         "dotenv": "^17.4.0",
-        "ioredis": "5.10.1"
+        "ioredis": "5.10.1",
+        "p-limit": "^3.1.0"
     },
     "devDependencies": {
         "@types/node": "^25.5.2",

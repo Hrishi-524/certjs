@@ -1,5 +1,4 @@
-import React from 'react'
-import PlaygroundTemplates from '@/components/playground/playground-templates'
+import PlaygroundTemplates from '@/components/templates/playground-templates'
 
 function page() {
   return (

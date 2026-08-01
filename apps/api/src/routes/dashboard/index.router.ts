@@ -7,6 +7,7 @@ import jobsRouter from "@/routes/dashboard/jobs.routes";
 import authRouter from "@/routes/dashboard/auth.routes";
 import apiKeysRouter from "@/routes/dashboard/apikeys.routes";
 import playgroundRouter from "@/routes/dashboard/playground.routes";
+import dashboardRouter from "@/routes/dashboard/dashboard.routes";
 
 router.use("/auth", authRouter);
 router.use("/documents", documentRouter);
@@ -15,5 +16,6 @@ router.use("/templates", templatesRouter);
 router.use("/certificates", documentRouter);
 router.use("/api-keys", apiKeysRouter);
 router.use("/playground", playgroundRouter);
+router.use("/dashboard", dashboardRouter);
 
 export default router;

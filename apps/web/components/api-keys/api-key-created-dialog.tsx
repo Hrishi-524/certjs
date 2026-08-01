@@ -73,7 +73,7 @@ export default function ApiKeyCreatedDialog({
                     </DialogTitle>
 
                     <DialogDescription>
-                        Store this API key securely. You won't be
+                        Store this API key securely. You won&apos;t be
                         able to view it again after closing this
                         dialog.
                     </DialogDescription>

@@ -58,7 +58,7 @@ export default function AllJobsTable({
 }: AllJobsTableProps) {
     return (
         <section className="space-y-4">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg font-semibold tracking-tight">
                 All Jobs
             </h2>
 

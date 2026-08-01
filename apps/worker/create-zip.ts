@@ -20,7 +20,11 @@ export async function createZip(
         });
 
         stream.on("end", () => {
-            resolve(Buffer.concat(chunks));
+            const zipBuffer = Buffer.concat(chunks);
+            console.log(
+                `ZIP Size: ${(zipBuffer.length / 1024).toFixed(1)} KB`
+            );
+            resolve(zipBuffer);
         });
 
         archive.on("error", reject);

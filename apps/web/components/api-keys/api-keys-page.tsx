@@ -114,14 +114,14 @@ export default function ApiKeysPage() {
 
     return (
         <>
-            <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold">
+            <div className="space-y-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-semibold tracking-tight">
                             API Keys
                         </h1>
 
-                        <p className="text-muted-foreground">
+                        <p className="max-w-2xl text-sm text-muted-foreground">
                             Manage API keys for accessing the
                             CertJS API.
                         </p>
@@ -146,7 +146,7 @@ export default function ApiKeysPage() {
                         }
                     />
                 ) : (
-                    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {apiKeys.map((apiKey) => (
                             <ApiKeyCard
                                 key={apiKey.id}

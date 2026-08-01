@@ -24,7 +24,7 @@ type OverviewCardProps = {
     title: string;
     value: number;
     subtitle: string;
-    icon: any;
+    icon: typeof File01Icon;
     iconClassName?: string;
 };
 
@@ -36,14 +36,14 @@ function OverviewCard({
     iconClassName,
 }: OverviewCardProps) {
     return (
-        <Card>
-            <CardContent className="flex items-start justify-between p-6">
+        <Card size="sm">
+            <CardContent className="flex items-start justify-between p-4">
                 <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">
                         {title}
                     </p>
 
-                    <p className="text-3xl font-bold tracking-tight tabular-nums">
+                    <p className="text-2xl font-semibold tracking-tight tabular-nums">
                         {value}
                     </p>
 
@@ -52,7 +52,7 @@ function OverviewCard({
                     </p>
                 </div>
 
-                <div className="rounded-lg border bg-muted/40 p-2">
+                <div className="rounded-lg border bg-muted/50 p-2">
                     <AppIcon
                         icon={icon}
                         className={iconClassName}

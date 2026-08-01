@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import useJobs from "@/hooks/use-jobs";
 
 import ActiveJobsSection from "./active-jobs-section";
@@ -9,6 +11,7 @@ import JobsOverview from "./jobs-overview";
 import RecentCompletedSection from "./recent-completed-section";
 
 export default function JobsDashboard() {
+    const [now] = useState(() => Date.now());
     const { data, isLoading } = useJobs();
 
     if (isLoading) {
@@ -22,7 +25,6 @@ export default function JobsDashboard() {
     const jobs = data.jobs;
 
     const ONE_DAY = 24 * 60 * 60 * 1000;
-    const now = Date.now();
 
     const activeJobs = jobs.filter(
         (job) =>
@@ -49,7 +51,7 @@ export default function JobsDashboard() {
     });
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <JobsOverview
                 total={jobs.length}
                 active={activeJobs.length}

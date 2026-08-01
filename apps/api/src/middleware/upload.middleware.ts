@@ -6,7 +6,8 @@ const storage = multer.memoryStorage();
 const allowedMimeTypes = [
     "image/png",
     "image/jpeg",
-    "image/webp"
+    "image/webp",
+    "image/jpg"
 ];
 
 export const uploadTemplateMiddleware = multer({
@@ -16,7 +17,7 @@ export const uploadTemplateMiddleware = multer({
     },
     fileFilter: (req, file, cb) => {
         if (!allowedMimeTypes.includes(file.mimetype)) {
-            return cb( new BadRequestError("Only PNG, JPEG, and WebP images are allowed") );
+            return cb( new BadRequestError("Only PNG, JPEG, JPG, and WebP images are allowed") );
         }
 
         cb(null, true);

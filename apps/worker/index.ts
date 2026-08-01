@@ -10,7 +10,9 @@ import { sql } from "drizzle-orm";
 import { enqueueFinalizeQueue } from "./finlaize-queue";
 import "./finalizer-worker"
 import "./webhook-worker"
-
+import { Profiler } from "./utils/profiler";
+import { getTemplate, removeTemplate, setTemplate } from "./utils/template-cache";
+import { cacheRenderedCertificate } from "./utils/finalizer-buffer-cache";
 // apps/worker/index.ts
 
 // const connection = new IORedis(process.env.REDIS_URL!, {
@@ -65,9 +67,20 @@ export const worker = new Worker( "certificates", async (job) => {
         throw new Error("Job already completed");
     }
 
+    const workerProfiler = new Profiler({
+        worker: "CertificateWorker",
+        operation: "Total Worker",
+        batchJobId: batchJob.id,
+        documentId: document_id,
+    });
+
     try {
         // 5.Fetch template
+       
+
         const [template] = await db.select().from(templates).where(eq(templates.id, batchJob.template_id));
+
+        
 
         if(!template) {
             throw new Error("Template not found")
@@ -88,7 +101,29 @@ export const worker = new Worker( "certificates", async (job) => {
         if(template.s3_url === null) {
             throw new Error("Template has no associated buffer URL");
         }
-        const templateBuffer = await fetchFileBuffer(template.s3_url);
+
+        const templateProfiler = new Profiler({
+            worker: "CertificateWorker",
+            operation: "Template Fetch",
+            batchJobId: batchJob.id,
+            documentId: document_id
+        })
+        let templatePromise = getTemplate(template.id);
+
+        if (!templatePromise) {
+            templatePromise = fetchFileBuffer(template.s3_url, "CertificateWorker")
+                .catch(err => {
+                    removeTemplate(template.id);
+                    throw err;
+                });
+            setTemplate(template.id, templatePromise);
+            console.log(`CACHE MISS: template ${template.id} cached`);
+        } else {
+            console.log(`CACHE HIT: template ${template.id} fetched from cache`);
+        }
+
+        const templateBuffer = await templatePromise;
+        templateProfiler.end();
 
         // 8. Validate data
         const data = document.recipient_data;
@@ -113,10 +148,42 @@ export const worker = new Worker( "certificates", async (job) => {
             showCenters: true,
             showBaselines: true
         };
-        const renderedBuffer = await renderCertificate(input, debugOptions);
+        
+        const renderProfiler = new Profiler({
+            worker: "CertificateWorker",
+            operation: "Render",
+            batchJobId: batchJob.id,
+            documentId: document_id
+        });
 
+        const renderedBuffer = await renderCertificate(input, debugOptions);
+        console.log( `${document_id}: ${(renderedBuffer.length / 1024).toFixed(1)} KB`);
+
+        renderProfiler.end();
+
+        cacheRenderedCertificate(
+            batchJob.id,
+            document_id,
+            {
+                name: `${document_id}.png`,
+                buffer: renderedBuffer
+            }
+        );
+        
         // 9.5 Upload to S3 and get URL
-        const response = await uploadGeneratedCertificate(renderedBuffer, document_id);
+        const uploadProfiler = new Profiler({
+            worker: "CertificateWorker",
+            operation: "Upload Certificate",
+            batchJobId: batchJob.id,
+            documentId: document_id
+        });
+
+        const response = await uploadGeneratedCertificate(
+            renderedBuffer,
+            document_id
+        );
+
+        uploadProfiler.end();
         
         // 10. Update document record with S3 URL and mark as completed
         await db.update(documents).set({ 
@@ -170,5 +237,7 @@ export const worker = new Worker( "certificates", async (job) => {
 
 
         throw error; 
+    } finally {
+        workerProfiler.end();
     }
 }, { connection, concurrency: 5 });

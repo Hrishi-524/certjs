@@ -13,8 +13,8 @@ export default function ActiveJobsSection({
 }: ActiveJobsSectionProps) {
     if (jobs.length === 0) {
         return (
-            <section className="space-y-4">
-                <h2 className="text-xl font-semibold">
+            <section className="space-y-2">
+                <h2 className="text-lg font-semibold tracking-tight">
                     Active Jobs
                 </h2>
 
@@ -27,11 +27,11 @@ export default function ActiveJobsSection({
 
     return (
         <section className="space-y-4">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg font-semibold tracking-tight">
                 Active Jobs
             </h2>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {jobs.map((job) => (
                     <JobCard
                         key={job.id}
