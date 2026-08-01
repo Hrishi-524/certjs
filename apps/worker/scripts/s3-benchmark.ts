@@ -8,10 +8,10 @@ import {
 } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
-    region: process.env.AWS_REGION ?? "ap-south-1",
+    region: process.env.AWS_REGION!,
 });
 
-const bucket = process.env.S3_BUCKET_NAME ?? "hrishi-s3-bucket-796466897662";
+const bucket = process.env.S3_BUCKET_NAME!;
 
 async function benchmark() {
 
