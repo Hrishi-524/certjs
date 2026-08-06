@@ -1,5 +1,7 @@
 "use client";
 
+import { GET_DOCUMENT } from "@/components/data/documentation/api-refrence/get-document";
+
 import AppLanguageTabs from "@/components/shared/app-language-tabs";
 import EndpointBadge from "@/components/shared/endpoint-badge";
 import ParametersCard from "@/components/shared/parameters-card";
@@ -7,43 +9,40 @@ import ResponseCard from "@/components/shared/response-card";
 import NotesCard from "@/components/shared/notes-card";
 import ErrorsCard from "@/components/shared/errors-card";
 
-import { GET_JOB_STATUS } from "@/components/data/documentation/api-refrence/get-job-status";
-
-export default function GetJobStatus() {
+export default function GetDocument() {
     return (
         <section
-            id="get-job-status"
+            id="get-document"
             className="space-y-8"
         >
             <EndpointBadge
-                method={GET_JOB_STATUS.method}
-                path={GET_JOB_STATUS.path}
-            /
-            >
+                method={GET_DOCUMENT.method}
+                path={GET_DOCUMENT.path}
+            />
 
             <AppLanguageTabs
-                snippets={Object.values(GET_JOB_STATUS.snippets)}
+                snippets={Object.values(GET_DOCUMENT.snippets)}
                 codeBlockLabel="Request Example"
             />
 
             <ParametersCard
                 title="Path Parameters"
                 description="Parameters included in the request path."
-                parameters={GET_JOB_STATUS.pathParameters}
+                parameters={GET_DOCUMENT.pathParameters}
             />
 
             <ResponseCard
-                status={GET_JOB_STATUS.response.status}
-                code={GET_JOB_STATUS.response.code}
-                description="Current status and progress of the requested job."
+                status={GET_DOCUMENT.response.status}
+                code={GET_DOCUMENT.response.code}
+                description="Returns the requested document along with its associated job metadata."
             />
 
             <NotesCard
-                notes={GET_JOB_STATUS.notes}
+                notes={GET_DOCUMENT.notes}
             />
 
             <ErrorsCard
-                errors={GET_JOB_STATUS.errors}
+                errors={GET_DOCUMENT.errors}
             />
         </section>
     );

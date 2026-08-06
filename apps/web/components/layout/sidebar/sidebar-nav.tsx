@@ -7,7 +7,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { sidebarGroups } from "@/components/data/sidebar-items";
+import { sidebarGroups } from "@/components/data/sidebar/sidebar-items";
 import { AppIcon } from "@/components/shared/app-icon";
 import { Separator } from "@/components/ui/separator";
 

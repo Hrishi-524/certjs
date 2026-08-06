@@ -12,6 +12,7 @@ import ErrorsCard from "@/components/shared/errors-card";
 export default function GetJobDocuments() {
     return (
         <section
+        
             id="get-job-documents"
             className="space-y-8"
         >

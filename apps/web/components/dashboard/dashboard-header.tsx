@@ -1,12 +1,13 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { TypeAnimation } from "react-type-animation";
 
-import type { Greeting } from "@/components/data/greetings";
+import type { Greeting } from "@/components/data/dashboard/greetings";
 import {
     getGreeting,
-} from "@/components/data/greetings";
+} from "@/components/data/dashboard/greetings";
 
 type DashboardHeaderProps = {
     name?: string;

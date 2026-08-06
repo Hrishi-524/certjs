@@ -1,8 +1,8 @@
 "use client";
 
-import ApiReference from "./api-refrence/api-refrence";
-import Authentication from "./authentication/authentication";
-import Overview from "./overview/overview";
+import ApiReference from "./api-refrence";
+import Authentication from "./authentication";
+import Overview from "./overview";
 
 import { Separator } from "@/components/ui/separator";
 
