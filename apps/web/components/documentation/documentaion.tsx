@@ -10,13 +10,9 @@ export default function Documentation() {
     return (
         <main className="space-y-20">
             <Overview />
-
-            <Separator />
-
-            {/* Authentication */}
+                <Separator />
             <Authentication />
-
-            {/* API Reference */}
+                <Separator />
             <ApiReference />
 
             {/* SDK Reference */}

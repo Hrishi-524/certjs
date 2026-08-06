@@ -5,7 +5,7 @@ import { R_SNIPPET } from "./r";
 import { C_SHARP_SNIPPET } from "./c-sharp";
 import { CPP_SNIPPET } from "./cpp";
 import { TERMINAL_SNIPPET } from "./terminal";
-import { POST_JOBS_RESPONSE } from "./response";
+import { GET_JOB_DOCUMENTS_RESPONSE } from "./response";
 
 export {
     JAVA_SNIPPET,
@@ -15,5 +15,5 @@ export {
     C_SHARP_SNIPPET,
     CPP_SNIPPET,
     TERMINAL_SNIPPET,
-    POST_JOBS_RESPONSE,
+    GET_JOB_DOCUMENTS_RESPONSE,
 }

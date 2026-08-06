@@ -14,7 +14,7 @@ router.get("/jobs/:jobId", requireApiKey, wrapAsync(getJobStatus));
 // fetch all certificates in job
 router.get("/jobs/:jobId/documents", requireApiKey, wrapAsync(getJobDocuments));
 
-// download jon zip after completion
+// download job zip after completion
 router.get("/jobs/:jobId/download", requireApiKey, wrapAsync(downloadJobZip));
 
 // retry job for processing of failed documents

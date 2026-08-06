@@ -108,7 +108,7 @@ export async function retryJob(req: Request, res: Response) {
 
     return res.status(200).json({
         message: "Job queued for retry",
-        retryCount: result
+        retryCount: result.retriedCount
     });
 }
 
@@ -132,8 +132,9 @@ export async function getJobDocuments(req: Request, res: Response) {
         count: documents.length,
         documents
     });
-/*
-    const documents: {
+/*  
+    count: number;
+    (property) documents: {
         id: string;
         jobId: string;
         recipientData: RecipientData;

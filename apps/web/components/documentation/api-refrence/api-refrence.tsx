@@ -1,8 +1,12 @@
 "use client";
 
 import CreateJob from "./create-job";
+import GetJobStatus from "./get-job-status";
+import DownloadZip from "./download-job-zip";
 
 import { Separator } from "@/components/ui/separator";
+import RetryJob from "./retry-job";
+import GetJobDocuments from "./get-job-documents";
 
 export default function ApiReference() {
     return (
@@ -23,20 +27,23 @@ export default function ApiReference() {
             </div>
 
             <Separator />
-
             <CreateJob />
 
-            {/* <Separator />
-            <GetJobStatus />
-
             <Separator />
-            <GetJobDocuments />
+            <GetJobStatus />
 
             <Separator />
             <DownloadZip />
 
             <Separator />
-            <VerifyCertificate /> */}
+            <RetryJob />
+             
+            <Separator />
+            <GetJobDocuments />
+            {/*
+                <Separator />
+                <VerifyCertificate />
+            */}
         </section>
     );
 }
