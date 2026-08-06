@@ -1,27 +1,27 @@
 "use client";
 
-import { Clock01Icon } from "@hugeicons/core-free-icons";
+import { Alert02Icon } from "@hugeicons/core-free-icons";
 
 import JobCard from "./job-card";
 import JobsEmptyState from "./jobs-empty-state";
 
 import type { JobSummary } from "@/types/jobs.types";
 
-type ActiveJobsSectionProps = {
+type FailedJobsSectionProps = {
     jobs: JobSummary[];
 };
 
-export default function ActiveJobsSection({
+export default function FailedJobsSection({
     jobs,
-}: ActiveJobsSectionProps) {
+}: FailedJobsSectionProps) {
     if (jobs.length === 0) {
         return (
             <JobsEmptyState
-                title="Active Jobs"
-                description="Jobs that are queued or processing will appear here."
-                emptyTitle="No active jobs"
-                emptyDescription="You are all caught up right now."
-                icon={Clock01Icon}
+                title="Failed Jobs"
+                description="Jobs that need attention will be grouped here."
+                emptyTitle="No failed jobs"
+                emptyDescription="Failures will appear here when a batch needs review."
+                icon={Alert02Icon}
             />
         );
     }
@@ -30,11 +30,11 @@ export default function ActiveJobsSection({
         <section className="space-y-3">
             <div className="space-y-1">
                 <h2 className="text-xl font-semibold tracking-tight">
-                    Active Jobs
+                    Failed Jobs
                 </h2>
 
                 <p className="text-sm text-muted-foreground">
-                    Jobs currently waiting or processing.
+                    Jobs that need attention.
                 </p>
             </div>
 

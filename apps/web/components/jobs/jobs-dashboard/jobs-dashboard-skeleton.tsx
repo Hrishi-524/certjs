@@ -6,11 +6,11 @@ export default function JobsDashboardSkeleton() {
     return (
         <div className="space-y-8">
             {/* Overview */}
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                     <div
                         key={index}
-                        className="rounded-xl border p-6 space-y-4"
+                        className="space-y-3 rounded-xl border p-4"
                     >
                         <Skeleton className="h-4 w-24" />
                         <Skeleton className="h-8 w-16" />
@@ -20,14 +20,14 @@ export default function JobsDashboardSkeleton() {
             </div>
 
             {/* Active Jobs */}
-            <section className="space-y-4">
+            <section className="space-y-3">
                 <Skeleton className="h-7 w-36" />
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
                         <div
                             key={index}
-                            className="rounded-xl border p-6 space-y-5"
+                            className="space-y-4 rounded-xl border p-4"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="space-y-2">
@@ -56,14 +56,14 @@ export default function JobsDashboardSkeleton() {
             </section>
 
             {/* Recently Completed */}
-            <section className="space-y-4">
+            <section className="space-y-3">
                 <Skeleton className="h-7 w-48" />
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
                         <div
                             key={index}
-                            className="rounded-xl border p-6 space-y-5"
+                            className="space-y-4 rounded-xl border p-4"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="space-y-2">

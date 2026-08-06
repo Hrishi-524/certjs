@@ -66,14 +66,14 @@ export default function JobCard({
               );
 
     return (
-        <Card size="sm">
-            <CardHeader className="flex flex-row items-start justify-between gap-3">
-                <div className="min-w-0 space-y-1">
-                    <CardTitle className="line-clamp-1 text-base">
+        <Card size="sm" className="shadow-sm">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
+                <div className="min-w-0 space-y-1.5">
+                    <CardTitle className="line-clamp-1 text-sm font-semibold leading-5">
                         {job.template?.name ?? "Deleted Template"}
                     </CardTitle>
 
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs leading-none text-muted-foreground">
                         {new Date(
                             job.createdAt
                         ).toLocaleString()}
@@ -82,10 +82,11 @@ export default function JobCard({
 
                 <Badge
                     variant="secondary"
-                    className="shrink-0 gap-2"
+                    className="h-6 shrink-0 gap-1.5 rounded-md px-2 text-[11px] font-medium"
                 >
                     <AppIcon
                         icon={status.icon}
+                        size={13}
                         className={
                             job.status === "processing"
                                 ? "animate-spin"
@@ -97,10 +98,10 @@ export default function JobCard({
                 </Badge>
             </CardHeader>
 
-            <CardContent className="space-y-3">
-                <div>
-                    <div className="mb-2 flex justify-between text-xs text-muted-foreground">
-                        <span>
+            <CardContent className="space-y-2.5 pb-3">
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">
                             {job.processedCount} / {job.totalCount}
                         </span>
 
@@ -111,24 +112,27 @@ export default function JobCard({
                 </div>
 
                 {job.failedCount > 0 && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-xs font-medium text-destructive">
                         {job.failedCount} certificate
                         {job.failedCount > 1 ? "s" : ""} failed
                     </p>
                 )}
             </CardContent>
 
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-end pt-0">
                 <Button
                     asChild
                     variant="ghost"
                     size="sm"
-                    className="-mr-2 h-7"
+                    className="-mr-2 h-7 px-2 text-xs"
                 >
                     <Link href={`/dashboard/jobs/${job.id}`}>
                         View
 
-                        <AppIcon icon={ArrowRight01Icon} />
+                        <AppIcon
+                            icon={ArrowRight01Icon}
+                            size={14}
+                        />
                     </Link>
                 </Button>
             </CardFooter>

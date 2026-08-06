@@ -36,25 +36,26 @@ function OverviewCard({
     iconClassName,
 }: OverviewCardProps) {
     return (
-        <Card size="sm">
-            <CardContent className="flex items-start justify-between p-4">
-                <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">
+        <Card size="sm" className="shadow-sm">
+            <CardContent className="flex items-center justify-between gap-4 p-4">
+                <div className="min-w-0 space-y-1">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {title}
                     </p>
 
-                    <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                    <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums">
                         {value}
                     </p>
 
-                    <p className="text-xs text-muted-foreground">
+                    <p className="truncate text-xs text-muted-foreground/80">
                         {subtitle}
                     </p>
                 </div>
 
-                <div className="rounded-lg border bg-muted/50 p-2">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/40">
                     <AppIcon
                         icon={icon}
+                        size={20}
                         className={iconClassName}
                     />
                 </div>
@@ -70,7 +71,7 @@ export default function JobsOverview({
     failed,
 }: JobsOverviewProps) {
     return (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <OverviewCard
                 title="Total Jobs"
                 value={total}

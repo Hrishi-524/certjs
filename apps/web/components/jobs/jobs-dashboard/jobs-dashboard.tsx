@@ -6,6 +6,7 @@ import useJobs from "@/hooks/use-jobs";
 
 import ActiveJobsSection from "./active-jobs-section";
 import AllJobsTable from "./all-jobs-table";
+import FailedJobsSection from "./failed-jobs-section";
 import JobsDashboardSkeleton from "./jobs-dashboard-skeleton";
 import JobsOverview from "./jobs-overview";
 import RecentCompletedSection from "./recent-completed-section";
@@ -51,7 +52,7 @@ export default function JobsDashboard() {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <JobsOverview
                 total={jobs.length}
                 active={activeJobs.length}
@@ -62,6 +63,8 @@ export default function JobsDashboard() {
             <ActiveJobsSection jobs={activeJobs} />
 
             <RecentCompletedSection jobs={recentCompletedJobs} />
+
+            <FailedJobsSection jobs={failedJobs} />
 
             <AllJobsTable jobs={jobs} />
         </div>

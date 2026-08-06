@@ -13,7 +13,12 @@ import DeleteAlertDialog from "@/components/shared/delete-alert-dialog";
 import { AppIcon } from "@/components/shared/app-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+} from "@/components/ui/card";
 
 import { ListApiKeysResponse } from "@/types/api-keys.types";
 
@@ -64,23 +69,29 @@ export default function ApiKeyCard({
 
     return (
         <>
-            <Card>
-                <CardHeader className="flex flex-row items-start justify-between">
-                    <div className="space-y-1">
+            <Card className="overflow-hidden border-border/70 shadow-sm">
+                <CardHeader className="flex flex-row items-start justify-between gap-4 px-5 py-5">
+                    <div className="min-w-0 space-y-2">
                         <div className="flex items-center gap-2">
-                            <AppIcon icon={Key01Icon} />
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-muted/40 text-primary">
+                                <AppIcon
+                                    icon={Key01Icon}
+                                    size={18}
+                                />
+                            </span>
 
-                            <h3 className="font-semibold">
+                            <h3 className="truncate font-semibold tracking-tight">
                                 {apiKey.name}
                             </h3>
                         </div>
 
-                        <p className="font-mono text-sm text-muted-foreground">
+                        <p className="truncate pl-10 font-mono text-xs text-muted-foreground">
                             {apiKey.prefix}
                         </p>
                     </div>
 
                     <Badge
+                        className="shrink-0"
                         variant={
                             apiKey.isActive
                                 ? "default"
@@ -93,33 +104,41 @@ export default function ApiKeyCard({
                     </Badge>
                 </CardHeader>
 
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                            Created
-                        </span>
+                <CardContent className="px-5 pb-5">
+                    <div className="space-y-3 rounded-lg border bg-muted/20 p-4 text-sm">
+                        <div className="grid grid-cols-[88px_minmax(0,1fr)] items-baseline gap-4">
+                            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                Created
+                            </span>
 
-                        <span>{created}</span>
-                    </div>
+                            <span className="min-w-0 text-right text-foreground">
+                                {created}
+                            </span>
+                        </div>
 
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                            Last Used
-                        </span>
+                        <div className="grid grid-cols-[88px_minmax(0,1fr)] items-baseline gap-4">
+                            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                Last Used
+                            </span>
 
-                        <span>{lastUsed}</span>
-                    </div>
+                            <span className="min-w-0 text-right text-foreground">
+                                {lastUsed}
+                            </span>
+                        </div>
 
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                            Expires
-                        </span>
+                        <div className="grid grid-cols-[88px_minmax(0,1fr)] items-baseline gap-4">
+                            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                Expires
+                            </span>
 
-                        <span>{expires}</span>
+                            <span className="min-w-0 text-right text-foreground">
+                                {expires}
+                            </span>
+                        </div>
                     </div>
                 </CardContent>
 
-                <CardFooter className="flex gap-2">
+                <CardFooter className="flex gap-3 border-t bg-muted/10 px-5 py-4">
                     <Button
                         variant="outline"
                         className="flex-1"
