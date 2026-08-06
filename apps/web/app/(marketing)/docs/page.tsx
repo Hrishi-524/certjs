@@ -1,9 +1,9 @@
-import React from 'react'
+import Documentation from "@/components/documentation/documentaion";
 
 function page() {
-  return (
-    <div>page</div>
-  )
+    return (
+        <Documentation />
+    )
 }
 
 export default page

@@ -9,7 +9,7 @@ import {
 
 import LanguageQuickStart from "./language-quick-start";
 
-import { ApiKeysSnippets } from "@/components/data/code-snippets/api-keys/api-keys-snippets";
+import { ApiKeysSnippets } from "@/components/data/api-keys/api-keys-snippets";
 
 export default function QuickStartTabs() {
     const entries = Object.entries(ApiKeysSnippets);

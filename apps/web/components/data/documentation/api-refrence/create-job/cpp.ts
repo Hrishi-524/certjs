@@ -1,4 +1,4 @@
-export const C_PLUS_PLUS_SNIPPET = `#include <cstdlib>
+export const CPP_SNIPPET = `#include <cstdlib>
 #include <iostream>
 
 #include <cpr/cpr.h>

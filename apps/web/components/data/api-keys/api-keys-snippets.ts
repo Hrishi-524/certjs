@@ -1,11 +1,11 @@
-import { JAVA_SNIPPET } from "./java-snippets";
-import { JAVASCRIPT_SNIPPET } from "./javascript-snippet"
-import { PYTHON_SNIPPET } from "./python-snippet"
+import { JAVA_SNIPPET } from "../documentation/api-refrence/create-job/java";
+import { JAVASCRIPT_SNIPPET } from "../documentation/api-refrence/create-job/javascript"
+import { PYTHON_SNIPPET } from "../documentation/api-refrence/create-job/python"
 import type { BundledLanguage } from "@/components/ui/code-block";
-import { R_SNIPPET } from "./r-snippet";
-import { C_SHARP_SNIPPET } from "./c-sharp-snippet";
-import { C_PLUS_PLUS_SNIPPET } from "./c-plus-plus-snippet";
-import { TERMINAL_SNIPPET } from "./terminal-snippet";
+import { R_SNIPPET } from "../documentation/api-refrence/create-job/r";
+import { C_SHARP_SNIPPET } from "../documentation/api-refrence/create-job/c-sharp";
+import { CPP_SNIPPET } from "../documentation/api-refrence/create-job/cpp";
+import { TERMINAL_SNIPPET } from "../documentation/api-refrence/create-job/terminal";
 
 export const ApiKeysSnippets = {
     javascript: {
@@ -50,11 +50,11 @@ export const ApiKeysSnippets = {
         snippet: C_SHARP_SNIPPET,
     },
 
-    c_plus_plus: {
+    cpp: {
         label: "C++",
         language: "cpp" as BundledLanguage,
         env: `std::string apiKey = std::getenv("CERTJS_API_KEY");`,
-        snippet: C_PLUS_PLUS_SNIPPET,
+        snippet: CPP_SNIPPET,
     },
 
     terminal: {
