@@ -7,10 +7,10 @@ import { errorHandler } from "./middleware/error-handler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+const allowedOrigins = process.env.CORS_ORIGINS?.split(",") ?? [];
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
-app.use(cors({ origin: "http://localhost:5000", credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 
 app.get("/health", (req, res) => {
