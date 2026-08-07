@@ -6,7 +6,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -27,68 +26,46 @@ export default function ComparisonCard({
     left,
     right,
 }: ComparisonCardProps) {
+    const renderSide = (side: ComparisonSide) => (
+        <div className="flex h-full min-h-0 flex-col">
+            <div>
+                <CardTitle>{side.title}</CardTitle>
+
+                {side.description && (
+                    <CardDescription className="mt-2">
+                        {side.description}
+                    </CardDescription>
+                )}
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="min-h-0 flex-1">
+                {side.children}
+            </div>
+
+            {side.footer && (
+                <>
+                    <Separator className="my-4" />
+                    <div>
+                        {side.footer}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+
     return (
         <Card>
-            <CardContent className="grid gap-8 p-6 md:grid-cols-2">
-                <div className="space-y-4">
-                   <div className="flex h-full flex-col space-y-4">
-                        <div>
-                            <CardTitle>{left.title}</CardTitle>
-
-                            {left.description && (
-                                <CardDescription className="mt-2">
-                                    {left.description}
-                                </CardDescription>
-                            )}
-                        </div>
-
-                        <div className="flex-1">
-                            {left.children}
-                        </div>
-
-                        {left.footer && (
-                            <>
-                                <Separator />
-                                <div className="pt-2">
-                                    {left.footer}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
+            <CardContent className="grid items-stretch gap-6 p-6 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-8">
+                {renderSide(left)}
 
                 <Separator
                     orientation="vertical"
-                    className="hidden md:block"
+                    className="hidden h-full md:block"
                 />
 
-                <div className="space-y-4">
-                   <div className="flex h-full flex-col space-y-4">
-                        <div>
-                            <CardTitle>
-                                {right.title}
-                            </CardTitle>
-                        </div>
-                        {right.description && (
-                            <CardDescription className="mt-2">
-                                {right.description}
-                            </CardDescription>
-                        )}
-                    </div>
-
-                    <div className="flex-1">
-                        {right.children}
-                    </div>
-
-                    {right.footer && (
-                        <>
-                            <Separator />
-                            <div className="pt-2">
-                                {right.footer}
-                            </div>
-                        </>
-                    )}
-                </div>
+                {renderSide(right)}
             </CardContent>
         </Card>
     );

@@ -1,5 +1,5 @@
 import multer from "multer";
-import { BadRequestError } from "@/middleware/express-errors";
+import { BadRequestError } from "#app/middleware/express-errors";
 
 const storage = multer.memoryStorage();
 

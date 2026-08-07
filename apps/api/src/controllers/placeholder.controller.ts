@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { createPlaceholders, getPlaceholdersByTemplateId, updatePlaceholder, deletePlaceholder, syncPlaceholdersService } from "@/services/placeholders/placeholders.service";
-import { CreatePlaceholdersSchema, PlaceholderIdParamSchema, SyncPlaceholdersSchema, TemplateIdParam, TemplateIdParamSchema, UpdatePlaceholderSchema} from "@/schema/placeholders.schema";
-import type { PlaceholderUpdateData } from "@/types/placeholder-types";
+import { createPlaceholders, getPlaceholdersByTemplateId, updatePlaceholder, deletePlaceholder, syncPlaceholdersService } from "#app/services/placeholders/placeholders.service";
+import { CreatePlaceholdersSchema, PlaceholderIdParamSchema, SyncPlaceholdersSchema, TemplateIdParam, TemplateIdParamSchema, UpdatePlaceholderSchema} from "#app/schema/placeholders.schema";
+import type { PlaceholderUpdateData } from "#app/types/placeholder-types";
 
 export async function syncPlaceholdersForTemplate(req: Request, res: Response) {
     const { templateId } = TemplateIdParamSchema.parse(req.params);

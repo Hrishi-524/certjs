@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Request, Response, NextFunction} from "express";
-import { BadRequestError } from "./express-errors";
+import { BadRequestError } from "./express-errors.js";
 
 export function validateRequest( schema: z.ZodType ) {
     return (req: Request, res: Response, next: NextFunction) => {

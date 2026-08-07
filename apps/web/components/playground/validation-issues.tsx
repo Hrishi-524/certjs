@@ -16,7 +16,7 @@ function ValidationIssues({
 
     if (!hasIssues) {
         return (
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
                 <p className="font-medium text-emerald-500">
                     Validation successful
                 </p>
@@ -30,7 +30,7 @@ function ValidationIssues({
     }
 
     return (
-        <div className="max-h-96 space-y-6 overflow-y-auto pr-2">
+        <div className="max-h-96 space-y-4 overflow-y-auto pr-2">
             {/* Missing Columns */}
             {validation.missingColumns.length > 0 && (
                 <div>
@@ -77,7 +77,7 @@ function ValidationIssues({
                         {validation.invalidRows.map((row) => (
                             <div
                                 key={row.row}
-                                className="rounded-lg border border-destructive/20 bg-destructive/5 p-3"
+                                className="rounded-md border border-destructive/20 bg-destructive/5 p-3"
                             >
                                 <p className="mb-2 text-sm font-medium">
                                     Row {row.row}

@@ -1,19 +1,16 @@
-import Link from "next/link";
 import {
     SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton
 } from "@/components/ui/sidebar"
-import { AppIcon } from "@/components/shared/app-icon";
-import { AiSettingIcon } from '@hugeicons/core-free-icons';
-import { ThemeButton } from "@/components/shared/theme-button";
+import { SidebarThemeButton } from "@/components/shared/sidebar-theme-button";
 import UserNav from "@/components/layout/sidebar/user-nav";
 
 function SidebarFooterContent() {
+
     return (
         <SidebarMenu className="space-y-1.5">
             {/* <SidebarMenu> */}
-                <SidebarMenuItem>
+                {/* <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
                         tooltip="Settings"
@@ -24,18 +21,18 @@ function SidebarFooterContent() {
                             <span>Settings</span>
                         </Link>
                     </SidebarMenuButton>
+                </SidebarMenuItem> */}
+            {/* </SidebarMenu> */}
+
+            {/* <SidebarMenu> */}
+                <SidebarMenuItem>
+                    <SidebarThemeButton />
                 </SidebarMenuItem>
             {/* </SidebarMenu> */}
 
             {/* <SidebarMenu> */}
                 <SidebarMenuItem>
-                    <ThemeButton />
-                </SidebarMenuItem>
-            {/* </SidebarMenu> */}
-
-            {/* <SidebarMenu> */}
-                <SidebarMenuItem>
-                    <UserNav />
+                    <UserNav/>
                 </SidebarMenuItem>
             {/* </SidebarMenu> */}
         </SidebarMenu>

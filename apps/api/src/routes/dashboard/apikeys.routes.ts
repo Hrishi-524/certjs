@@ -1,9 +1,9 @@
 import { Router } from "express";
 const router = Router();
 
-import wrapAsync from "@/utils/wrapAsync";
-import { requireAuth }from "@/middleware/auth.middleware";
-import { createApiKey, getApiKey, deleteApiKey, deActivateApiKey, getAllApiKeys } from "@/controllers/apikeys.controller";
+import wrapAsync from "#app/utils/wrapAsync";
+import { requireAuth }from "#app/middleware/auth.middleware";
+import { createApiKey, getApiKey, deleteApiKey, deActivateApiKey, getAllApiKeys } from "#app/controllers/apikeys.controller";
 
 router.post("/", requireAuth, wrapAsync(createApiKey));
 router.get("/", requireAuth,wrapAsync(getAllApiKeys));

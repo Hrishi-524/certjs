@@ -1,12 +1,12 @@
 import { db } from "@certjs/db/index";
 import { placeholders } from "@certjs/db/schema/placeholders";
 import { eq, inArray } from "drizzle-orm";
-import { CreatePlaceholdersInput, DeletePlaceholderInput, UpdatePlaceholderInput } from "@/schema/placeholders.schema";
-import type { Placeholder, PlaceholderUpdateData } from "@/types/placeholder-types";
-import { NotFoundError } from "@/middleware/express-errors";
-import type { Template } from "@/types/templates-types";
+import { CreatePlaceholdersInput, DeletePlaceholderInput, UpdatePlaceholderInput } from "#app/schema/placeholders.schema";
+import type { Placeholder, PlaceholderUpdateData } from "#app/types/placeholder-types";
+import { NotFoundError } from "#app/middleware/express-errors";
+import type { Template } from "#app/types/templates-types";
 import { templates } from "@certjs/db/schema/templates";
-import { convertToCamelCase, convertToSnakeCase } from "@/utils/object-case-conversions";
+import { convertToCamelCase, convertToSnakeCase } from "#app/utils/object-case-conversions";
 
 export async function syncPlaceholdersService(templateId: string, items: CreatePlaceholdersInput) {
     const [template] = await db.select().from(templates).where(

@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
-import type { IdParam } from "@/controllers/types";
-import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate, updateTemplateNameService, deactivateTemplateService } from "@/services/templates/templates.service";
-import { uploadTemplateImage } from "@/services/templates/storage.service";
+import type { IdParam } from "#app/controllers/types";
+import { getTemplateById, getAllTemplates, deleteTemplateById, createTemplate, updateTemplateNameService, deactivateTemplateService, activateTemplateService } from "#app/services/templates/templates.service";
+import { uploadTemplateImage } from "#app/services/templates/storage.service";
 import crypto from "crypto";
-import { BadRequestError, NotFoundError } from "@/middleware/express-errors";
-import { createTemplateSchema, templateIdParamSchema, updateTemplateSchema } from "@/schema/templates.schema";
-import generatePresignedUrl from "@/services/documents/get-signed-url";
-import { getKeyForS3Url } from "@/services/templates/get-key";
+import { BadRequestError, NotFoundError } from "#app/middleware/express-errors";
+import { createTemplateSchema, templateIdParamSchema, updateTemplateSchema } from "#app/schema/templates.schema";
+import generatePresignedUrl from "#app/services/documents/get-signed-url";
+import { getKeyForS3Url } from "#app/services/templates/get-key";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
     if (!req.file) {
@@ -102,16 +102,20 @@ export async function deactivateTemplate(req: Request<IdParam>, res: Response, n
     const { templateId } = templateIdParamSchema.parse(req.params)
     const userId = req.user!.id
 
-    const {template, presignedUrl} = await deactivateTemplateService(templateId, userId)
+    await deactivateTemplateService(templateId, userId)
 
     return res.status(200).json({
-        templateId: template.id,
-        userId: template.user_id,
-        presignedUrl,
-        name: template.name,
-        width: template.width,
-        height: template.height,
-        createdAt: template.created_at,
-        updatedAt: template.updated_at
+        message: "Template deactivated successfully",
+    })
+}
+
+export async function activateTemplate(req: Request<IdParam>, res: Response, next: NextFunction) {
+    const { templateId } = templateIdParamSchema.parse(req.params)
+    const userId = req.user!.id
+    
+    await activateTemplateService(templateId, userId)
+
+    return res.status(200).json({
+        message: "Template activated successfully",
     })
 }

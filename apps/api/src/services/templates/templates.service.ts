@@ -1,9 +1,9 @@
 import { db, placeholders, templates } from "@certjs/db/index";
 import { eq, desc, and } from "drizzle-orm";
-import { NotFoundError } from "@/middleware/express-errors";
-import generatePresignedUrl from "@/services/documents/get-signed-url";
-import { getKeyForS3Url } from "@/services/templates/get-key";
-import { deleteS3Object } from "@/services/templates/storage.service";
+import { NotFoundError } from "#app/middleware/express-errors";
+import generatePresignedUrl from "#app/services/documents/get-signed-url";
+import { getKeyForS3Url } from "#app/services/templates/get-key";
+import { deleteS3Object } from "#app/services/templates/storage.service";
 
 export async function createTemplate(template_id: string, s3_url: string, userId: string, name: string, width: number, height: number) {
     const [template] = await db.insert(templates).values({ 
@@ -115,10 +115,29 @@ export async function deactivateTemplateService(templateId: string, userId: stri
             eq(templates.id, templateId),
             eq(templates.user_id, userId)
         )
+    ).returning()
+
+    if(!template) {
+        throw new NotFoundError("Template not found");
+    }
+
+    return;
+}
+
+export async function activateTemplateService(templateId: string, userId: string) {
+    const [template] = await db.update(templates).set({
+        is_active: true,
+        updated_at: new Date()
+    }).where(
+        and(
+            eq(templates.id, templateId),
+            eq(templates.user_id, userId)
+        )
     ).returning();
 
-    const key = getKeyForS3Url(template.s3_url)
-    const presignedUrl = await generatePresignedUrl(key);
+    if (!template) {
+        throw new NotFoundError("Template not found");
+    }
 
-    return {template, presignedUrl};
+    return;
 }

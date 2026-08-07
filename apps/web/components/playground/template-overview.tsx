@@ -14,7 +14,7 @@ type TemplateOverviewProps = {
 
 function TemplateOverview({ template, placeholders }: TemplateOverviewProps) {
     return (
-        <div className="grid gap-7 rounded-lg border bg-card p-4 text-card-foreground shadow-sm md:grid-cols-[minmax(480px,520px)_1fr] md:items-start md:gap-10 md:p-6">
+        <div className="grid gap-5 rounded-lg border bg-card p-4 text-card-foreground shadow-sm md:grid-cols-[minmax(480px,520px)_1fr] md:items-start md:gap-6 md:p-5">
             <div className="space-y-3">
                 <TemplateThumbnail template={template} placeholders={placeholders} />
                 <div className="grid grid-cols-2 gap-3">

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getDashboardService } from '@/services/dashboard/dashboard.service';
+import { getDashboardService } from '#app/services/dashboard/dashboard.service';
 
 export async function getDashboard(req: Request, res: Response) {
     const userId = req.user?.id;

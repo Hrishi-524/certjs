@@ -1,13 +1,13 @@
 import { Router } from "express";
 const router = Router();
 
-import templatesRouter from "@/routes/dashboard/template.routes";
-import documentRouter from "@/routes/dashboard/document.routes";
-import jobsRouter from "@/routes/dashboard/jobs.routes";
-import authRouter from "@/routes/dashboard/auth.routes";
-import apiKeysRouter from "@/routes/dashboard/apikeys.routes";
-import playgroundRouter from "@/routes/dashboard/playground.routes";
-import dashboardRouter from "@/routes/dashboard/dashboard.routes";
+import templatesRouter from "#app/routes/dashboard/template.routes";
+import documentRouter from "#app/routes/dashboard/document.routes";
+import jobsRouter from "#app/routes/dashboard/jobs.routes";
+import authRouter from "#app/routes/dashboard/auth.routes";
+import apiKeysRouter from "#app/routes/dashboard/apikeys.routes";
+import playgroundRouter from "#app/routes/dashboard/playground.routes";
+import dashboardRouter from "#app/routes/dashboard/dashboard.routes";
 
 router.use("/auth", authRouter);
 router.use("/documents", documentRouter);

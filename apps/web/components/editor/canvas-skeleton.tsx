@@ -1,9 +1,3 @@
 import React from 'react'
 
-function CanvasSkeleton() {
-  return (
-    <div>CanvasSkeleton</div>
-  )
-}
-
-export default CanvasSkeleton
+export { EditorSkeleton as default } from "@/components/skeletons/editor-skeleton";

@@ -1,15 +1,15 @@
 import { db } from "@certjs/db";
 import { eq, and } from "drizzle-orm";
 import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
-import { enqueueDocument } from "@/services/queue/queue.service";
-import type { CreateJobParams } from "@/types/jobs-types";
+import { enqueueDocument } from "#app/services/queue/queue.service";
+import type { CreateJobParams } from "#app/types/jobs-types";
 import crypto from "crypto";
 import { sql } from "drizzle-orm";
-import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "@/middleware/express-errors";
-import fetchFileBuffer from "@/utils/fetch-file-buffer"
+import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "#app/middleware/express-errors";
+import fetchFileBuffer from "#app/utils/fetch-file-buffer"
 import{ renderCertificate} from "@certjs/core/render-engine"
-import generatePresignedUrl from "../documents/get-signed-url";
-import { getKeyForS3Url } from "../templates/get-key";
+import generatePresignedUrl from "../documents/get-signed-url.js";
+import { getKeyForS3Url } from "../templates/get-key.js";
 
 export async function createBatchJobService(params: CreateJobParams) {
     // 1. Validate template exists

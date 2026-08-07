@@ -20,26 +20,36 @@ function ValidationCard({
     const canContinue = validCount > 0;
 
     return (
-        <section className="mx-auto w-full max-w-7xl px-8 pb-8">
-            <div className="rounded-xl border bg-card p-5 text-card-foreground shadow-sm">
-                <div className="mb-5 border-b pb-4">
-                    <h2 className="text-base font-semibold">
-                        Validation
-                    </h2>
+        <section>
+            <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+                <div className="mb-4 flex items-center justify-between gap-4 border-b pb-3">
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground">
+                            2
+                        </span>
+                        <div>
+                            <h2 className="text-base font-semibold">
+                                Validate
+                            </h2>
 
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Review the uploaded dataset before generating certificates.
-                    </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Review the uploaded dataset before generating certificates.
+                            </p>
+                        </div>
+                    </div>
+                    <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        Step 2 / 4
+                    </span>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <ValidationSummary validation={validation} />
 
                     <ValidationIssues validation={validation} />
 
                     {canContinue && (
-                        <div className="border-t pt-6">
-                            <p className="mb-4 text-sm text-muted-foreground">
+                        <div className="border-t pt-4">
+                            <p className="mb-3 text-sm text-muted-foreground">
                                 {invalidCount === 0
                                     ? `All ${validCount} recipient${validCount === 1 ? "" : "s"} are ready for certificate generation.`
                                     : `${validCount} recipient${validCount === 1 ? "" : "s"} recipients are ready. ${invalidCount} invalid row${invalidCount === 1 ? "" : "s"} will be skipped if you continue.`}

@@ -1,5 +1,5 @@
 import clientApi from "@/lib/api/client";
-import { GetTemplateResponse, ListTemplatesResponse, UpdateTemplateNameResponse, UploadTemplateInput, UploadTemplateResponse } from "@/types/templates.types";
+import { ActivateTemplateResponse, DeactivateTemplateResponse, GetTemplateResponse, ListTemplatesResponse, UpdateTemplateNameResponse, UploadTemplateInput, UploadTemplateResponse } from "@/types/templates.types";
 
 export async function uploadTemplate(input: UploadTemplateInput): Promise<UploadTemplateResponse> {
     const formData = new FormData();
@@ -30,10 +30,13 @@ export async function deleteTemplate(id: string): Promise<void> {
     await clientApi.delete(`/dashboard/templates/${id}`);
 }
 
-export async function activateTemplate(id: string): Promise<void> {
-    await clientApi.post(`/dashboard/templates/${id}/activate`);
+export async function activateTemplate(id: string): Promise<ActivateTemplateResponse> {
+    console.log(`lib/api/templates.ts: Activating template with id: ${id}`);
+    const { data } = await clientApi.post<ActivateTemplateResponse>(`/dashboard/templates/${id}/activate`);
+    return data
 }
 
-export async function deactivateTemplate(id: string): Promise<void> {
-    await clientApi.post(`/dashboard/templates/${id}/deactivate`);
+export async function deactivateTemplate(id: string): Promise<DeactivateTemplateResponse> {
+    const { data } = await clientApi.post<DeactivateTemplateResponse>(`/dashboard/templates/${id}/deactivate`);
+    return data
 }

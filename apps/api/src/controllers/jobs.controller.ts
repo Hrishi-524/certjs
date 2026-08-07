@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { CreateJobSchema, JobIdParamSchema, playgroundPreviewSchema } from "@/schema/jobs.schema";
+import { CreateJobSchema, JobIdParamSchema, playgroundPreviewSchema } from "#app/schema/jobs.schema";
 import {
     createBatchJobService,
     playgroundPreviewService,
@@ -8,9 +8,9 @@ import {
     retryJobService,
     getJobDocumentsService,
     getJobsService
-} from "@/services/jobs/jobs.service";
-import { UnauthorizedError } from "@/middleware/express-errors";
-import generatePresignedUrl from "@/services/documents/get-signed-url";
+} from "#app/services/jobs/jobs.service";
+import { UnauthorizedError } from "#app/middleware/express-errors";
+import generatePresignedUrl from "#app/services/documents/get-signed-url";
 
 export async function playgroundPreview(req: Request, res: Response) {
     const data = playgroundPreviewSchema.parse(req.body);

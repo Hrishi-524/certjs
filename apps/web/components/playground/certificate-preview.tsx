@@ -16,15 +16,15 @@ function CertificatePreview({
 }: CertificatePreviewProps) {
     if (isLoading) {
         return (
-            <div className="flex h-full min-h-[500px] items-center justify-center rounded-xl border bg-muted/20 p-6">
-                <Skeleton className="aspect-[16/9] w-full max-w-3xl rounded-lg" />
+            <div className="flex h-full min-h-[500px] items-center justify-center rounded-lg border bg-muted/20 p-5">
+                <Skeleton className="aspect-[16/9] w-full max-w-3xl rounded-md" />
             </div>
         );
     }
 
     if (!previewUrl) {
         return (
-            <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-xl border bg-muted/20 p-6 text-center">
+            <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-lg border bg-muted/20 p-5 text-center">
                 <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted">
                     <AppIcon
                         icon={Image01Icon}
@@ -45,8 +45,8 @@ function CertificatePreview({
     }
 
     return (
-        <div className="flex h-full min-h-[500px] items-center justify-center rounded-xl border bg-muted/20 p-6">
-            <div className="overflow-hidden rounded-lg border bg-background shadow-sm">
+        <div className="flex h-full min-h-[500px] items-center justify-center rounded-lg border bg-muted/20 p-5">
+            <div className="overflow-hidden rounded-md border bg-background shadow-sm">
                 <Image
                     src={previewUrl}
                     alt="Certificate Preview"

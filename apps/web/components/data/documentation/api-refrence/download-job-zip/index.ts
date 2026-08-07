@@ -8,7 +8,6 @@ import {
     C_SHARP_SNIPPET,
     CPP_SNIPPET,
     TERMINAL_SNIPPET,
-    
 } from "./snippets";
 import { DOWNLOAD_JOB_ZIP_RESPONSE } from "./response";
 

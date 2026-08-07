@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { UnauthorizedError } from "./express-errors";
-import { verifyAccessToken } from "@/services/auth/token.service";
-import { ErrorCode } from "@/types/auth-types";
+import { UnauthorizedError } from "./express-errors.js";
+import { verifyAccessToken } from "#app/services/auth/token.service";
+import { ErrorCode } from "#app/types/auth-types";
 import * as jwt from "jsonwebtoken";
 
 export async function requireAuth( req: Request, res: Response, next: NextFunction ) {

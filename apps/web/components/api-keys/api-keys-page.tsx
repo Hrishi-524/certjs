@@ -12,6 +12,7 @@ import CreateApiKeyDialog from "./create-api-key-dialog";
 import QuickStartCard from "./quick-start-card";
 
 import { AppIcon } from "@/components/shared/app-icon";
+import { ApiKeysContentSkeleton } from "@/components/skeletons/api-keys-skeleton";
 import { Button } from "@/components/ui/button";
 
 import { useActivateApiKey } from "@/hooks/use-activate-api-key";
@@ -108,12 +109,7 @@ export default function ApiKeysPage() {
     }
 
     if (isLoading) {
-        return (
-            <div className="text-sm text-muted-foreground">
-                Loading API keys...
-            </div>
-        );
-        // Replace with ApiKeyCardSkeleton later.
+        return <ApiKeysContentSkeleton />;
     }
 
     return (

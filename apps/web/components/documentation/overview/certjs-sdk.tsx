@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 export default function CertJsSdk() {
     return (
         <section
-            id="sdk"
+            id="certjs-sdk"
             className="space-y-8"
         >
             <div className="flex items-start gap-4">
@@ -69,7 +69,10 @@ export default function CertJsSdk() {
 
             <Separator />
 
-            <div className="space-y-5">
+            <section
+                id="capabilities"
+                className="space-y-5"
+            >
                 <div>
                     <h3 className="text-xl font-semibold">
                         Capabilities
@@ -96,7 +99,7 @@ export default function CertJsSdk() {
                         </Card>
                     ))}
                 </div>
-            </div>
+            </section>
 
             <Separator />
 

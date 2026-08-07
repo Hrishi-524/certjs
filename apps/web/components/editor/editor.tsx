@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTemplate } from "@/hooks/use-template";
 import { CreatePlaceholdersInput, CreatePlaceholdersResponse, Placeholder } from "@/types/placeholders.types";
 import Canvas from "@/components/editor/canvas";
-import CanvasSkeleton from "@/components/editor/canvas-skeleton";
+import { EditorSkeleton } from "@/components/skeletons/editor-skeleton";
 import createPlaceholder from "@/lib/helpers/create-placeholder";
 import Layers from "@/components/editor/layers";
 import PropertiesPanel from "@/components/editor/properties-panel";
@@ -44,7 +44,7 @@ export default function Editor({ templateId }: { templateId: string; }) {
         }
     }, [loadedPlaceholders]);
 
-    if (isLoading) return <CanvasSkeleton />;
+    if (isLoading || isPlaceholdersLoading) return <EditorSkeleton />;
     if (!template) return null;
 
     function addPlaceholder(name: string, key: string) {
@@ -128,6 +128,7 @@ export default function Editor({ templateId }: { templateId: string; }) {
                 onSave={savePlaceholders}
                 isSaving={isSaving}
                 templateName={template.name}
+                templateId={template.templateId}
             />
         </div>
 

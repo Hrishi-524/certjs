@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import { authConfig } from "@/config/auth-config";
+import { authConfig } from "#app/config/auth-config";
 import crypto from "crypto";
-import { ErrorCode } from "@/types/auth-types";
-import { UnauthorizedError } from "@/middleware/express-errors";
+import { ErrorCode } from "#app/types/auth-types";
+import { UnauthorizedError } from "#app/middleware/express-errors";
 
 export interface AccessTokenPayload {
     sub: string;

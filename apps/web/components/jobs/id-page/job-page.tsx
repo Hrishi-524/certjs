@@ -2,7 +2,7 @@
 
 import { useBatchJob } from '@/hooks/use-batch-job'
 import { useBatchJobDocuments } from '@/hooks/use-batch-job-documents'
-import JobPageSketon from './job-page-sketon';
+import JobPageSkeleton from './job-page-skeleton';
 import JobHeader from './job-header';
 import JobProgress from './job-progress';
 import JobStatistics from './job-statistics';
@@ -16,7 +16,7 @@ export default function JobPage({ jobId }: { jobId: string }) {
     // const _isProcessing = job?.status === "processing" || job?.status === "pending";
     // const _isFailed = job?.status === "failed";
 
-    if(isJobLoading || isDocumentsLoading) return <JobPageSketon />;
+    if(isJobLoading || isDocumentsLoading) return <JobPageSkeleton />;
     
     if (!job || !documents) return null;
 

@@ -1,7 +1,7 @@
 import { apikeys, db } from "@certjs/db";
 import { eq } from "drizzle-orm"
 import crypto from "crypto"
-import { BadRequestError, UnauthorizedError } from "@/middleware/express-errors";
+import { BadRequestError, UnauthorizedError } from "#app/middleware/express-errors";
 
 export async function findApiKeyByHash(apiKey: string) {
     const hash = crypto.createHash("sha256").update(apiKey).digest("hex");

@@ -5,6 +5,7 @@ import {
     Key01Icon,
     CodeIcon,
     BookOpen01Icon,
+    Home01Icon 
 } from "@hugeicons/core-free-icons";
 import type { SidebarGroup } from "@/types/components/sidebar.types";
 
@@ -17,6 +18,11 @@ export const sidebarGroups: SidebarGroup[] = [
                 href: "/dashboard",
                 icon: DashboardSquare01Icon,
             },
+            {
+                title: "Home",
+                href: "/",
+                icon: Home01Icon,
+            }
         ]
     },
     {

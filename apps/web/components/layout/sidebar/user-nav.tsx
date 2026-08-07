@@ -1,8 +1,6 @@
 "use client";
-
-import useMe from "@/hooks/use-me"
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import UserNavSkeleton from "./use-nav-skeleton"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import {
     DropdownMenu,
@@ -14,29 +12,35 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-    AiUserIcon,
     ArrowTurnBackwardIcon,
-    CreditCardIcon,
-    Notification01Icon,
+    BookOpen01Icon,
+    DashboardSquare01Icon,
+    GithubIcon,
     SparklesIcon,
     UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
+
 import { AppIcon } from "@/components/shared/app-icon";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
+
+import { useLogout } from "@/hooks/use-logout";
 
 function UserNav() {
-    const { data, isLoading } = useMe()
-
-    if (isLoading) {
-        return <UserNavSkeleton />
-    }
-
-    if (!data) {
-        return null
-    }
-
-    const { user } = data
-  
+    const { user } = useAuth();
     const fallback = user.name?.charAt(0)?.toUpperCase() ?? "U"
+
+    const logoutMutation = useLogout();
+
+    async function handleLogout() {
+        try {
+            await logoutMutation.mutateAsync();
+
+            toast.success("Signed out.");
+        } catch {
+            toast.error("Failed to sign out.");
+        }
+    }
 
     return (
         <DropdownMenu>
@@ -74,13 +78,20 @@ function UserNav() {
                 <DropdownMenuLabel className="p-0 font-normal">
                     <div className="flex items-center gap-3 px-3 py-3">
                         <Avatar className="size-10 rounded-lg">
-                            <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
+                            <AvatarImage
+                                src={user.avatarUrl ?? undefined}
+                                alt={user.name}
+                            />
                             <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                 {fallback}
                             </AvatarFallback>
                         </Avatar>
+
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                            <span className="truncate font-semibold">{user.name}</span>
+                            <span className="truncate font-semibold">
+                                {user.name}
+                            </span>
+
                             <span className="truncate text-xs text-muted-foreground">
                                 {user.email}
                             </span>
@@ -90,34 +101,56 @@ function UserNav() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="gap-2">
-                    <AppIcon icon={SparklesIcon} />
-                    Upgrade to Pro
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
                 <DropdownMenuGroup>
-                    <DropdownMenuItem className="gap-2">
-                        <AppIcon icon={AiUserIcon} />
-                        Account
+
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard">
+                            <AppIcon icon={DashboardSquare01Icon} />
+                            Dashboard
+                        </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2">
-                        <AppIcon icon={CreditCardIcon} />
-                        Billing
+
+                    <DropdownMenuItem asChild>
+                        <Link href="/docs">
+                            <AppIcon icon={BookOpen01Icon} />
+                            Documentation
+                        </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2">
-                        <AppIcon icon={Notification01Icon} />
-                        Notifications
+
+                    <DropdownMenuItem asChild>
+                        <a
+                            href="https://github.com/your-org/certjs"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <AppIcon icon={GithubIcon} />
+                            GitHub
+                        </a>
                     </DropdownMenuItem>
+
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="gap-2">
-                    <AppIcon icon={ArrowTurnBackwardIcon} />
-                    Log out
+                <DropdownMenuItem>
+                    <AppIcon icon={SparklesIcon} />
+                    What's New
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                    disabled={logoutMutation.isPending}
+                    onClick={handleLogout}
+                    className="text-destructive focus:text-destructive"
+                >
+                    <AppIcon icon={ArrowTurnBackwardIcon} />
+
+                    {logoutMutation.isPending
+                        ? "Signing out..."
+                        : "Sign Out"}
+                </DropdownMenuItem>
+
             </DropdownMenuContent>
         </DropdownMenu>
     )

@@ -1,19 +1,47 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons"
-import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { AppIcon } from "@/components/shared/app-icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAppTheme } from "@/hooks/use-app-theme";
 
-export function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
+type ThemeToggleProps = {
+    showLabel?: boolean;
+};
+
+export function ThemeToggle({
+    showLabel = false,
+}: ThemeToggleProps) {
+    const {
+        mounted,
+        icon,
+        label,
+        toggleTheme,
+    } = useAppTheme();
+
+    if (!mounted) {
+        return showLabel ? (
+            <Skeleton className="h-10 w-24 rounded-md" />
+        ) : (
+            <Skeleton className="size-10 rounded-md" />
+        );
+    }
 
     return (
-        <button
-            onClick={() =>
-                setTheme(theme === "dark" ? "light" : "dark")
-            }
+        <Button
+            variant="ghost"
+            size={showLabel ? "default" : "icon"}
+            onClick={toggleTheme}
+            aria-label={label}
+            title={label}
         >
-            {theme === "dark" ? <HugeiconsIcon icon={Sun01Icon} /> : <HugeiconsIcon icon={Moon01Icon} />}
-        </button>
+            <AppIcon icon={icon} />
+
+            {showLabel && (
+                <span className="ml-2">
+                    {label}
+                </span>
+            )}
+        </Button>
     );
 }

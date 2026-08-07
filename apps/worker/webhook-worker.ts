@@ -4,15 +4,9 @@ import { db, jobs } from "@certjs/db"
 import { eq } from "drizzle-orm";
 import crypto from "crypto"
 
-// const connection = new IORedis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-const connection = new IORedis({
-    host: "127.0.0.1",
-    port: 6379,
+const connection = new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
-})
+});
 
 export const webhookWorker = new Worker("webhook", async (job) => {
     const { batchJobId } = job.data

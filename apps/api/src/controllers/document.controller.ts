@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { documentIdParamSchema } from "@/schema/documents.schema";
-import { UnauthorizedError } from "@/middleware/express-errors";
-import { getDocumentService, downloadDocumentService } from "@/services/documents/documents.service";
+import { documentIdParamSchema } from "#app/schema/documents.schema";
+import { UnauthorizedError } from "#app/middleware/express-errors";
+import { getDocumentService, downloadDocumentService } from "#app/services/documents/documents.service";
 
 export async function getDocument(req: Request, res: Response) {
     const { documentId } = documentIdParamSchema.parse(req.params);

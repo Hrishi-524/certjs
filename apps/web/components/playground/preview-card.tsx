@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import RecipientPreview from "./recipint-preview";
+import RecipientPreview from "./recipient-preview";
 import CertificatePreview from "./certificate-preview";
 import type { UploadedRow } from "@/types/components/playground.types";
 
@@ -32,25 +32,30 @@ function PreviewCard({
     if (!recipient) return null;
 
     return (
-        <section className="mx-auto w-full max-w-7xl px-8 pb-8">
-            <div className="rounded-xl border bg-card p-5 text-card-foreground shadow-sm">
-                <div className="mb-5 flex items-center justify-between border-b pb-4">
-                    <div>
-                        <h2 className="text-base font-semibold">
+        <section>
+            <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+                <div className="mb-4 flex items-center justify-between gap-4 border-b pb-3">
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground">
+                            3
+                        </span>
+                        <div>
+                            <h2 className="text-base font-semibold">
                             Preview
-                        </h2>
+                            </h2>
 
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Review recipient data alongside the rendered certificate.
-                        </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Review recipient data alongside the rendered certificate.
+                            </p>
+                        </div>
                     </div>
 
-                    <span className="rounded-full border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+                    <span className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                         Step 3 / 4
                     </span>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+                <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
                     <RecipientPreview
                         recipient={recipient}
                     />
@@ -61,7 +66,7 @@ function PreviewCard({
                     />
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t pt-5">
+                <div className="mt-4 flex items-center justify-between border-t pt-4">
                     <Button
                         variant="outline"
                         onClick={onPrevious}

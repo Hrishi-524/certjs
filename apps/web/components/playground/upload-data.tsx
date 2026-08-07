@@ -34,21 +34,26 @@ function formatFileSize(size: number) {
 
 function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
     return (
-        <section className="mx-auto w-full max-w-7xl px-8 pb-8">
-            <div className="rounded-xl border bg-card p-5 text-card-foreground shadow-sm">
-                <div className="mb-5 flex items-center justify-between gap-4 border-b pb-4">
-                    <div>
+        <section>
+            <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+                <div className="mb-4 flex items-center justify-between gap-4 border-b pb-3">
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground">
+                            1
+                        </span>
+                        <div>
                         <h2 className="text-base font-semibold">Upload Data</h2>
                         <p className="mt-1 text-sm text-muted-foreground">
                             Add the recipient dataset for this template.
                         </p>
+                        </div>
                     </div>
-                    <span className="shrink-0 rounded-full border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
-                        Step 1/4
+                    <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        Step 1 / 4
                     </span>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-[minmax(360px,420px)_1fr] lg:items-center">
+                <div className="grid gap-4 lg:grid-cols-[minmax(360px,420px)_1fr] lg:items-center">
                     <Dropzone
                         onDrop={onUpload}
                         multiple={false}
@@ -65,7 +70,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                             <div
                                 {...getRootProps()}
                                 className={cn(
-                                    "group flex min-h-48 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-all duration-200",
+                                    "group flex min-h-44 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed px-5 py-6 text-center transition-all duration-200",
                                     "border-border bg-muted/20 hover:-translate-y-0.5 hover:border-cyan-500/70 hover:bg-cyan-500/5",
                                     isFocused && "ring-2 ring-cyan-500/60 ring-offset-2 ring-offset-background",
                                     isDragActive && "scale-[1.01] border-cyan-500 bg-cyan-500/10 shadow-sm shadow-cyan-500/10",
@@ -76,7 +81,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
 
                                 {file ? (
                                     <div className="flex w-full max-w-xs flex-col items-center">
-                                        <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500">
+                                        <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500">
                                             <AppIcon icon={FileSpreadsheetIcon} className="size-5" />
                                         </div>
                                         <p className="max-w-full truncate text-sm font-semibold">
@@ -102,7 +107,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                                     <div className="flex max-w-xs flex-col items-center">
                                         <div
                                             className={cn(
-                                                "mb-4 flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-all duration-200 group-hover:bg-cyan-500/10 group-hover:text-cyan-500",
+                                                "mb-4 flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-all duration-200 group-hover:bg-cyan-500/10 group-hover:text-cyan-500",
                                                 isDragActive && "translate-y-1 bg-cyan-500/10 text-cyan-500",
                                                 isDragReject && "bg-destructive/10 text-destructive"
                                             )}
@@ -129,7 +134,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                         )}
                     </Dropzone>
 
-                    <div className="space-y-5 rounded-lg bg-muted/20 p-4">
+                    <div className="space-y-4 rounded-md bg-muted/20 p-4">
                         <div>
                             <h3 className="text-sm font-semibold">Supported Formats</h3>
                             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -157,7 +162,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                 </div>
 
                 {error ? (
-                    <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    <p className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                         {error}
                     </p>
                 ) : null}

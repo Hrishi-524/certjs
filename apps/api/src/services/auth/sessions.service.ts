@@ -1,10 +1,10 @@
 import { db } from "@certjs/db";
 import { sessions } from "@certjs/db/schema";
 import ms from "ms"
-import { authConfig } from "@/config/auth-config";
+import { authConfig } from "#app/config/auth-config";
 import { eq } from "drizzle-orm";
-import { generateRefreshToken, hashRefreshToken } from "./token.service";
-import { UnauthorizedError } from "@/middleware/express-errors";
+import { generateRefreshToken, hashRefreshToken } from "./token.service.js";
+import { UnauthorizedError } from "#app/middleware/express-errors";
 
 export async function createSession(userId: string) {
     const { refreshToken, refreshTokenHash } = generateRefreshToken();

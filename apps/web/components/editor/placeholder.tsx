@@ -3,6 +3,12 @@
 import { Rnd } from "react-rnd";
 import { Placeholder } from "@/types/placeholders.types";
 
+const justifyClassByAlign: Record<Placeholder["align"], string> = {
+    left: "justify-start",
+    center: "justify-center",
+    right: "justify-end",
+};
+
 export default function PlaceholderComponent({
     placeholder,
     scale,
@@ -59,10 +65,17 @@ export default function PlaceholderComponent({
                     bg-blue-500/10
                     flex
                     items-center
-                    justify-center
-                    text-sm
-                    text-black
+                    ${justifyClassByAlign[placeholder.align]}
+                    overflow-hidden
+                    px-1
                 `}
+                style={{
+                    color: placeholder.fontColor,
+                    fontFamily: placeholder.fontFamily,
+                    fontSize: placeholder.fontSize * scale,
+                    lineHeight: 1.2,
+                    textAlign: placeholder.align,
+                }}
             >
                 {placeholder.name}
             </div>

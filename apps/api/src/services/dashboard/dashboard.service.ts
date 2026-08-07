@@ -3,8 +3,8 @@ import { db } from "@certjs/db";
 import { inArray } from "drizzle-orm";
 import { eq, and } from "drizzle-orm";
 import { desc } from "drizzle-orm";
-import generatePresignedUrl from "../documents/get-signed-url";
-import { getKeyForS3Url } from "../templates/get-key";
+import generatePresignedUrl from "../documents/get-signed-url.js";
+import { getKeyForS3Url } from "../templates/get-key.js";
 
 export async function getDashboardService(userId: string, {
     activeJobsLimit = 4,

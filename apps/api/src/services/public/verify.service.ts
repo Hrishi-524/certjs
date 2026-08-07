@@ -1,5 +1,5 @@
 import { db } from "@certjs/db";
-import { NotFoundError } from "@/middleware/express-errors";
+import { NotFoundError } from "#app/middleware/express-errors";
 import { documents, jobs, templates } from "@certjs/db";
 import { eq } from "drizzle-orm";
 

@@ -1,9 +1,9 @@
-import { googleOAuthClient } from "@/config/google-oauth";
+import { googleOAuthClient } from "#app/config/google-oauth";
 import { oauth_accounts, users } from "@certjs/db/schema";
 import { db } from "@certjs/db";
-import { InternalServerError, NotFoundError } from "@/middleware/express-errors";
-import { createSession } from "./sessions.service";
-import { generateAccessToken }from "./token.service";
+import { InternalServerError, NotFoundError } from "#app/middleware/express-errors";
+import { createSession } from "./sessions.service.js";
+import { generateAccessToken }from "./token.service.js";
 import { TokenPayload } from "google-auth-library";
 
 export function getGoogleAuthUrl() {

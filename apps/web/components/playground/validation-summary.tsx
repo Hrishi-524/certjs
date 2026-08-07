@@ -6,10 +6,8 @@ import {
     CheckmarkCircle02Icon,
     CancelCircleIcon,
     File01Icon,
-    TaskDone01Icon,
     Alert02Icon,
 } from "@hugeicons/core-free-icons";
-import { cn } from "@/lib/utils";
 
 type ValidationSummaryProps = {
     validation: ValidationResult;
@@ -17,9 +15,9 @@ type ValidationSummaryProps = {
 
 function ValidationSummary({ validation }: ValidationSummaryProps) {
     return (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-4">
             {/* Total Rows */}
-            <div className="rounded-lg border p-4">
+            <div className="rounded-md border p-3">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                     <AppIcon icon={File01Icon} className="size-4" />
                     <span className="text-sm">Total Rows</span>
@@ -31,7 +29,7 @@ function ValidationSummary({ validation }: ValidationSummaryProps) {
             </div>
 
             {/* Valid Rows */}
-            <div className="rounded-lg border p-4">
+            <div className="rounded-md border p-3">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                     <AppIcon
                         icon={CheckmarkCircle02Icon}
@@ -46,7 +44,7 @@ function ValidationSummary({ validation }: ValidationSummaryProps) {
             </div>
 
             {/* Invalid Rows */}
-            <div className="rounded-lg border p-4">
+            <div className="rounded-md border p-3">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                     <AppIcon
                         icon={Alert02Icon}
@@ -60,7 +58,7 @@ function ValidationSummary({ validation }: ValidationSummaryProps) {
                 </p>
             </div>
 {/* Status */}
-<div className="rounded-lg border p-4">
+<div className="rounded-md border p-3">
     <div className="mb-2 text-sm text-muted-foreground">
         Status
     </div>

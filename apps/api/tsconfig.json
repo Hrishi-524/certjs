@@ -11,7 +11,7 @@
         "declaration": true,
         
         "paths": {
-            "@/*": ["./src/*"]
+            "#app/*": ["./src/*"]
         }
     },
     "include": ["src/**/*", "drizzle.config.ts"],

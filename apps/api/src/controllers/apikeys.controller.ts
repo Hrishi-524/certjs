@@ -1,5 +1,5 @@
-import { apiKeyIdSchema, createApiKeySchema } from "@/schema/apikeys.schema";
-import { createApiKeyService, getPrefix, deleteApiKeyService, deActivateApiKeyService, getAllApiKeysService } from "@/services/keys/apikeys.servie";
+import { apiKeyIdSchema, createApiKeySchema } from "#app/schema/apikeys.schema";
+import { createApiKeyService, getPrefix, deleteApiKeyService, deActivateApiKeyService, getAllApiKeysService } from "#app/services/keys/apikeys.servie";
 import { Request, Response } from "express";
 
 export async function createApiKey(req: Request, res: Response) {

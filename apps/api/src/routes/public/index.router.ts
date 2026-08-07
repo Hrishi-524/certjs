@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router();
 
-import { verifyRateLimit } from "@/middleware/verify-rate-limit";
-import { verifyCertificate } from "@/controllers/verify.controller";
+import { verifyRateLimit } from "#app/middleware/verify-rate-limit";
+import { verifyCertificate } from "#app/controllers/verify.controller";
 
 router.get("/certificates/:verifyToken", verifyRateLimit, verifyCertificate);
 

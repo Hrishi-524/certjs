@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router();
-import { createBatchJob, getJobStatus, downloadJobZip, retryJob, getJobDocuments, getJobs } from "@/controllers/jobs.controller";
-import wrapAsync from "@/utils/wrapAsync";
-import {requireAuth} from "@/middleware/auth.middleware";
+import { createBatchJob, getJobStatus, downloadJobZip, retryJob, getJobDocuments, getJobs } from "#app/controllers/jobs.controller";
+import wrapAsync from "#app/utils/wrapAsync";
+import {requireAuth} from "#app/middleware/auth.middleware";
 
 router.post("/", requireAuth, wrapAsync(createBatchJob));
 router.get("/:jobId", requireAuth, wrapAsync(getJobStatus));

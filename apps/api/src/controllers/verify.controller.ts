@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { verifyCertificateService } from "@/services/public/verify.service";
-import { verifyTokenParamSchema } from "@/schema/public.schema";
+import { verifyCertificateService } from "#app/services/public/verify.service";
+import { verifyTokenParamSchema } from "#app/schema/public.schema";
 
 export async function verifyCertificate(req: Request, res: Response) {
     const { verifyToken } = verifyTokenParamSchema.parse(req.params);

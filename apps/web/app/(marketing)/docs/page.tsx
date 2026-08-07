@@ -1,4 +1,4 @@
-import Documentation from "@/components/documentation/documentaion";
+import Documentation from "@/components/documentation";
 
 function page() {
     return (

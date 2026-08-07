@@ -1,9 +1,9 @@
 import { Router } from "express";
-import wrapAsync from "@/utils/wrapAsync";
-import { signUpUser, loginUser, logoutUser, getCurrentUser, refreshAccessToken, logoutAllUserSessions, redirectToGoogleAuth, handleGoogleAuthCallback} from "@/controllers/auth.controller";
-import { requireAuth } from "@/middleware/auth.middleware";
-import { signUpSchema, loginSchema } from "@/schema/auth.schema";
-import { validateRequest } from "@/middleware/validate-request";
+import wrapAsync from "#app/utils/wrapAsync";
+import { signUpUser, loginUser, logoutUser, getCurrentUser, refreshAccessToken, logoutAllUserSessions, redirectToGoogleAuth, handleGoogleAuthCallback} from "#app/controllers/auth.controller";
+import { requireAuth } from "#app/middleware/auth.middleware";
+import { signUpSchema, loginSchema } from "#app/schema/auth.schema";
+import { validateRequest } from "#app/middleware/validate-request";
 const router = Router();
 
 router.post("/signup", validateRequest(signUpSchema), wrapAsync(signUpUser));

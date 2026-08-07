@@ -31,9 +31,9 @@ export default function AppLanguageTabs({
     return (
         <Tabs
             defaultValue={defaultTab}
-            className="w-full"
+            className="w-full gap-0"
         >
-            <TabsList className="mb-8 h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl border bg-muted/40 p-1 whitespace-nowrap">
+            <TabsList className="mb-4 h-fit max-h-fit w-full justify-start gap-1 overflow-x-auto overflow-y-hidden rounded-xl border bg-muted/40 p-1 whitespace-nowrap">
                 {snippets.map((snippet) => (
                     <TabsTrigger
                         key={snippet.id}

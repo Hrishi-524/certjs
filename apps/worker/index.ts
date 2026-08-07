@@ -13,17 +13,10 @@ import "./webhook-worker"
 import { Profiler } from "./utils/profiler";
 import { getTemplate, removeTemplate, setTemplate } from "./utils/template-cache";
 import { cacheRenderedCertificate } from "./utils/finalizer-buffer-cache";
-// apps/worker/index.ts
 
-// const connection = new IORedis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-const connection = new IORedis({
-    host: "127.0.0.1",
-    port: 6379,
+const connection = new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
-})
+});
 
 export const worker = new Worker( "certificates", async (job) => {
     const { document_id } = job.data;

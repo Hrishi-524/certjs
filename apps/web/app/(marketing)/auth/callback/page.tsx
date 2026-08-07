@@ -1,29 +1,18 @@
-"use client";
+import { Suspense } from "react";
+import AuthCallbackClient from "./auth-callback-client";
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { setAccessToken } from "@/lib/auth/token-storage";
+export const dynamic = "force-dynamic";
 
-export default function AuthCallbackPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        const accessToken = searchParams.get("accessToken");
-
-        if (!accessToken) {
-            router.replace("/login");
-            return;
-        }
-
-        setAccessToken(accessToken);
-
-        router.replace("/dashboard");
-    }, [router, searchParams]);
-
+export default function Page() {
     return (
-        <div className="flex min-h-screen items-center justify-center">
-            <p>Signing you in please wait...</p>
-        </div>
+        <Suspense
+            fallback={
+                <div className="flex min-h-screen items-center justify-center">
+                    <p>Signing you in, please wait...</p>
+                </div>
+            }
+        >
+            <AuthCallbackClient />
+        </Suspense>
     );
 }

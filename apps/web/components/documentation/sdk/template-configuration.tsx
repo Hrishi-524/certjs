@@ -11,7 +11,7 @@ import StepCard from "@/components/shared/step-card";
 export default function TemplateConfiguration() {
     return (
         <section
-            id="templates"
+            id="template-configuration"
             className="space-y-8"
         >
             <GuideSection

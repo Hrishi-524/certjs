@@ -71,3 +71,11 @@ export type UpdateTemplateNameResponse = {
     createdAt: string;
     updatedAt: string;
 }
+
+export type DeactivateTemplateResponse = {
+    message: string;
+}
+
+export type ActivateTemplateResponse = {
+    message: string;
+}

@@ -13,7 +13,7 @@ type TemplateInfoProps = {
 
 function TemplateInfo({ template, placeholders }: TemplateInfoProps) {
     return (
-        <section className="min-w-0 space-y-5">
+        <section className="min-w-0 space-y-4">
             <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <h1 className="min-w-0 truncate text-2xl font-semibold tracking-normal text-foreground">
@@ -23,9 +23,9 @@ function TemplateInfo({ template, placeholders }: TemplateInfoProps) {
                 </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-                <Card className="rounded-lg shadow-none">
-                    <CardContent className="px-4 py-3">
+            <div className="grid gap-2 sm:grid-cols-2">
+                <Card className="rounded-md shadow-none">
+                    <CardContent className="px-3 py-2.5">
                         <span className="text-xs font-medium uppercase tracking-normal text-muted-foreground">
                             Dimensions
                         </span>
@@ -35,8 +35,8 @@ function TemplateInfo({ template, placeholders }: TemplateInfoProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-lg shadow-none">
-                    <CardContent className="px-4 py-3">
+                <Card className="rounded-md shadow-none">
+                    <CardContent className="px-3 py-2.5">
                         <span className="text-xs font-medium uppercase tracking-normal text-muted-foreground">
                             Placeholders
                         </span>
@@ -52,7 +52,7 @@ function TemplateInfo({ template, placeholders }: TemplateInfoProps) {
                     Placeholder List
                 </h2>
 
-                <div className="overflow-hidden rounded-lg border">
+                <div className="overflow-hidden rounded-md border">
                     {placeholders.length > 0 ? (
                         <ul className="divide-y">
                             {placeholders.map((placeholder, index) => {

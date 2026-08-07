@@ -1,6 +1,6 @@
 "use client";
 
-import { INITIALIZATION } from "@/components/data/documentation/sdk/initialiazation";
+import { INITIALIZATION } from "@/components/data/documentation/sdk/initialization";
 
 import AppLanguageTabs from "@/components/shared/app-language-tabs";
 import ComparisonCard from "@/components/shared/comparison-card";

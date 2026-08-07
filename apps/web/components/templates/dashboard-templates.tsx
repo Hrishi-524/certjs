@@ -11,7 +11,7 @@ import DashboardTemplateCard from "./dashboard-template-card";
 import SearchTemplates from "./search-templates";
 
 import { AppIcon } from "@/components/shared/app-icon";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TemplateCardSkeleton } from "@/components/skeletons/templates-skeleton";
 
 import { useTemplates } from "@/hooks/use-templates";
 import { useDeleteTemplate } from "@/hooks/use-delete-template";
@@ -19,25 +19,6 @@ import { useActivateTemplate } from "@/hooks/use-activate-template";
 import { useDeactivateTemplate } from "@/hooks/use-deactivate-template";
 
 import { Template } from "@/types/templates.types";
-
-function TemplateCardSkeleton() {
-    return (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <Skeleton className="aspect-video w-full rounded-none" />
-
-            <div className="space-y-3 p-5">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-            </div>
-
-            <div className="space-y-2 p-5 pt-0">
-                <Skeleton className="h-9 w-full" />
-                <Skeleton className="h-9 w-full" />
-                <Skeleton className="h-9 w-full" />
-            </div>
-        </div>
-    );
-}
 
 export default function DashboardTemplates() {
     const [searchQuery, setSearchQuery] = useState("");

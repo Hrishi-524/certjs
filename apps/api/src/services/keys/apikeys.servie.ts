@@ -1,6 +1,6 @@
 import { apikeys, db } from "@certjs/db";
-import { generateApiKey } from "./generate-api-key";
-import { BadRequestError, NotFoundError } from "@/middleware/express-errors";
+import { generateApiKey } from "./generate-api-key.js";
+import { BadRequestError, NotFoundError } from "#app/middleware/express-errors";
 import { and, eq, desc } from "drizzle-orm";
 
 export async function createApiKeyService(userId: string, name: string, expiry: Date | null | undefined) {

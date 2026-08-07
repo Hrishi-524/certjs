@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
-import type { RegisterInput, LoginInput } from "@/types/auth-types";
+import type { RegisterInput, LoginInput } from "#app/types/auth-types";
 import { db } from "@certjs/db";
 import { users } from "@certjs/db/schema";
-import { ConflictError, UnauthorizedError } from "@/middleware/express-errors";
-import { authConfig } from "@/config/auth-config";
-import { generateAccessToken, generateRefreshToken, hashRefreshToken }from "./token.service";
-import { createSession, findValidSessionByRefreshToken, revokeAllSessionsForUser, revokeSession, rotateRefreshToken } from "./sessions.service";
+import { ConflictError, UnauthorizedError } from "#app/middleware/express-errors";
+import { authConfig } from "#app/config/auth-config";
+import { generateAccessToken, generateRefreshToken, hashRefreshToken }from "./token.service.js";
+import { createSession, findValidSessionByRefreshToken, revokeAllSessionsForUser, revokeSession, rotateRefreshToken } from "./sessions.service.js";
 
 export async function registerWithPassword(input: RegisterInput) {
     const existingUser = await db.query.users.findFirst({

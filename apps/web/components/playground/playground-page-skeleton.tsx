@@ -1,8 +1,2 @@
 "use client"
-function PlaygroundPageSkeleton() {
-  return (
-    <div>PlaygroundPageSkeleton</div>
-  )
-}
-
-export default PlaygroundPageSkeleton
+export { PlaygroundSkeleton as default } from "@/components/skeletons/playground-skeleton";

@@ -3,7 +3,7 @@
 import { useTemplate } from '@/hooks/use-template';
 import { usePlaceholders } from '@/hooks/use-placeholders';
 import TemplateOverview from '@/components/playground/template-overview';
-import PlaygroundPageSkeleton from './playground-page-skeleton';
+import { PlaygroundSkeleton } from '@/components/skeletons/playground-skeleton';
 import { useState } from 'react';
 import { parsedUploadedData } from '@/lib/helpers/data-conversions';
 import type {UploadedRow} from '@/types/components/playground.types';
@@ -39,7 +39,7 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
     // const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
     
-    if(isTemplateLoading || isPlaceholdersLoading) return <PlaygroundPageSkeleton />
+    if(isTemplateLoading || isPlaceholdersLoading) return <PlaygroundSkeleton />
     
 
     const handlePrevious = async () => {
@@ -118,22 +118,43 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
     }
 
     return (
-        <div>
+        <div className="mx-auto w-full max-w-7xl space-y-5 px-6 py-6 lg:px-8">
             <TemplateOverview 
                 template={template!} 
                 placeholders={placeholders!} 
             />
-            <UploadData
-                file={uploadedFile}
-                isUploading={isUploading}
-                error={uploadError}
-                onUpload={handleUpload}
-            />
-            {validationResult && (
-                <ValidationCard validation={validationResult} onContinue={handleContinue} />
-            )}
-           {validationResult && validationResult.validRows.length > 0 && (
-                <>
+
+            <section className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-base font-semibold text-foreground">
+                            Certificate Workflow
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Upload, validate, preview, and generate certificates for this template.
+                        </p>
+                    </div>
+                    <div className="hidden items-center gap-2 text-xs font-medium text-muted-foreground md:flex">
+                        <span>Upload</span>
+                        <span className="h-px w-5 bg-border" />
+                        <span>Validate</span>
+                        <span className="h-px w-5 bg-border" />
+                        <span>Preview</span>
+                        <span className="h-px w-5 bg-border" />
+                        <span>Generate</span>
+                    </div>
+                </div>
+
+                <UploadData
+                    file={uploadedFile}
+                    isUploading={isUploading}
+                    error={uploadError}
+                    onUpload={handleUpload}
+                />
+                {validationResult && (
+                    <ValidationCard validation={validationResult} onContinue={handleContinue} />
+                )}
+                {validationResult && validationResult.validRows.length > 0 && (
                     <PreviewCard
                         rows={validationResult.validRows}
                         selectedRow={selectedRow}
@@ -142,13 +163,15 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
                         onPrevious={handlePrevious}
                         onNext={handleNext}
                     />
+                )}
+            </section>
 
-                    <GenerateCard
-                        recipientCount={validationResult.validRows.length}
-                        isGenerating={isEnqueuing}
-                        onGenerate={handleCreateBatchJob}
-                    />
-                </>
+            {validationResult && validationResult.validRows.length > 0 && (
+                <GenerateCard
+                    recipientCount={validationResult.validRows.length}
+                    isGenerating={isEnqueuing}
+                    onGenerate={handleCreateBatchJob}
+                />
             )}
         </div>
     )

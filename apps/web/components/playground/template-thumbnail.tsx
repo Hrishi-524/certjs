@@ -21,7 +21,7 @@ function TemplateThumbnail({
     return (
         <div className="w-full overflow-x-auto md:overflow-visible">
             <div
-                className="relative overflow-hidden rounded-xl border border-border/80 bg-muted/30 shadow-md ring-1 ring-border/60"
+                className="relative overflow-hidden rounded-lg border border-border/80 bg-muted/30 shadow-md ring-1 ring-border/60"
                 style={{
                     width: thumbnailWidth,
                     height: thumbnailHeight,

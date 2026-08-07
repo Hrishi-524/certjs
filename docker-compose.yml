@@ -1,0 +1,56 @@
+services:
+
+  redis:
+    container_name: certjs-redis
+
+    image: redis:8-alpine
+
+    restart: unless-stopped
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    container_name: certjs-api
+
+    build:
+      context: .
+      dockerfile: ./Dockerfile.api
+
+    env_file:
+      - ./.env.docker
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+  worker:
+    container_name: certjs-worker
+    
+    build:
+      context: .
+      dockerfile: ./Dockerfile.worker
+
+    env_file:
+      - ./.env.docker
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+volumes:
+
+  redis-data:

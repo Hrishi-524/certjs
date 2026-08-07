@@ -1,7 +1,7 @@
-import { getDocument } from "@/controllers/document.controller";
-import { createBatchJob, getJobDocuments, getJobStatus, downloadJobZip, retryJob } from "@/controllers/jobs.controller";
-import { requireApiKey } from "@/middleware/require-api-key";
-import wrapAsync from "@/utils/wrapAsync";
+import { getDocument } from "#app/controllers/document.controller";
+import { createBatchJob, getJobDocuments, getJobStatus, downloadJobZip, retryJob } from "#app/controllers/jobs.controller";
+import { requireApiKey } from "#app/middleware/require-api-key";
+import wrapAsync from "#app/utils/wrapAsync";
 import { Router } from "express";
 const router = Router();
 

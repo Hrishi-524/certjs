@@ -1,8 +1,8 @@
 import { documents, jobs } from "@certjs/db";
 import { db } from "@certjs/db";
 import { eq, and } from "drizzle-orm";
-import generatePresignedUrl from "./get-signed-url";
-import { NotFoundError, UnauthorizedError } from "@/middleware/express-errors";
+import generatePresignedUrl from "./get-signed-url.js";
+import { NotFoundError, UnauthorizedError } from "#app/middleware/express-errors";
 
 export async function getDocumentService(docId: string, userId: string) { 
     const [doc] = await db.select().from(documents).where(eq(documents.id, docId));

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { loginSchema, signUpSchema } from "@/schema/auth.schema";
+import { loginSchema, signUpSchema } from "#app/schema/auth.schema";
 
 export type RegisterInput = z.infer<typeof signUpSchema>;
 

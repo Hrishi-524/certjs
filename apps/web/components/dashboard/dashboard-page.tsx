@@ -10,21 +10,21 @@ import RecentTemplates from "./recent-templates";
 import SetupChecklist from "./setup-checklist";
 
 import useDashboard from "@/hooks/use-dashboard";
-import useMe from "@/hooks/use-me";
 import WorkspaceOnboarding from "./workspace-onboarding";
 import RecentJobsEmpty from "./recent-jobs-empty";
 import RecentTemplatesEmpty from "./recent-templates-empty";
+import { MeResponse } from "@/types/auth.types";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
     const { data: dashboard, isPending: isDashboardPending } = useDashboard();
-
-    const { data: me, isPending: isMePending } = useMe();
-
-    if (isDashboardPending || isMePending) {
+    const { user } = useAuth()
+    
+    if (isDashboardPending) {
         return <DashboardSkeleton />;
     }
 
-    if (!dashboard || !me) {
+    if (!dashboard) {
         return null;
     }
 
@@ -43,7 +43,7 @@ export default function DashboardPage() {
         return (
             <div className="space-y-6">
                 <DashboardHeader
-                    name={me.user.name}
+                    name={user.name}
                 />
 
                 <WorkspaceOnboarding />
@@ -60,7 +60,7 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6">
             <DashboardHeader
-                name={me.user.name}
+                name={user.name}
             />
 
             <DashboardStats

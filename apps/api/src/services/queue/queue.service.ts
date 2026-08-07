@@ -1,5 +1,5 @@
 import { certificateQueue } from "@certjs/queue";
-import type { Document } from "@/types/document-types";
+import type { Document } from "#app/types/document-types";
 import { db } from "@certjs/db";
 import { eq } from "drizzle-orm";
 import { jobs } from "@certjs/db/schema";

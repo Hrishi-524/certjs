@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
-import { registerWithPassword, loginWithPassword, logout, getCurrentUserService, refreshSession, logoutAllSessionsForUser } from "@/services/auth/auth.service";
-import { UnauthorizedError } from "@/middleware/express-errors";
-import { getGoogleAuthUrl, loginWithGoogle } from "@/services/auth/oauth.servcie";
-import { googleOAuthClient } from "@/config/google-oauth";
-import { ErrorCode } from "@/types/auth-types";
-import { authConfig } from "@/config/auth-config";
+import { registerWithPassword, loginWithPassword, logout, getCurrentUserService, refreshSession, logoutAllSessionsForUser } from "#app/services/auth/auth.service";
+import { UnauthorizedError } from "#app/middleware/express-errors";
+import { getGoogleAuthUrl, loginWithGoogle } from "#app/services/auth/oauth.servcie";
+import { googleOAuthClient } from "#app/config/google-oauth";
+import { ErrorCode } from "#app/types/auth-types";
+import { authConfig } from "#app/config/auth-config";
 
 // helpers
 const refreshCookieOptions = {
