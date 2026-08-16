@@ -6,12 +6,9 @@ import { MeResponse } from "@/types/auth.types"
 import { getAccessToken } from "@/lib/auth/token-storage";
 
 export default function useMe() {
-    console.log("useMe mounted");
-
     return useQuery({
         queryKey: ["me"],
         queryFn: async () => {
-            console.log("Fetching /me");
             return me();
         },
         retry: false,

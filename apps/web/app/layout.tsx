@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "CertJs",
-    description: "CertJs is a certificate management system that allows users to create, manage, and verify digital certificates. It provides a secure and user-friendly platform for organizations and individuals to handle their certification needs.",
+    title: "CertJs - Developer-first certificate generation and automation platform",
+    description: "Developer-first certificate generation and automation platform",
 };
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {

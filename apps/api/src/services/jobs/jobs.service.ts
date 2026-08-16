@@ -114,7 +114,6 @@ export async function createBatchJobService(params: CreateJobParams) {
     }
 
     // 13. Enqueue BullMQ Child Jobs
-    console.log("Enqueuing documents for jobId: ", job.id, " with document count: ", createdDocuments.length);
     await enqueueDocument(createdDocuments, job.id);
 
     // 14. Return Summary
