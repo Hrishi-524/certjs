@@ -1,6 +1,7 @@
 import { pgTable, uuid, text, timestamp, integer, index, unique } from "drizzle-orm/pg-core";
 import { users } from "./users"
 import { templates } from "./templates"
+import { jsonb } from "drizzle-orm/pg-core";
 
 export const jobs = pgTable("jobs", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -20,7 +21,8 @@ export const jobs = pgTable("jobs", {
     webhook_url: text("webhook_url"),
     webhook_secret: text("webhook_secret"),
     created_at: timestamp("created_at").defaultNow().notNull(),
-    completed_at: timestamp("completed_at")
+    completed_at: timestamp("completed_at"),
+    semantics: jsonb("semantics"),
 }, 
 (table) => [
     unique("jobs_user_idempotency_unique").on(
