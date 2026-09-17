@@ -37,7 +37,7 @@ function PreviewCard({
                 <div className="mb-4 flex items-center justify-between gap-4 border-b pb-3">
                     <div className="flex items-center gap-3">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground">
-                            3
+                            4
                         </span>
                         <div>
                             <h2 className="text-base font-semibold">
@@ -51,7 +51,7 @@ function PreviewCard({
                     </div>
 
                     <span className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                        Step 3 / 4
+                        Step 4 / 5
                     </span>
                 </div>
 

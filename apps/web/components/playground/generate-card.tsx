@@ -32,7 +32,7 @@ function GenerateCard({
                     <div>
                         <div className="mb-2 flex items-center gap-3">
                             <span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-primary text-xs font-semibold text-primary-foreground">
-                                4
+                                5
                             </span>
                             <CardTitle>Generate Certificates</CardTitle>
                         </div>
@@ -43,7 +43,7 @@ function GenerateCard({
                         </CardDescription>
                     </div>
                     <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                        Step 4 / 4
+                        Step 5 / 5
                     </span>
                 </div>
             </CardHeader>

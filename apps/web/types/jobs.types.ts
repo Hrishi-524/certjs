@@ -2,7 +2,44 @@ import type { Document } from "./documents.types";
 
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
 
-export type RecipientData = Record<string, string | number>;
+export type RecipientValue = string | number;
+
+export type RecipientData = Record<string, RecipientValue>;
+
+export type DeliveryChannel = "email" | "webhook" | "dashboard";
+
+export type DeliveryScope = "recipient" | "batch";
+
+export type DeliveryArtifact = "certificate" | "zip";
+
+export type DeliveryContent = {
+    body: string;
+};
+
+export type JobDeliverySemantics = {
+    channel: DeliveryChannel;
+    scope: DeliveryScope;
+    destination: string[];
+    content: DeliveryContent | null;
+    artifact: DeliveryArtifact;
+};
+
+export type IdentificationCase = "lower" | "upper" | "preserve";
+
+export type IdentificationCollision = "prefix" | "suffix";
+
+export type JobIdentificationSemantics = {
+    fields: string[];
+    separator?: string; // default " "
+    case?: IdentificationCase; // default "preserve"
+    collision?: IdentificationCollision; // default "suffix"
+    docId?: boolean; // default false
+};
+
+export type JobSemantics = {
+    deliveries: JobDeliverySemantics[];
+    identification: JobIdentificationSemantics;
+};
 
 export type PlaygroundPreviewInput = {
     templateId: string;
@@ -12,6 +49,7 @@ export type PlaygroundPreviewInput = {
 export type CreateBatchJobInput = {
     templateId: string;
     recipients: RecipientData[]; // min 1
+    semantics: JobSemantics;
     idempotencyKey: string;
     webhookUrl?: string;
 }

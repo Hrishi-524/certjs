@@ -1,6 +1,9 @@
 "use client";
 
-import type { ValidationResult } from "@/types/components/playground.types";
+import type {
+    UploadedRow,
+    ValidationResult,
+} from "@/types/components/playground.types";
 import { AppIcon } from "@/components/shared/app-icon";
 import {
     CheckmarkCircle02Icon,
@@ -8,12 +11,23 @@ import {
     File01Icon,
     Alert02Icon,
 } from "@hugeicons/core-free-icons";
+import {
+    getRemovedEntryCount,
+} from "@/lib/helpers/validation-report";
 
 type ValidationSummaryProps = {
     validation: ValidationResult;
+    rows: UploadedRow[];
+    usableRows: UploadedRow[];
 };
 
-function ValidationSummary({ validation }: ValidationSummaryProps) {
+function ValidationSummary({
+    validation,
+    rows,
+    usableRows,
+}: ValidationSummaryProps) {
+    const removedEntryCount = getRemovedEntryCount(rows.length, validation);
+
     return (
         <div className="grid gap-3 md:grid-cols-4">
             {/* Total Rows */}
@@ -24,71 +38,71 @@ function ValidationSummary({ validation }: ValidationSummaryProps) {
                 </div>
 
                 <p className="text-2xl font-semibold">
-                    {validation.rowCount}
+                    {rows.length}
                 </p>
             </div>
 
-            {/* Valid Rows */}
+            {/* Usable Entries */}
             <div className="rounded-md border p-3">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                     <AppIcon
                         icon={CheckmarkCircle02Icon}
                         className="size-4"
                     />
-                    <span className="text-sm">Valid Rows</span>
+                    <span className="text-sm">Usable Entries</span>
                 </div>
 
                 <p className="text-2xl font-semibold text-emerald-500">
-                    {validation.validRows.length}
+                    {usableRows.length}
                 </p>
             </div>
 
-            {/* Invalid Rows */}
+            {/* Removed Entries */}
             <div className="rounded-md border p-3">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                     <AppIcon
                         icon={Alert02Icon}
                         className="size-4"
                     />
-                    <span className="text-sm">Invalid Rows</span>
+                    <span className="text-sm">Removed Entries</span>
                 </div>
 
                 <p className="text-2xl font-semibold text-amber-500">
-                    {validation.invalidRows.length}
+                    {removedEntryCount}
                 </p>
             </div>
-{/* Status */}
-<div className="rounded-md border p-3">
-    <div className="mb-2 text-sm text-muted-foreground">
-        Status
-    </div>
+            {/* Status */}
+            <div className="rounded-md border p-3">
+                <div className="mb-2 text-sm text-muted-foreground">
+                    Status
+                </div>
 
-    {validation.invalidRows.length === 0 ? (
-        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-500">
-            <AppIcon
-                icon={CheckmarkCircle02Icon}
-                className="size-4"
-            />
-            Ready
-        </div>
-    ) : validation.validRows.length > 0 ? (
-        <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-500">
-            <AppIcon
-                icon={Alert02Icon}
-                className="size-4"
-            />
-            Partially Valid
-        </div>
-    ) : (
-        <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1 text-sm font-medium text-destructive">
-            <AppIcon
-                icon={CancelCircleIcon}
-                className="size-4"
-            />
-            Validation Failed
-        </div>
-    )}
-</div>
+                {usableRows.length === rows.length ? (
+                    <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-500">
+                        <AppIcon
+                            icon={CheckmarkCircle02Icon}
+                            className="size-4"
+                        />
+                        Ready
+                    </div>
+                ) : usableRows.length > 0 ? (
+                    <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-500">
+                        <AppIcon
+                            icon={Alert02Icon}
+                            className="size-4"
+                        />
+                        Reviewable
+                    </div>
+                ) : (
+                    <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1 text-sm font-medium text-destructive">
+                        <AppIcon
+                            icon={CancelCircleIcon}
+                            className="size-4"
+                        />
+                        No Usable Entries
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

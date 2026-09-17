@@ -7,7 +7,8 @@ import { PlaygroundSkeleton } from '@/components/skeletons/playground-skeleton';
 import { useState } from 'react';
 import { parsedUploadedData } from '@/lib/helpers/data-conversions';
 import type {UploadedRow} from '@/types/components/playground.types';
-import { ValidationResult } from '@/types/components/playground.types';
+import type { ValidationResult } from '@/types/components/playground.types';
+import type { JobSemantics } from '@/types/jobs.types';
 import UploadData from './upload-data';
 import { validateUpload } from '@/lib/helpers/validate-upload';
 import ValidationCard from './validation-card';
@@ -16,10 +17,42 @@ import PreviewCard from './preview-card';
 import { useCreateBatchJob } from '@/hooks/use-create-batch-job';
 import { useRouter } from 'next/navigation';
 import GenerateCard from './generate-card';
+import CertificateDeliverySettings from './certificate-delivery-settings';
 
 type PlaygroundPageProps = {
     templateId: string;
 };
+
+type PlaygroundStep = "upload" | "settings" | "validation" | "preview";
+
+function createDefaultSettings(rows: UploadedRow[]): JobSemantics {
+    const fields = rows.length > 0 ? Object.keys(rows[0]) : [];
+    const emailField =
+        fields.find((field) => field.toLowerCase().includes("email")) ??
+        fields[0] ??
+        "";
+
+    return {
+        deliveries: [
+            {
+                channel: "email",
+                scope: "recipient",
+                destination: emailField ? [emailField] : [],
+                content: {
+                    body: "",
+                },
+                artifact: "certificate",
+            },
+        ],
+        identification: {
+            fields: fields.length > 0 ? [fields[0]] : [],
+            separator: " ",
+            case: "preserve",
+            collision: "suffix",
+            docId: false,
+        },
+    };
+}
 
 function PlaygroundPage({ templateId }: PlaygroundPageProps) {
     const router = useRouter();
@@ -29,14 +62,19 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
     const { mutateAsync: loadPreview, data: previewUrl, isPending: isPreviewLoading } = usePlaygroundPreview();
     const { mutateAsync: enqueueJob, isPending: isEnqueuing } = useCreateBatchJob();
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-    const [_uploadedData, setUploadedData] = useState<UploadedRow[]>([]);
+    const [uploadedData, setUploadedData] = useState<UploadedRow[]>([]);
+    const [certificateSettings, setCertificateSettings] =
+        useState<JobSemantics | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);    
     const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
     const [selectedRow, setSelectedRow] = useState(0); // for certificate preview, default to first row
-    const [_currentStep, setCurrentStep] = useState<"upload" | "preview">("upload");
+    const [currentStep, setCurrentStep] = useState<PlaygroundStep>("upload");
     // const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     // const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+    const sanitizedRows = validationResult
+        ? validationResult.sanitizedData
+        : [];
 
     
     if(isTemplateLoading || isPlaceholdersLoading) return <PlaygroundSkeleton />
@@ -50,18 +88,17 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
 
         await loadPreview({
             templateId,
-            recipient: validationResult.validRows[newRow],
+            recipient: sanitizedRows[newRow],
         });
     };
 
     async function handleCreateBatchJob() {
-        if (!validationResult) return;
-
-        const validRows = validationResult.validRows;
+        if (!validationResult || !certificateSettings) return;
 
         const job = await enqueueJob({
             templateId,
-            recipients: validRows,
+            recipients: sanitizedRows,
+            semantics: certificateSettings,
             idempotencyKey: crypto.randomUUID(),
         });
 
@@ -71,7 +108,7 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
     const handleNext = async () => {
         if (
             !validationResult ||
-            selectedRow >= validationResult.validRows.length - 1
+            selectedRow >= sanitizedRows.length - 1
         ) {
             return;
         }
@@ -81,7 +118,7 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
 
         await loadPreview({
             templateId,
-            recipient: validationResult.validRows[newRow],
+            recipient: sanitizedRows[newRow],
         });
     };
     
@@ -92,18 +129,19 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
         setIsUploading(true);
         setUploadError(null);
         setUploadedData([]);
+        setCertificateSettings(null);
         setValidationResult(null);
         setSelectedRow(0);
+        setCurrentStep("upload");
         // setPreviewUrl(null);
 
         try {
             const rows = await parsedUploadedData(file);
 
-            const vResult = validateUpload(rows, placeholders!);
-            setValidationResult(vResult);
-            
             setUploadedFile(file);
             setUploadedData(rows);
+            setCertificateSettings(createDefaultSettings(rows));
+            setCurrentStep("settings");
         } catch (err) {
             setUploadError(
                 err instanceof Error ? err.message : "Upload failed."
@@ -113,9 +151,35 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
         }
     };
 
-    const handleContinue = () => {
-        setCurrentStep("preview");  
+    const handleValidateSettings = () => {
+        if (!certificateSettings) return;
+
+        const vResult = validateUpload(
+            uploadedData,
+            placeholders!,
+            certificateSettings
+        );
+
+        setValidationResult(vResult);
+        setSelectedRow(0);
+        setCurrentStep("validation");
+    };
+
+    const handleContinue = async () => {
+        if (!validationResult || sanitizedRows.length === 0) {
+            return;
+        }
+
+        setCurrentStep("preview");
+
+        await loadPreview({
+            templateId,
+            recipient: sanitizedRows[0],
+        });
     }
+
+    const uploadedFields =
+        uploadedData.length > 0 ? Object.keys(uploadedData[0]) : [];
 
     return (
         <div className="mx-auto w-full max-w-7xl space-y-5 px-6 py-6 lg:px-8">
@@ -131,11 +195,13 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
                             Certificate Workflow
                         </h2>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Upload, validate, preview, and generate certificates for this template.
+                            Upload, configure, validate, preview, and generate certificates for this template.
                         </p>
                     </div>
                     <div className="hidden items-center gap-2 text-xs font-medium text-muted-foreground md:flex">
                         <span>Upload</span>
+                        <span className="h-px w-5 bg-border" />
+                        <span>Settings</span>
                         <span className="h-px w-5 bg-border" />
                         <span>Validate</span>
                         <span className="h-px w-5 bg-border" />
@@ -151,12 +217,29 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
                     error={uploadError}
                     onUpload={handleUpload}
                 />
-                {validationResult && (
-                    <ValidationCard validation={validationResult} onContinue={handleContinue} />
+                {currentStep !== "upload" && certificateSettings && (
+                    <CertificateDeliverySettings
+                        fields={uploadedFields}
+                        value={certificateSettings}
+                        onChange={(nextSettings) => {
+                            setCertificateSettings(nextSettings);
+                            setValidationResult(null);
+                            setCurrentStep("settings");
+                        }}
+                        onContinue={handleValidateSettings}
+                    />
                 )}
-                {validationResult && validationResult.validRows.length > 0 && (
+                {validationResult && currentStep !== "settings" && (
+                    <ValidationCard
+                        validation={validationResult}
+                        rows={uploadedData}
+                        usableRows={sanitizedRows}
+                        onContinue={handleContinue}
+                    />
+                )}
+                {validationResult && currentStep === "preview" && sanitizedRows.length > 0 && (
                     <PreviewCard
-                        rows={validationResult.validRows}
+                        rows={sanitizedRows}
                         selectedRow={selectedRow}
                         previewUrl={previewUrl}
                         isLoading={isPreviewLoading}
@@ -166,9 +249,9 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
                 )}
             </section>
 
-            {validationResult && validationResult.validRows.length > 0 && (
+            {validationResult && currentStep === "preview" && sanitizedRows.length > 0 && (
                 <GenerateCard
-                    recipientCount={validationResult.validRows.length}
+                    recipientCount={sanitizedRows.length}
                     isGenerating={isEnqueuing}
                     onGenerate={handleCreateBatchJob}
                 />
