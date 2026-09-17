@@ -1,98 +1,139 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { AppIcon } from "@/components/shared/app-icon";
+import {
+    Alert02Icon,
+    CheckmarkCircle02Icon,
+    Download04Icon,
+} from "@hugeicons/core-free-icons";
+import {
+    downloadDetailedValidationIssues,
+    getValidationIssueSummaries,
+    hasValidationIssues,
+    type ValidationIssueSeverity,
+} from "@/lib/helpers/validation-report";
 import type { ValidationResult } from "@/types/components/playground.types";
 
 type ValidationIssuesProps = {
     validation: ValidationResult;
 };
 
-function ValidationIssues({
-    validation,
-}: ValidationIssuesProps) {
-    const hasIssues =
-        validation.missingColumns.length > 0 ||
-        validation.extraColumns.length > 0 ||
-        validation.invalidRows.length > 0;
+const groupOrder = [
+    "Structure",
+    "Certificate Data / Placeholder",
+    "Delivery",
+    "Identification",
+];
 
-    if (!hasIssues) {
+const severityStyles: Record<
+    ValidationIssueSeverity,
+    {
+        row: string;
+        badge: string;
+        icon: typeof Alert02Icon;
+        label: string;
+    }
+> = {
+    blocking: {
+        row: "border-destructive/25 bg-destructive/5",
+        badge: "bg-destructive/10 text-destructive",
+        icon: Alert02Icon,
+        label: "Blocking",
+    },
+    warning: {
+        row: "border-amber-500/25 bg-amber-500/5",
+        badge: "bg-amber-500/10 text-amber-600",
+        icon: Alert02Icon,
+        label: "Warning",
+    },
+};
+
+function ValidationIssues({ validation }: ValidationIssuesProps) {
+    const summaries = getValidationIssueSummaries(validation).filter(
+        (summary) => summary.count > 0
+    );
+
+    if (!hasValidationIssues(validation)) {
         return (
             <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <p className="font-medium text-emerald-500">
-                    Validation successful
-                </p>
+                <div className="flex items-center gap-2 font-medium text-emerald-500">
+                    <AppIcon icon={CheckmarkCircle02Icon} className="size-4" />
+                    <span>Validation successful</span>
+                </div>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                    All uploaded rows are valid and ready for certificate
-                    generation.
+                    No issues were found in the uploaded dataset.
                 </p>
             </div>
         );
     }
 
     return (
-        <div className="max-h-96 space-y-4 overflow-y-auto pr-2">
-            {/* Missing Columns */}
-            {validation.missingColumns.length > 0 && (
-                <div>
-                    <h3 className="mb-2 font-medium text-destructive">
-                        Missing Required Columns
-                    </h3>
+        <div className="space-y-4">
+            {groupOrder.map((group) => {
+                const groupSummaries = summaries.filter(
+                    (summary) => summary.group === group
+                );
 
-                    <ul className="list-disc space-y-1 pl-5 text-sm">
-                        {validation.missingColumns.map((column) => (
-                            <li key={column}>{column}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+                if (groupSummaries.length === 0) {
+                    return null;
+                }
 
-            {/* Extra Columns */}
-            {validation.extraColumns.length > 0 && (
-                <div>
-                    <h3 className="mb-2 font-medium text-amber-500">
-                        Extra Columns
-                    </h3>
+                return (
+                    <div key={group} className="space-y-2">
+                        <h3 className="text-sm font-medium text-foreground">
+                            {group}
+                        </h3>
 
-                    <ul className="list-disc space-y-1 pl-5 text-sm">
-                        {validation.extraColumns.map((column) => (
-                            <li key={column}>{column}</li>
-                        ))}
-                    </ul>
+                        <div className="grid gap-2 md:grid-cols-2">
+                            {groupSummaries.map((summary) => {
+                                const styles =
+                                    severityStyles[summary.severity];
 
-                    <p className="mt-2 text-xs text-muted-foreground">
-                        These columns will be ignored during certificate
-                        generation.
-                    </p>
-                </div>
-            )}
+                                return (
+                                    <div
+                                        key={`${summary.group}-${summary.label}`}
+                                        className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${styles.row}`}
+                                    >
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <AppIcon
+                                                icon={styles.icon}
+                                                className="size-4 shrink-0"
+                                            />
+                                            <span className="truncate text-sm font-medium">
+                                                {summary.label}
+                                            </span>
+                                        </div>
 
-            {/* Invalid Rows */}
-            {validation.invalidRows.length > 0 && (
-                <div>
-                    <h3 className="mb-3 font-medium text-destructive">
-                        Invalid Rows ({validation.invalidRows.length})
-                    </h3>
-
-                    <div className="space-y-3">
-                        {validation.invalidRows.map((row) => (
-                            <div
-                                key={row.row}
-                                className="rounded-md border border-destructive/20 bg-destructive/5 p-3"
-                            >
-                                <p className="mb-2 text-sm font-medium">
-                                    Row {row.row}
-                                </p>
-
-                                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                                    {row.errors.map((error, index) => (
-                                        <li key={index}>{error}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+                                        <div className="flex shrink-0 items-center gap-2">
+                                            <span
+                                                className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles.badge}`}
+                                            >
+                                                {styles.label}
+                                            </span>
+                                            <span className="text-sm font-semibold">
+                                                {summary.count}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })}
+
+            <div className="flex justify-end border-t pt-3">
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => downloadDetailedValidationIssues(validation)}
+                >
+                    <AppIcon icon={Download04Icon} className="mr-2 size-4" />
+                    Download detailed issues
+                </Button>
+            </div>
         </div>
     );
 }

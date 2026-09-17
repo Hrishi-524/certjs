@@ -49,7 +49,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                         </div>
                     </div>
                     <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                        Step 1 / 4
+                        Step 1 / 5
                     </span>
                 </div>
 
@@ -92,7 +92,7 @@ function UploadData({ file, isUploading, error, onUpload }: UploadDataProps) {
                                         </p>
                                         <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-500">
                                             <AppIcon icon={CheckmarkCircle02Icon} className="size-3.5" />
-                                            Ready to validate
+                                            Ready to configure
                                         </div>
                                         <Button
                                             type="button"

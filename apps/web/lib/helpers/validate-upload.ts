@@ -1,76 +1,203 @@
-import type { InvalidRow, RecipientData, UploadedRow, ValidationResult } from "@/types/components/playground.types";
+import type {
+    UploadedRow,
+    ValidationIssueEntry,
+    ValidationResult,
+} from "@/types/components/playground.types";
 import type { Placeholder } from "@/types/placeholders.types";
+import type { JobDeliverySemantics, JobSemantics } from "@/types/jobs.types";
 
-export function validateUpload(data: UploadedRow[], placeholders: Placeholder[]): ValidationResult {
-    // Dataset Validation
-    const requiredColumns = placeholders.map((p) => p.key);
-    const expectedKeys = new Set(requiredColumns);
-    const foundColumns = data.length > 0 ? Object.keys(data[0]) : [];
-    const missingColumns = requiredColumns.filter((key) => !foundColumns.includes(key));
-    const extraColumns = foundColumns.filter((key) => !expectedKeys.has(key));
+export function validateUpload(
+    data: UploadedRow[],
+    placeholders: Placeholder[],
+    semantics: JobSemantics
+): ValidationResult {
+    // Base setup
 
+    const sanitizedData: UploadedRow[] = [];
+
+    const placeholderFields = new Set(placeholders.map((p) => p.key));
     
-    // Row Validation
-    const warnings: string[] = [];
-    const validRows: UploadedRow[] = [];
-    const invalidRows: InvalidRow[] = [];
-
-    data.forEach((row, index) => {
-        const rowErrors: string[] = [];
-        const rowKeys = Object.keys(row);
-
-        // JSON specific (CSV/Excel naturally pass this)
-        for(const key of requiredColumns) {
-            if(!rowKeys.includes(key)) {
-                rowErrors.push(`Missing column "${key}"`);
+    const deliveryFields = new Map<string, JobDeliverySemantics>();
+    const directEmailDeliveryValues: string[] = [];
+    const directWebhookDeliveryValues: string[] = [];
+    for(const delivery of semantics.deliveries) {
+        if(delivery.scope === "batch" && delivery.channel === "email") {
+            directEmailDeliveryValues.push(...delivery.destination.map((mail) => mail));
+        }
+        if(delivery.scope === "batch" && delivery.channel === "webhook") {
+            directWebhookDeliveryValues.push(...delivery.destination.map((webhook) => webhook));
+        }
+        if(delivery.scope === "recipient") {
+            for(const field of delivery.destination) {
+                deliveryFields.set(field, delivery);
             }
         }
-
-        for(const key of rowKeys) {
-            if(!expectedKeys.has(key)) {
-                rowErrors.push(`Unexpected column "${key}"`);
-            }
-        }
-
+    }
     
-        // Validate values and types
-        for(const placeholder of placeholders) {
-            const value = row[placeholder.key];
-            if (value === null || value === undefined ||(typeof value === "string" && value.trim() === "")) {
-                rowErrors.push(`"${placeholder.key}" is empty`);
-            }
+    const identifierFields = new Set(semantics.identification.fields.map((f) => f));
+    
+    const allFields = new Set([...placeholderFields, ...deliveryFields.keys(), ...identifierFields ]);
 
-            /*
-            * TODO:
-            * switch (placeholder.type)
-            * {
-            *   case "number":
-            *   case "date":
-            *   case "email":
-            * }
-            */
+
+    // Dataset structure validation
+
+    const foundFields = data.length > 0 ? Object.keys(data[0]) : [];
+    const missingFields = [...allFields].filter((key) => !foundFields.includes(key));
+    const extraFields = foundFields.filter((key) => !allFields.has(key));
+    
+    // Dataset information validation
+
+    const invalidEmails: ValidationIssueEntry[] = [];
+    const invalidWebhookUrls: ValidationIssueEntry[]  = [];
+    const emptyValues: ValidationIssueEntry[] = [];
+    const duplicateIdentifiers: ValidationIssueEntry[] = [];
+    const missingEntry: ValidationIssueEntry[] = [];
+    const unexpectedEntry: ValidationIssueEntry[] = [];
+    const invalidDirectEmails: ValidationIssueEntry[] = [];
+    const invalidDirectWebhooks: ValidationIssueEntry[] = [];
+
+    const uniqueFieldSet = new Set();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+
+    const describeEmptyValue = (value: unknown): string => {
+        if(value === null) return "null";
+        if(value === undefined) return "undefined";
+        if(typeof value === "string" && value.trim() === "") return "empty";
+        return String(value);
+    };
+
+    data.forEach((entry, index) => {
+        let deleteFlag = false;
+        const unexpected: string[] = [];
+
+        const identifierParts: string[] = [];
+        const fields = Object.keys(entry);
+
+        for(const expectedField of allFields) {
+            if(!fields.includes(expectedField)) {
+                missingEntry.push({
+                    entry: index,
+                    field: null,
+                    warning: `${expectedField} is missing at ${index} entry! entry will be ignored.`
+                })
+                deleteFlag = true;
+            }
         }
 
-        if (rowErrors.length === 0) {
-            validRows.push(row);
-        } else {
-            invalidRows.push({
-                row: index + 1,
-                data: row,
-                errors: rowErrors,
-                warnings: []
-            });
+        for(const field of fields) {
+            if(!allFields.has(field)) {
+                unexpectedEntry.push({
+                    entry: index,
+                    field: field,
+                    warning: `${field} is unexpected at ${index} entry! field will be ignored.`
+                })
+                unexpected.push(field);
+            }
+        }
+
+        for(const [field, value] of Object.entries(entry)) {
+            if(placeholderFields.has(field)) {
+                if(value === null || value === undefined ||(typeof value === "string" && value.trim() === "")) {
+                    emptyValues.push({
+                        entry: index,
+                        field: field,
+                        warning: `${field} at ${index} has a ${describeEmptyValue(value)} value! certificate might get empty value`
+                    })
+                }
+            }
+            if(deliveryFields.has(field)) {
+                const delivery = deliveryFields.get(field)!;
+                if(delivery.channel === "email" && delivery.scope === "recipient") {
+                    if(!emailRegex.test(String(value))) {
+                        invalidEmails.push({
+                            entry: index,
+                            field: field,
+                            warning: `${field} at ${index} has a ${value} which is not a valid email pattern! email delivery might fail for this entry`
+                        })
+                    }
+                }
+                if(delivery.channel === "webhook" && delivery.scope === "recipient") {
+                    if(!urlRegex.test(String(value))) {
+                        invalidWebhookUrls.push({
+                            entry: index,
+                            field: field,
+                            warning: `${field} at ${index} has a invalid webhook url pattern ${value}! webhoook delivery might fail for this entry`
+                        })
+                    }
+                }
+            }
+            if(identifierFields.has(field)) {
+                identifierParts.push(value as string);
+            }
+        }
+
+        if(!deleteFlag) {
+            const identifierKey = identifierParts.join(semantics.identification.separator);
+            if(uniqueFieldSet.has(identifierKey)) {
+                duplicateIdentifiers.push({
+                    entry: index,
+                    field: null,
+                    warning: `Duplicate identifier found at ${index} entry! This entry may cause filename conflicts which will be handled by collision resolution strategy ${semantics.identification.collision}`
+                })
+            } else {
+                uniqueFieldSet.add(identifierKey);
+            }
+
+            if(unexpected.length > 0) {
+                const sanitizedEntry = { ...entry };
+                for(const field of unexpected) {
+                    delete sanitizedEntry[field];
+                }
+                sanitizedData.push(sanitizedEntry);
+            } else {
+                sanitizedData.push(entry);
+            } 
         }
     });
 
-    // Build result
+    for(const mail of directEmailDeliveryValues) {
+        if(!emailRegex.test(mail)) {
+            invalidDirectEmails.push({
+                entry: null,
+                field: null,
+                warning: `${mail} is not valid email pattern present in direct emails! This will be skipped in delivery`
+            })
+        }
+    }
+    
+    for(const webhook of directWebhookDeliveryValues) {
+        if(!urlRegex.test(webhook)) {
+            invalidDirectWebhooks.push({
+                entry: null,
+                field: null,
+                warning: `${webhook} is not valid url pattern in direct webhooks! This will be skipped in delivery`
+            })
+        }
+    }
+
     return {
-        isValid: missingColumns.length === 0 && validRows.length > 0,
-        rowCount: data.length,
-        foundColumns,
-        missingColumns,
-        extraColumns,
-        validRows,
-        invalidRows,
+        sanitizedData,
+        structure: {
+            foundFields,
+            missingFields,
+            extraFields,
+            missingEntry,
+            unexpectedEntry,
+        },
+        information: {
+            placeholder: {
+                emptyValues,
+            },
+            delivery: {
+                invalidEmails,
+                invalidWebhookUrls,
+                invalidDirectEmails,
+                invalidDirectWebhooks,
+            },
+            identification: {
+                duplicateIdentifiers,
+            }
+        }
     };
 }
