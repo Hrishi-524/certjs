@@ -27,23 +27,9 @@ type PlaygroundStep = "upload" | "settings" | "validation" | "preview";
 
 function createDefaultSettings(rows: UploadedRow[]): JobSemantics {
     const fields = rows.length > 0 ? Object.keys(rows[0]) : [];
-    const emailField =
-        fields.find((field) => field.toLowerCase().includes("email")) ??
-        fields[0] ??
-        "";
 
     return {
-        deliveries: [
-            {
-                channel: "email",
-                scope: "recipient",
-                destination: emailField ? [emailField] : [],
-                content: {
-                    body: "",
-                },
-                artifact: "certificate",
-            },
-        ],
+        deliveries: [],
         identification: {
             fields: fields.length > 0 ? [fields[0]] : [],
             separator: " ",
@@ -51,6 +37,7 @@ function createDefaultSettings(rows: UploadedRow[]): JobSemantics {
             collision: "suffix",
             docId: false,
         },
+        dashboardPersistence: true,
     };
 }
 
@@ -102,7 +89,7 @@ function PlaygroundPage({ templateId }: PlaygroundPageProps) {
             idempotencyKey: crypto.randomUUID(),
         });
 
-        router.push(`/dashboard/jobs/${job.jobId}`);
+        // router.push(`/dashboard/jobs/${job.jobId}`);
     }
     
     const handleNext = async () => {

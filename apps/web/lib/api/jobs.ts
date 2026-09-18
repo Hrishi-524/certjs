@@ -1,9 +1,12 @@
 import clientApi from "@/lib/api/client";
 import { CreateBatchJobInput, CreateBatchJobResponse, DownloadBatchJobDocumentsResponse, GetBatchJobStatusResponse, ListBatchJobDocumentsResponse, RetryFailedDocumentsResponse, PlaygroundPreviewInput, GetJobsResponse } from "@/types/jobs.types";
-
-export async function createBatchJob(input: CreateBatchJobInput): Promise<CreateBatchJobResponse> {
-    const { data } = await clientApi.post<CreateBatchJobResponse>("/dashboard/jobs", input);
-    return data;
+// Promise<CreateBatchJobResponse>
+export async function createBatchJob(input: CreateBatchJobInput): Promise<any> {
+    console.log("LOCACTION:/lib/api/jobs.ts: createBatchJob");
+    console.log("input: ", input);
+    // const { data } = await clientApi.post<CreateBatchJobResponse>("/dashboard/jobs", input);
+    // return data;
+    return {};
 }   
 
 export async function getJobs(): Promise<GetJobsResponse> {
