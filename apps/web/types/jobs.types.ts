@@ -6,11 +6,9 @@ export type RecipientValue = string | number;
 
 export type RecipientData = Record<string, RecipientValue>;
 
-export type DeliveryChannel = "email" | "webhook" | "dashboard";
+export type DeliveryChannel = "email" | "webhook";
 
 export type DeliveryScope = "recipient" | "batch";
-
-export type DeliveryArtifact = "certificate" | "zip";
 
 export type DeliveryContent = {
     body: string;
@@ -21,8 +19,31 @@ export type JobDeliverySemantics = {
     scope: DeliveryScope;
     destination: string[];
     content: DeliveryContent | null;
-    artifact: DeliveryArtifact;
 };
+/*
+Reference
+```
+recipients: [<values>]
+semantics: {
+    deliveries: [
+        {
+            channel: "email" | "webhook",
+            scope: "recipient" | "batch",
+            destination: [<value>],
+            content: { body: <value> } | null,
+        }
+    ],
+    identification: {
+        fields: [<values>],
+        separator: <value>, 
+        case: "lower" | "upper" | "preserve", 
+        collision: "prefix" | "suffix", 
+        docId: true | false
+    },
+    dashboardPersistence: true | false, // force true for web
+}
+```
+*/
 
 export type IdentificationCase = "lower" | "upper" | "preserve";
 
@@ -39,6 +60,7 @@ export type JobIdentificationSemantics = {
 export type JobSemantics = {
     deliveries: JobDeliverySemantics[];
     identification: JobIdentificationSemantics;
+    dashboardPersistence: true;
 };
 
 export type PlaygroundPreviewInput = {
@@ -51,7 +73,6 @@ export type CreateBatchJobInput = {
     recipients: RecipientData[]; // min 1
     semantics: JobSemantics;
     idempotencyKey: string;
-    webhookUrl?: string;
 }
 
 export type GetPlaygroundPreviewResponse = {

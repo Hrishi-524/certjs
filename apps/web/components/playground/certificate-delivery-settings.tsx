@@ -12,7 +12,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type {
-    DeliveryArtifact,
     DeliveryChannel,
     DeliveryScope,
     IdentificationCase,
@@ -34,18 +33,39 @@ type CertificateDeliverySettingsProps = {
 
 const channels: Array<{ value: DeliveryChannel; label: string }> = [
     { value: "email", label: "Email" },
-    { value: "webhook", label: "Webhook" },
-    { value: "dashboard", label: "Dashboard" },
+    { value: "webhook", label: "Webhook (send to another system)" },
 ];
 
 const scopes: Array<{ value: DeliveryScope; label: string }> = [
-    { value: "recipient", label: "Recipient" },
-    { value: "batch", label: "Batch" },
+    { value: "recipient", label: "Each recipient" },
+    { value: "batch", label: "Shared recipients" },
 ];
 
-const artifacts: Array<{ value: DeliveryArtifact; label: string }> = [
-    { value: "certificate", label: "Certificate" },
-    { value: "zip", label: "ZIP" },
+const deliveryCombinations: Array<{
+    channel: DeliveryChannel;
+    scope: DeliveryScope;
+    label: string;
+}> = [
+    {
+        channel: "email",
+        scope: "recipient",
+        label: "Email each recipient",
+    },
+    {
+        channel: "email",
+        scope: "batch",
+        label: "Email the batch",
+    },
+    {
+        channel: "webhook",
+        scope: "recipient",
+        label: "Webhook for each recipient",
+    },
+    {
+        channel: "webhook",
+        scope: "batch",
+        label: "Webhook for the batch",
+    },
 ];
 
 const cases: Array<{ value: IdentificationCase; label: string }> = [
@@ -59,21 +79,30 @@ const collisions: Array<{ value: IdentificationCollision; label: string }> = [
     { value: "prefix", label: "Add prefix" },
 ];
 
-function emptyDelivery(fields: string[]): JobDeliverySemantics {
+function createDelivery(
+    fields: string[],
+    channel: DeliveryChannel,
+    scope: DeliveryScope
+): JobDeliverySemantics {
     return {
-        channel: "email",
-        scope: "recipient",
-        destination: fields.length > 0 ? [fields[0]] : [],
-        content: { body: "" },
-        artifact: "certificate",
+        channel,
+        scope,
+        destination:
+            scope === "recipient" && fields.length > 0 ? [fields[0]] : [],
+        content: channel === "email" ? { body: "" } : null,
     };
 }
 
-function normalizeDestinations(value: string) {
-    return value
-        .split(/[\n,]/)
-        .map((destination) => destination.trim())
-        .filter(Boolean);
+function getDeliveryResultText(delivery: JobDeliverySemantics) {
+    if (delivery.scope === "recipient") {
+        return delivery.channel === "email"
+            ? "Each recipient will receive their certificate."
+            : "Each recipient's certificate will be sent to their webhook URL.";
+    }
+
+    return delivery.channel === "email"
+        ? "These recipients will receive the generated ZIP."
+        : "The generated ZIP will be sent to these webhook endpoints.";
 }
 
 function CertificateDeliverySettings({
@@ -82,10 +111,34 @@ function CertificateDeliverySettings({
     onChange,
     onContinue,
 }: CertificateDeliverySettingsProps) {
+    const updateSettings = (nextValue: JobSemantics) => {
+        onChange({
+            ...nextValue,
+            dashboardPersistence: true,
+        });
+    };
+
+    const isCombinationUsed = (
+        channel: DeliveryChannel,
+        scope: DeliveryScope,
+        currentIndex?: number
+    ) =>
+        value.deliveries.some(
+            (delivery, index) =>
+                index !== currentIndex &&
+                delivery.channel === channel &&
+                delivery.scope === scope
+        );
+
+    const availableCombinations = deliveryCombinations.filter(
+        (combination) =>
+            !isCombinationUsed(combination.channel, combination.scope)
+    );
+
     const updateIdentification = (
         update: Partial<JobSemantics["identification"]>
     ) => {
-        onChange({
+        updateSettings({
             ...value,
             identification: {
                 ...value.identification,
@@ -98,7 +151,7 @@ function CertificateDeliverySettings({
         index: number,
         update: Partial<JobDeliverySemantics>
     ) => {
-        onChange({
+        updateSettings({
             ...value,
             deliveries: value.deliveries.map((delivery, deliveryIndex) =>
                 deliveryIndex === index
@@ -112,6 +165,11 @@ function CertificateDeliverySettings({
     };
 
     const updateDeliveryScope = (index: number, scope: DeliveryScope) => {
+        const delivery = value.deliveries[index];
+        if (!delivery || isCombinationUsed(delivery.channel, scope, index)) {
+            return;
+        }
+
         updateDelivery(index, {
             scope,
             destination:
@@ -124,9 +182,14 @@ function CertificateDeliverySettings({
     };
 
     const updateDeliveryChannel = (index: number, channel: DeliveryChannel) => {
+        const delivery = value.deliveries[index];
+        if (!delivery || isCombinationUsed(channel, delivery.scope, index)) {
+            return;
+        }
+
         updateDelivery(index, {
             channel,
-            content: channel === "dashboard" ? null : { body: "" },
+            content: channel === "email" ? { body: "" } : null,
         });
     };
 
@@ -165,10 +228,14 @@ function CertificateDeliverySettings({
         const delivery = value.deliveries[deliveryIndex];
         if (!delivery) return;
 
+        const nextDestinations =
+            delivery.destination.length > 0
+                ? [...delivery.destination]
+                : [fields[0] ?? ""];
+        nextDestinations[destinationIndex] = destination;
+
         updateDelivery(deliveryIndex, {
-            destination: delivery.destination.map((currentDestination, index) =>
-                index === destinationIndex ? destination : currentDestination
-            ),
+            destination: nextDestinations.filter(Boolean),
         });
     };
 
@@ -200,10 +267,57 @@ function CertificateDeliverySettings({
         });
     };
 
+    const setLiteralDestination = (
+        deliveryIndex: number,
+        destinationIndex: number,
+        destination: string
+    ) => {
+        const delivery = value.deliveries[deliveryIndex];
+        if (!delivery) return;
+
+        const nextDestinations =
+            delivery.destination.length > 0 ? [...delivery.destination] : [""];
+        nextDestinations[destinationIndex] = destination;
+
+        updateDelivery(deliveryIndex, {
+            destination: nextDestinations,
+        });
+    };
+
+    const addLiteralDestination = (deliveryIndex: number) => {
+        const delivery = value.deliveries[deliveryIndex];
+        if (!delivery) return;
+
+        updateDelivery(deliveryIndex, {
+            destination: [...delivery.destination, ""],
+        });
+    };
+
+    const removeLiteralDestination = (
+        deliveryIndex: number,
+        destinationIndex: number
+    ) => {
+        const delivery = value.deliveries[deliveryIndex];
+        if (!delivery) return;
+
+        updateDelivery(deliveryIndex, {
+            destination: delivery.destination.filter(
+                (_destination, index) => index !== destinationIndex
+            ),
+        });
+    };
+
     const canContinue =
         fields.length > 0 &&
         value.identification.fields.length > 0 &&
-        value.identification.fields.every(Boolean);
+        value.identification.fields.every(Boolean) &&
+        value.deliveries.every(
+            (delivery) =>
+                delivery.destination.length > 0 &&
+                delivery.destination.every((destination) =>
+                    destination.trim()
+                )
+        );
 
     return (
         <section>
@@ -218,7 +332,7 @@ function CertificateDeliverySettings({
                                 Certificate & Delivery Settings
                             </h2>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                Choose certificate file names and where generated artifacts should go.
+                                Choose certificate file names and where generated files should go.
                             </p>
                         </div>
                     </div>
@@ -370,27 +484,46 @@ function CertificateDeliverySettings({
                             <div>
                                 <h3 className="text-sm font-semibold">Delivery</h3>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    Add one or more delivery methods for generated artifacts.
+                                    Add one or more ways to send generated certificates or the batch ZIP.
                                 </p>
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                    onChange({
-                                        ...value,
-                                        deliveries: [
-                                            ...value.deliveries,
-                                            emptyDelivery(fields),
-                                        ],
-                                    })
-                                }
-                            >
-                                <AppIcon icon={Add01Icon} className="mr-2 size-4" />
-                                Add
-                            </Button>
                         </div>
+
+                        {availableCombinations.length > 0 ? (
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {availableCombinations.map((combination) => (
+                                    <Button
+                                        key={`${combination.channel}-${combination.scope}`}
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            updateSettings({
+                                                ...value,
+                                                deliveries: [
+                                                    ...value.deliveries,
+                                                    createDelivery(
+                                                        fields,
+                                                        combination.channel,
+                                                        combination.scope
+                                                    ),
+                                                ],
+                                            })
+                                        }
+                                    >
+                                        <AppIcon
+                                            icon={Add01Icon}
+                                            className="mr-2 size-4"
+                                        />
+                                        {combination.label}
+                                    </Button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="rounded-lg border bg-background px-3 py-2 text-sm text-muted-foreground">
+                                All delivery methods are configured.
+                            </div>
+                        )}
 
                         {value.deliveries.length === 0 ? (
                             <div className="rounded-lg border border-dashed bg-background p-4 text-sm text-muted-foreground">
@@ -413,7 +546,7 @@ function CertificateDeliverySettings({
                                                 size="icon"
                                                 className="size-8 rounded-lg"
                                                 onClick={() =>
-                                                    onChange({
+                                                    updateSettings({
                                                         ...value,
                                                         deliveries: value.deliveries.filter(
                                                             (_delivery, deliveryIndex) =>
@@ -430,9 +563,9 @@ function CertificateDeliverySettings({
                                             </Button>
                                         </div>
 
-                                        <div className="grid gap-3 sm:grid-cols-3">
+                                        <div className="grid gap-3 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Channel</Label>
+                                                <Label>How should we send it?</Label>
                                                 <Select
                                                     value={delivery.channel}
                                                     onValueChange={(channel) =>
@@ -450,6 +583,11 @@ function CertificateDeliverySettings({
                                                             <SelectItem
                                                                 key={option.value}
                                                                 value={option.value}
+                                                                disabled={isCombinationUsed(
+                                                                    option.value,
+                                                                    delivery.scope,
+                                                                    index
+                                                                )}
                                                             >
                                                                 {option.label}
                                                             </SelectItem>
@@ -459,7 +597,7 @@ function CertificateDeliverySettings({
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label>Scope</Label>
+                                                <Label>Who should receive it?</Label>
                                                 <Select
                                                     value={delivery.scope}
                                                     onValueChange={(scope) =>
@@ -477,33 +615,11 @@ function CertificateDeliverySettings({
                                                             <SelectItem
                                                                 key={option.value}
                                                                 value={option.value}
-                                                            >
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label>Artifact</Label>
-                                                <Select
-                                                    value={delivery.artifact}
-                                                    onValueChange={(artifact) =>
-                                                        updateDelivery(index, {
-                                                            artifact:
-                                                                artifact as DeliveryArtifact,
-                                                        })
-                                                    }
-                                                >
-                                                    <SelectTrigger className="w-full rounded-lg">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {artifacts.map((option) => (
-                                                            <SelectItem
-                                                                key={option.value}
-                                                                value={option.value}
+                                                                disabled={isCombinationUsed(
+                                                                    delivery.channel,
+                                                                    option.value,
+                                                                    index
+                                                                )}
                                                             >
                                                                 {option.label}
                                                             </SelectItem>
@@ -513,8 +629,20 @@ function CertificateDeliverySettings({
                                             </div>
                                         </div>
 
+                                        <p className="rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                                            {getDeliveryResultText(delivery)}
+                                        </p>
+
                                         <div className="space-y-2">
-                                            <Label>Destination</Label>
+                                            <Label>
+                                                {delivery.scope === "recipient"
+                                                    ? delivery.channel === "email"
+                                                        ? "Which field contains their email address?"
+                                                        : "Which field contains the webhook URL?"
+                                                    : delivery.channel === "email"
+                                                      ? "Who should receive the batch?"
+                                                      : "Where should we send the batch?"}
+                                            </Label>
                                             {delivery.scope === "recipient" ? (
                                                 <div className="space-y-2">
                                                     {(delivery.destination.length > 0
@@ -593,26 +721,84 @@ function CertificateDeliverySettings({
                                                     </Button>
                                                 </div>
                                             ) : (
-                                                <Input
-                                                    value={delivery.destination.join(", ")}
-                                                    onChange={(event) =>
-                                                        updateDelivery(index, {
-                                                            destination: normalizeDestinations(
-                                                                event.target.value
-                                                            ),
-                                                        })
-                                                    }
-                                                    placeholder={
-                                                        delivery.channel === "webhook"
-                                                            ? "https://example.com/webhook"
-                                                            : "team@example.com"
-                                                    }
-                                                    className="rounded-lg"
-                                                />
+                                                <div className="space-y-2">
+                                                    {(delivery.destination.length > 0
+                                                        ? delivery.destination
+                                                        : [""]
+                                                    ).map(
+                                                        (
+                                                            destination,
+                                                            destinationIndex
+                                                        ) => (
+                                                            <div
+                                                                key={`${delivery.channel}-${delivery.scope}-${destinationIndex}`}
+                                                                className="flex gap-2"
+                                                            >
+                                                                <Input
+                                                                    value={destination}
+                                                                    onChange={(event) =>
+                                                                        setLiteralDestination(
+                                                                            index,
+                                                                            destinationIndex,
+                                                                            event.target.value
+                                                                        )
+                                                                    }
+                                                                    placeholder={
+                                                                        delivery.channel ===
+                                                                        "webhook"
+                                                                            ? "https://example.com/webhook"
+                                                                            : "team@example.com"
+                                                                    }
+                                                                    className="rounded-lg"
+                                                                />
+
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    className="size-8 shrink-0 rounded-lg"
+                                                                    onClick={() =>
+                                                                        removeLiteralDestination(
+                                                                            index,
+                                                                            destinationIndex
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        delivery.destination.length <=
+                                                                        1
+                                                                    }
+                                                                    aria-label="Remove delivery recipient"
+                                                                >
+                                                                    <AppIcon
+                                                                        icon={Delete02Icon}
+                                                                        className="size-4"
+                                                                    />
+                                                                </Button>
+                                                            </div>
+                                                        )
+                                                    )}
+
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            addLiteralDestination(index)
+                                                        }
+                                                    >
+                                                        <AppIcon
+                                                            icon={Add01Icon}
+                                                            className="mr-2 size-4"
+                                                        />
+                                                        {delivery.channel === "webhook"
+                                                            ? "Add another webhook"
+                                                            : "Add another email"}
+                                                    </Button>
+                                                </div>
                                             )}
                                         </div>
 
-                                        {delivery.channel !== "dashboard" ? (
+                                        {delivery.channel === "email" ? (
                                             <div className="space-y-2">
                                                 <Label htmlFor={`delivery-body-${index}`}>
                                                     Content

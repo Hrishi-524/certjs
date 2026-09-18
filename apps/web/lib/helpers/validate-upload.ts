@@ -74,14 +74,33 @@ export function validateUpload(
         const identifierParts: string[] = [];
         const fields = Object.keys(entry);
 
+        let identifierComplete = true;
+
         for(const expectedField of allFields) {
             if(!fields.includes(expectedField)) {
-                missingEntry.push({
-                    entry: index,
-                    field: null,
-                    warning: `${expectedField} is missing at ${index} entry! entry will be ignored.`
-                })
-                deleteFlag = true;
+                if(placeholderFields.has(expectedField)) {
+                    missingEntry.push({
+                        entry: index,
+                        field: null,
+                        warning: `${expectedField} is missing at ${index} entry! entry will be ignored.`
+                    })
+                    deleteFlag = true;
+                }
+                if(deliveryFields.has(expectedField)) {
+                    missingEntry.push({
+                        entry: index,
+                        field: null,
+                        warning: `${expectedField} is missing at ${index} entry! delivery via this field will be skipped for this entry.`
+                    })
+                }
+                if(identifierFields.has(expectedField)) {
+                    missingEntry.push({
+                        entry: index,
+                        field: null,
+                        warning: `${expectedField} is missing at ${index} entry! a generated document id will be used as filename fallback instead.`
+                    })
+                    identifierComplete = false;
+                }
             }
         }
 
@@ -133,15 +152,17 @@ export function validateUpload(
         }
 
         if(!deleteFlag) {
-            const identifierKey = identifierParts.join(semantics.identification.separator);
-            if(uniqueFieldSet.has(identifierKey)) {
-                duplicateIdentifiers.push({
-                    entry: index,
-                    field: null,
-                    warning: `Duplicate identifier found at ${index} entry! This entry may cause filename conflicts which will be handled by collision resolution strategy ${semantics.identification.collision}`
-                })
-            } else {
-                uniqueFieldSet.add(identifierKey);
+            if(identifierComplete) {
+                const identifierKey = identifierParts.join(semantics.identification.separator);
+                if(uniqueFieldSet.has(identifierKey)) {
+                    duplicateIdentifiers.push({
+                        entry: index,
+                        field: null,
+                        warning: `Duplicate identifier found at ${index} entry! This entry may cause filename conflicts which will be handled by collision resolution strategy ${semantics.identification.collision}`
+                    })
+                } else {
+                    uniqueFieldSet.add(identifierKey);
+                }
             }
 
             if(unexpected.length > 0) {
