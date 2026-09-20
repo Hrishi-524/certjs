@@ -4,6 +4,7 @@ import { AppIcon } from "@/components/shared/app-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { parsedUploadedData } from "@/lib/helpers/data-conversions";
 import {
     Select,
     SelectContent,
@@ -12,17 +13,20 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type {
+    DeliveryContent,
     DeliveryChannel,
     DeliveryScope,
     IdentificationCase,
     IdentificationCollision,
     JobDeliverySemantics,
     JobSemantics,
+    RecipientData,
 } from "@/types/jobs.types";
 import {
     Add01Icon,
     Delete02Icon,
 } from "@hugeicons/core-free-icons";
+import { useState } from "react";
 
 type CertificateDeliverySettingsProps = {
     fields: string[];
@@ -79,6 +83,38 @@ const collisions: Array<{ value: IdentificationCollision; label: string }> = [
     { value: "prefix", label: "Add prefix" },
 ];
 
+const emptyEmailContent: DeliveryContent = {
+    sender: null,
+    subject: "",
+    body: "",
+};
+
+const fieldRegex = /\{\{\s*([^{}]+?)\s*\}\}/g;
+
+function getTemplateVariables(content: DeliveryContent | null) {
+    if (!content) return [];
+
+    const variables = new Set<string>();
+
+    for (const text of [content.subject, content.body]) {
+        let match: RegExpExecArray | null;
+        fieldRegex.lastIndex = 0;
+
+        while ((match = fieldRegex.exec(text)) !== null) {
+            variables.add(match[1].trim());
+        }
+    }
+
+    return [...variables];
+}
+
+function getEmailContent(delivery: JobDeliverySemantics): DeliveryContent {
+    return {
+        ...emptyEmailContent,
+        ...delivery.content,
+    };
+}
+
 function createDelivery(
     fields: string[],
     channel: DeliveryChannel,
@@ -89,7 +125,7 @@ function createDelivery(
         scope,
         destination:
             scope === "recipient" && fields.length > 0 ? [fields[0]] : [],
-        content: channel === "email" ? { body: "" } : null,
+        content: channel === "email" ? emptyEmailContent : null,
     };
 }
 
@@ -111,6 +147,16 @@ function CertificateDeliverySettings({
     onChange,
     onContinue,
 }: CertificateDeliverySettingsProps) {
+    const [batchDataFileNames, setBatchDataFileNames] = useState<
+        Record<number, string>
+    >({});
+    const [batchDataErrors, setBatchDataErrors] = useState<
+        Record<number, string>
+    >({});
+    const [parsingBatchData, setParsingBatchData] = useState<
+        Record<number, boolean>
+    >({});
+
     const updateSettings = (nextValue: JobSemantics) => {
         onChange({
             ...nextValue,
@@ -178,6 +224,13 @@ function CertificateDeliverySettings({
                         ? [fields[0]]
                         : []
                     : [],
+            content:
+                delivery.channel === "email"
+                    ? {
+                          ...getEmailContent(delivery),
+                          data: scope === "batch" ? delivery.content?.data ?? null : undefined,
+                      }
+                    : null,
         });
     };
 
@@ -189,8 +242,77 @@ function CertificateDeliverySettings({
 
         updateDelivery(index, {
             channel,
-            content: channel === "email" ? { body: "" } : null,
+            content: channel === "email" ? emptyEmailContent : null,
         });
+    };
+
+    const updateEmailContent = (
+        deliveryIndex: number,
+        update: Partial<DeliveryContent>
+    ) => {
+        const delivery = value.deliveries[deliveryIndex];
+        if (!delivery || delivery.channel !== "email") return;
+
+        const currentContent = getEmailContent(delivery);
+        const nextContent: DeliveryContent = {
+            ...currentContent,
+            ...update,
+        };
+
+        if (delivery.scope === "recipient") {
+            delete nextContent.data;
+        }
+
+        if (
+            delivery.scope === "batch" &&
+            getTemplateVariables(nextContent).length === 0
+        ) {
+            nextContent.data = null;
+        }
+
+        updateDelivery(deliveryIndex, {
+            content: nextContent,
+        });
+    };
+
+    const handleBatchEmailDataUpload = async (
+        deliveryIndex: number,
+        file: File | null
+    ) => {
+        if (!file) return;
+
+        setParsingBatchData((current) => ({
+            ...current,
+            [deliveryIndex]: true,
+        }));
+        setBatchDataErrors((current) => ({
+            ...current,
+            [deliveryIndex]: "",
+        }));
+
+        try {
+            const rows = await parsedUploadedData(file);
+            updateEmailContent(deliveryIndex, {
+                data: rows as RecipientData[],
+            });
+            setBatchDataFileNames((current) => ({
+                ...current,
+                [deliveryIndex]: file.name,
+            }));
+        } catch (error) {
+            setBatchDataErrors((current) => ({
+                ...current,
+                [deliveryIndex]:
+                    error instanceof Error
+                        ? error.message
+                        : "Could not parse batch email data.",
+            }));
+        } finally {
+            setParsingBatchData((current) => ({
+                ...current,
+                [deliveryIndex]: false,
+            }));
+        }
     };
 
     const setFilenameField = (index: number, field: string) => {
@@ -237,6 +359,16 @@ function CertificateDeliverySettings({
         updateDelivery(deliveryIndex, {
             destination: nextDestinations.filter(Boolean),
         });
+    };
+
+    const deliveryTitles: Record<
+    `${JobDeliverySemantics["channel"]}-${JobDeliverySemantics["scope"]}`,
+        string
+    > = {
+        "email-recipient": "Email each recipient",
+        "email-batch": "Email the batch",
+        "webhook-recipient": "Webhook for each recipient",
+        "webhook-batch": "Webhook for the batch",
     };
 
     const addRecipientDestination = (deliveryIndex: number) => {
@@ -341,7 +473,7 @@ function CertificateDeliverySettings({
                     </span>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="grid w-full gap-4">
                     <div className="space-y-4 rounded-md border bg-muted/20 p-4">
                         <div>
                             <h3 className="text-sm font-semibold">File Naming</h3>
@@ -398,7 +530,7 @@ function CertificateDeliverySettings({
                             </Button>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="grid gap-3 lg:grid-cols-3">
                             <div className="space-y-2">
                                 <Label htmlFor="filename-separator">Separator</Label>
                                 <Input
@@ -436,9 +568,7 @@ function CertificateDeliverySettings({
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label>Collision handling</Label>
                                 <Select
@@ -462,7 +592,9 @@ function CertificateDeliverySettings({
                                     </SelectContent>
                                 </Select>
                             </div>
+                        </div>
 
+                        <div className="grid gap-3 lg:grid-cols-3">
                             <label className="flex min-h-16 items-center gap-3 rounded-lg border bg-background px-3 py-2 text-sm">
                                 <input
                                     type="checkbox"
@@ -538,7 +670,7 @@ function CertificateDeliverySettings({
                                     >
                                         <div className="flex items-center justify-between gap-3">
                                             <span className="text-sm font-semibold">
-                                                Method {index + 1}
+                                                {deliveryTitles[`${delivery.channel}-${delivery.scope}`]}
                                             </span>
                                             <Button
                                                 type="button"
@@ -798,27 +930,236 @@ function CertificateDeliverySettings({
                                             )}
                                         </div>
 
-                                        {delivery.channel === "email" ? (
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`delivery-body-${index}`}>
-                                                    Content
-                                                </Label>
-                                                <textarea
-                                                    id={`delivery-body-${index}`}
-                                                    value={delivery.content?.body ?? ""}
-                                                    onChange={(event) =>
-                                                        updateDelivery(index, {
-                                                            content: {
-                                                                body: event.target.value,
-                                                            },
-                                                        })
-                                                    }
-                                                    rows={3}
-                                                    className="w-full resize-none rounded-lg border bg-input/50 px-3 py-2 text-sm outline-none transition-[color,box-shadow] duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-                                                    placeholder="Message body"
-                                                />
-                                            </div>
-                                        ) : null}
+                                        {delivery.channel === "email"
+                                            ? (() => {
+                                                  const content =
+                                                      getEmailContent(delivery);
+                                                  const templateVariables =
+                                                      getTemplateVariables(
+                                                          content
+                                                      );
+                                                  const hasTemplateVariables =
+                                                      templateVariables.length > 0;
+                                                  const batchRows =
+                                                      content.data ?? [];
+                                                  const batchFields =
+                                                      batchRows.length > 0
+                                                          ? Object.keys(
+                                                                batchRows[0]
+                                                            )
+                                                          : [];
+
+                                                  return (
+                                                      <div className="space-y-3">
+                                                          <div className="space-y-2">
+                                                              <Label
+                                                                  htmlFor={`delivery-sender-${index}`}
+                                                              >
+                                                                  Sender
+                                                              </Label>
+                                                              <Input
+                                                                  id={`delivery-sender-${index}`}
+                                                                  value={
+                                                                      content.sender ??
+                                                                      ""
+                                                                  }
+                                                                  onChange={(
+                                                                      event
+                                                                  ) =>
+                                                                      updateEmailContent(
+                                                                          index,
+                                                                          {
+                                                                              sender:
+                                                                                  event.target.value.trim() ===
+                                                                                  ""
+                                                                                      ? null
+                                                                                      : event
+                                                                                            .target
+                                                                                            .value,
+                                                                          }
+                                                                      )
+                                                                  }
+                                                                  placeholder="Default CertJS sender"
+                                                                  className="rounded-lg"
+                                                              />
+                                                              <p className="text-xs text-muted-foreground">
+                                                                  Leave empty to
+                                                                  use the CertJS
+                                                                  default
+                                                                  sender.
+                                                              </p>
+                                                          </div>
+
+                                                          <div className="space-y-2">
+                                                              <Label
+                                                                  htmlFor={`delivery-subject-${index}`}
+                                                              >
+                                                                  Subject
+                                                              </Label>
+                                                              <Input
+                                                                  id={`delivery-subject-${index}`}
+                                                                  value={
+                                                                      content.subject
+                                                                  }
+                                                                  onChange={(
+                                                                      event
+                                                                  ) =>
+                                                                      updateEmailContent(
+                                                                          index,
+                                                                          {
+                                                                              subject:
+                                                                                  event
+                                                                                      .target
+                                                                                      .value,
+                                                                          }
+                                                                      )
+                                                                  }
+                                                                  placeholder="Certificate of Completion"
+                                                                  className="rounded-lg"
+                                                              />
+                                                          </div>
+
+                                                          <div className="space-y-2">
+                                                              <Label
+                                                                  htmlFor={`delivery-body-${index}`}
+                                                              >
+                                                                  Body
+                                                              </Label>
+                                                              <textarea
+                                                                  id={`delivery-body-${index}`}
+                                                                  value={
+                                                                      content.body
+                                                                  }
+                                                                  onChange={(
+                                                                      event
+                                                                  ) =>
+                                                                      updateEmailContent(
+                                                                          index,
+                                                                          {
+                                                                              body: event
+                                                                                  .target
+                                                                                  .value,
+                                                                          }
+                                                                      )
+                                                                  }
+                                                                  rows={3}
+                                                                  className="w-full resize-none rounded-lg border bg-input/50 px-3 py-2 text-sm outline-none transition-[color,box-shadow] duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                                                                  placeholder="Message body"
+                                                              />
+                                                          </div>
+
+                                                          {delivery.scope ===
+                                                              "batch" &&
+                                                          hasTemplateVariables ? (
+                                                              <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                                                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                                                      <div>
+                                                                          <Label
+                                                                              htmlFor={`batch-email-data-${index}`}
+                                                                          >
+                                                                              Batch
+                                                                              email
+                                                                              data
+                                                                          </Label>
+                                                                          <p className="mt-1 text-xs text-muted-foreground">
+                                                                              Optional
+                                                                              CSV,
+                                                                              Excel,
+                                                                              or
+                                                                              JSON
+                                                                              data
+                                                                              for
+                                                                              template
+                                                                              variables.
+                                                                          </p>
+                                                                      </div>
+                                                                      <Input
+                                                                          id={`batch-email-data-${index}`}
+                                                                          type="file"
+                                                                          accept=".csv,.xlsx,.xls,.json"
+                                                                          onChange={(
+                                                                              event
+                                                                          ) =>
+                                                                              handleBatchEmailDataUpload(
+                                                                                  index,
+                                                                                  event
+                                                                                      .target
+                                                                                      .files?.[0] ??
+                                                                                      null
+                                                                              )
+                                                                          }
+                                                                          className="max-w-56 rounded-lg text-xs"
+                                                                      />
+                                                                  </div>
+
+                                                                  <div className="text-xs text-muted-foreground">
+                                                                      Variables:{" "}
+                                                                      {templateVariables.join(
+                                                                          ", "
+                                                                      )}
+                                                                  </div>
+
+                                                                  {parsingBatchData[
+                                                                      index
+                                                                  ] ? (
+                                                                      <p className="text-xs text-muted-foreground">
+                                                                          Parsing
+                                                                          batch
+                                                                          email
+                                                                          data...
+                                                                      </p>
+                                                                  ) : null}
+
+                                                                  {batchDataErrors[
+                                                                      index
+                                                                  ] ? (
+                                                                      <p className="text-xs text-destructive">
+                                                                          {
+                                                                              batchDataErrors[
+                                                                                  index
+                                                                              ]
+                                                                          }
+                                                                      </p>
+                                                                  ) : null}
+
+                                                                  {batchRows.length >
+                                                                  0 ? (
+                                                                      <p className="text-xs text-muted-foreground">
+                                                                          Loaded{" "}
+                                                                          {
+                                                                              batchRows.length
+                                                                          }{" "}
+                                                                          records
+                                                                          {batchDataFileNames[
+                                                                              index
+                                                                          ]
+                                                                              ? ` from ${batchDataFileNames[index]}`
+                                                                              : ""}
+                                                                          {batchFields.length >
+                                                                          0
+                                                                              ? ` with fields ${batchFields.join(", ")}`
+                                                                              : ""}
+                                                                          .
+                                                                      </p>
+                                                                  ) : (
+                                                                      <p className="text-xs text-muted-foreground">
+                                                                          Missing
+                                                                          rows
+                                                                          are
+                                                                          allowed;
+                                                                          unmatched
+                                                                          email
+                                                                          variables
+                                                                          become
+                                                                          warnings.
+                                                                      </p>
+                                                                  )}
+                                                              </div>
+                                                          ) : null}
+                                                      </div>
+                                                  );
+                                              })()
+                                            : null}
                                     </div>
                                 ))}
                             </div>

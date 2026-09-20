@@ -11,7 +11,10 @@ export type DeliveryChannel = "email" | "webhook";
 export type DeliveryScope = "recipient" | "batch";
 
 export type DeliveryContent = {
+    sender: string | null;
+    subject: string;
     body: string;
+    data?: RecipientData[] | null;
 };
 
 export type JobDeliverySemantics = {

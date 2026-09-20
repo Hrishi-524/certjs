@@ -1,18 +1,9 @@
-import type {
-    UploadedRow,
-    ValidationIssueEntry,
-    ValidationResult,
-} from "@/types/components/playground.types";
+import type { UploadedRow, ValidationIssueEntry, ValidationResult } from "@/types/components/playground.types";
 import type { Placeholder } from "@/types/placeholders.types";
-import type { JobDeliverySemantics, JobSemantics } from "@/types/jobs.types";
+import type { JobDeliverySemantics, JobSemantics, DeliveryContent } from "@/types/jobs.types";
 
-export function validateUpload(
-    data: UploadedRow[],
-    placeholders: Placeholder[],
-    semantics: JobSemantics
-): ValidationResult {
+export function validateUpload( data: UploadedRow[], placeholders: Placeholder[], semantics: JobSemantics ): ValidationResult {
     // Base setup
-
     const sanitizedData: UploadedRow[] = [];
 
     const placeholderFields = new Set(placeholders.map((p) => p.key));
@@ -20,15 +11,63 @@ export function validateUpload(
     const deliveryFields = new Map<string, JobDeliverySemantics>();
     const directEmailDeliveryValues: string[] = [];
     const directWebhookDeliveryValues: string[] = [];
-    for(const delivery of semantics.deliveries) {
-        if(delivery.scope === "batch" && delivery.channel === "email") {
-            directEmailDeliveryValues.push(...delivery.destination.map((mail) => mail));
+    let templateVariablesRecipient = new Set<string>(); 
+    let templateVariablesBatch = new Set<string>();
+
+    const missingVariableEntries: ValidationIssueEntry[] = [];
+    const unexpectedVariableEntries: ValidationIssueEntry[] = [];
+
+    for(const delivery of semantics.deliveries) { // O(4) ~ O(1) Only 4 unique combinations of delivery methods are possible, so this is constant time complexity
+        // Method 1: Direct delivery via email or webhook
+        if (delivery.scope === "batch" && delivery.channel === "email") {
+            directEmailDeliveryValues.push(...delivery.destination);
+
+            if (delivery.content) {
+                templateVariablesBatch = parseTemplateVariables(delivery.content);
+
+                delivery.content.data?.forEach((data, index) => {
+                    for (const variable of templateVariablesBatch) {
+                        if (!(variable in data)) {
+                            missingVariableEntries.push({
+                                entry: index,
+                                field: variable,
+                                warning: `${variable} is required by the email template but was not provided`,
+                            });
+                        }
+                    }
+
+                    // Report unexpected fields
+                    for (const variable of Object.keys(data)) {
+                        if (!templateVariablesBatch.has(variable)) {
+                            unexpectedVariableEntries.push({
+                                entry: index,
+                                field: variable,
+                                warning: `${variable} is not a valid template variable in the template! This will be ignored in delivery`,
+                            });
+                        }
+                    }
+                });
+            }
         }
+
+        // Method 2: Recipient based delivery via email or webhook
         if(delivery.scope === "batch" && delivery.channel === "webhook") {
             directWebhookDeliveryValues.push(...delivery.destination.map((webhook) => webhook));
         }
-        if(delivery.scope === "recipient") {
-            for(const field of delivery.destination) {
+
+        // Method 3: Recipient based delivery via email or webhook
+        if(delivery.scope === "recipient" && delivery.channel === "email") {
+            for(const field of delivery.destination) { // O(n) ~ O(1) because the number of fields in a delivery is limited and small, so this is constant time complexity
+                deliveryFields.set(field, delivery);
+            }
+            if(delivery.content) {
+                templateVariablesRecipient = parseTemplateVariables(delivery.content);
+            }
+        }
+
+        // Method 4: Recipient based delivery via email or webhook
+        if(delivery.scope === "recipient" && delivery.channel === "webhook") {
+            for(const field of delivery.destination) { // O(n) ~ O(1) because the number of fields in a delivery is limited and small, so this is constant time complexity
                 deliveryFields.set(field, delivery);
             }
         }
@@ -36,7 +75,7 @@ export function validateUpload(
     
     const identifierFields = new Set(semantics.identification.fields.map((f) => f));
     
-    const allFields = new Set([...placeholderFields, ...deliveryFields.keys(), ...identifierFields ]);
+    const allFields = new Set([...placeholderFields, ...deliveryFields.keys(), ...identifierFields]);
 
 
     // Dataset structure validation
@@ -151,6 +190,16 @@ export function validateUpload(
             }
         }
 
+        for (const variable of templateVariablesRecipient) {
+            if (!(variable in entry)) {
+                missingVariableEntries.push({
+                    entry: index,
+                    field: variable,
+                    warning: `${variable} is required by the email template but was not provided`,
+                });
+            }
+        }
+
         if(!deleteFlag) {
             if(identifierComplete) {
                 const identifierKey = identifierParts.join(semantics.identification.separator);
@@ -215,10 +264,37 @@ export function validateUpload(
                 invalidWebhookUrls,
                 invalidDirectEmails,
                 invalidDirectWebhooks,
+                missingTemplateVariables: missingVariableEntries,
+                unexpectedTemplateVariables: unexpectedVariableEntries,
             },
             identification: {
                 duplicateIdentifiers,
             }
         }
     };
+}
+
+export function parseTemplateVariables(content: DeliveryContent): Set<string> {
+    if(content === null) return new Set<string>(); 
+
+    const templateVariables = new Set<string>();
+    const fieldRegex = /\{\{\s*([^{}]+?)\s*\}\}/g;
+
+    const extractFields = (text: string) => {
+        let match: RegExpExecArray | null;
+
+        while ((match = fieldRegex.exec(text)) !== null) {
+            templateVariables.add(match[1].trim());
+        }
+    };
+
+    if (content.body) {
+        extractFields(content.body);
+    }
+
+    if (content.subject) {
+        extractFields(content.subject);
+    }
+
+    return templateVariables;
 }

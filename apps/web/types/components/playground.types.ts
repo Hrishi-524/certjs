@@ -27,6 +27,8 @@ export type ValidationResult = {
             invalidWebhookUrls: ValidationIssueEntry[];
             invalidDirectEmails: ValidationIssueEntry[];
             invalidDirectWebhooks: ValidationIssueEntry[];
+            missingTemplateVariables: ValidationIssueEntry[];
+            unexpectedTemplateVariables: ValidationIssueEntry[];
         };
         identification: {
             duplicateIdentifiers: ValidationIssueEntry[];
