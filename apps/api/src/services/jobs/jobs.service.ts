@@ -2,7 +2,7 @@ import { db } from "@certjs/db";
 import { eq, and } from "drizzle-orm";
 import { templates, jobs, documents, placeholders } from "@certjs/db/schema";
 import { enqueueDocument } from "#app/services/queue/queue.service";
-import type { CreateJobParams } from "#app/types/jobs-types";
+import type { CreateJobParams, ValidationResult } from "#app/types/jobs-types";
 import crypto from "crypto";
 import { sql } from "drizzle-orm";
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "#app/middleware/express-errors";
@@ -10,6 +10,7 @@ import fetchFileBuffer from "#app/utils/fetch-file-buffer"
 import{ renderCertificate} from "@certjs/core/render-engine"
 import generatePresignedUrl from "../documents/get-signed-url.js";
 import { getKeyForS3Url } from "../templates/get-key.js";
+import { validate } from "./validate.service.js";
 
 export async function createBatchJobService(params: CreateJobParams) {
     // 1. Validate template exists
@@ -31,34 +32,7 @@ export async function createBatchJobService(params: CreateJobParams) {
         throw new BadRequestError("Template is inactive")
     }
 
-    // 4. Load Placeholders
-    const placeholdersList = await db.select().from(placeholders).where(
-        eq(placeholders.template_id, template.id)
-    )
-
-    // 5. Ensure that template has placeholders
-    if (placeholdersList.length === 0) {
-        throw new BadRequestError( "Template has no placeholders" );
-    }
-    
-    // 6. Extract required keys
-    const requiredKeys = new Set( placeholdersList.map(p => p.key) )
-
-    // 7. Validate recipients array
-    if(params.recipients.length === 0) {
-        throw new BadRequestError( "Request has no recipients" );
-    }
-
-    // 8. Validate every recipient
-    for(const recipient of params.recipients) {
-        for(const key of requiredKeys) {
-            if(recipient[key] === undefined) {
-                throw new BadRequestError( `Missing placeholder key: ${key}` );
-            }
-        }
-    }
-
-    // 9. Idempotency Check
+    // 4. Idempotency Check
     if (params.idempotencyKey) {
         const [existingJob] = await db
             .select()
@@ -82,41 +56,50 @@ export async function createBatchJobService(params: CreateJobParams) {
         }
     }
 
+    // 5. Load Placeholders
+    const placeholdersList = await db.select().from(placeholders).where(
+        eq(placeholders.template_id, template.id)
+    )
+
+    // 6. Validate data
+    const validationResult: ValidationResult = validate(params.recipients, params.semantics, placeholdersList);
+
+    const fileterdRecipients = validationResult.sanitizedData;
+
+    if (fileterdRecipients.length === 0) {
+        throw new BadRequestError("No valid recipients to process");
+    }
+
     const { createdDocuments, job } = await db.transaction(async (tx) => {
-        // 10. Create Parent Job
+        // 7. Create Parent Job
         const [job] = await tx.insert(jobs).values({
             job_type: "CERTIFICATE_BATCH",
             idempotency_key: params.idempotencyKey,
             user_id: params.userId,
             template_id: params.templateId,
             status: "pending",
-            total_count: params.recipients.length,
+            total_count: fileterdRecipients.length,
             processed_count: 0,
-            webhook_url: params.webhookUrl,
-            webhook_secret: params.webhookSecret
+            semantics: params.semantics
         }).returning()
 
-        // 11. Create Document Rows - Child Job (document in bullmq job)
-        const documentsList = params.recipients.map(recipient => ({
+        // 8. Create Document Rows - Child Job (document in bullmq job)
+        const documentsList = fileterdRecipients.map(recipient => ({
             job_id: job.id,
             recipient_data: recipient, 
             verify_token: crypto.randomBytes(32).toString("hex")
         }))
         
-        // 12. Insert All Dcoument Rows
+        // 9. Insert All Dcoument Rows
         const createdDocuments = await tx.insert(documents).values(documentsList).returning()
 
         return { createdDocuments, job }
     })
 
-    if (createdDocuments.length !== params.recipients.length) {
-        throw new InternalServerError( "Failed to create all document records" );
-    }
-
-    // 13. Enqueue BullMQ Child Jobs
+    // 10. Enqueue BullMQ Child Jobs
     await enqueueDocument(createdDocuments, job.id);
 
-    // 14. Return Summary
+    // 11. Return Summary
     return {
         job: {
             id: job.id,
@@ -124,7 +107,8 @@ export async function createBatchJobService(params: CreateJobParams) {
             total_count: job.total_count,
             processed_count: job.processed_count,
             failed_count: job.failed_count // usually 0
-        }
+        },
+        validationResult
     };
 }
 
@@ -163,8 +147,7 @@ export async function getJobStatusService(jobId: string, userId: string) {
             maxRetries: job.max_retries,
             failedAt: job.failed_at,
             presignedZipUrl: presignedZipUrl,
-            webhookUrl: job.webhook_url,
-            webhookSecret: job.webhook_secret,
+            semantics: job.semantics,
             createdAt: job.created_at,
             completedAt: job.completed_at
         }
