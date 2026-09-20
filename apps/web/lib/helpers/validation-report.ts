@@ -73,6 +73,18 @@ function getIssueArrayCategories(
             issues: validation.information.delivery.invalidDirectWebhooks,
         },
         {
+            group: "Delivery",
+            label: "Missing template variables",
+            severity: "warning",
+            issues: validation.information.delivery.missingTemplateVariables,
+        },
+        {
+            group: "Delivery",
+            label: "Unexpected template variables",
+            severity: "warning",
+            issues: validation.information.delivery.unexpectedTemplateVariables,
+        },
+        {
             group: "Identification",
             label: "Duplicate identifiers",
             severity: "warning",
