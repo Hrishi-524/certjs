@@ -18,8 +18,6 @@ export const jobs = pgTable("jobs", {
     processed_count: integer("processed_count").notNull().default(0),
     failed_count: integer("failed_count").notNull().default(0),
     zip_s3_url: text("zip_s3_url"),
-    webhook_url: text("webhook_url"),
-    webhook_secret: text("webhook_secret"),
     created_at: timestamp("created_at").defaultNow().notNull(),
     completed_at: timestamp("completed_at"),
     semantics: jsonb("semantics"),
