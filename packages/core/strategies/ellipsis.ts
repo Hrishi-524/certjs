@@ -4,16 +4,16 @@ import measureTextWidth  from "../utils/measureWidth";
 export default function ellipsisText(
     content: string,
     width: number,
-    ph_width: number,
+    placeholderWidth: number,
     fontSize: number,
     family: string
 ):  LayoutResult {
-    const maxWidth = width * ph_width;
+    const maxWidth = width * placeholderWidth;
 
     if (measureTextWidth(content, fontSize, family) <= maxWidth) {
         return {
         lines: [content],
-        font_size: fontSize
+        fontSize
         };
     }
 
@@ -25,11 +25,11 @@ export default function ellipsisText(
         const testWidth = measureTextWidth(testText + "...", fontSize, family);
 
         if (testWidth > maxWidth) {
-            return { lines: [text + "..."], font_size: fontSize };
+            return { lines: [text + "..."], fontSize };
         }
 
         text = testText;
     }
 
-    return { lines: [text], font_size: fontSize };
+    return { lines: [text], fontSize };
 }

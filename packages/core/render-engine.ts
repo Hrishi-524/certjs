@@ -24,7 +24,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
 
     /*
         Placholders schema (ph as referenced in types.ts):
-        - id, template_id (FK), name, x, y, key, align, width, height, font_size, font_color, font_family, min_font_size, startergy ("shrink" | "ellipsis" | "wrap"), overflow
+        - id, templateId (FK), name, x, y, key, align, width, height, fontSize, fontColor, fontFamily, minFontSize, strategy ("shrink" | "ellipsis" | "wrap"), overflow
     */
 
     // Step 2. For each placeholder, create an SVG <text> element with absolute pixel coordinates.
@@ -43,18 +43,18 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
         const content = input.data[ph.key];
      
         const strategy : "shrink" | "ellipsis" | "wrap" = ph.strategy ?? "shrink";
-        const fontSize : number = ph.font_size ?? 40;
-        const color = ph.font_color ?? "#000000";
-        const family = ph.font_family ?? "sans-serif"; 
-        const ph_width = ph.width;
-        const min_font_size = ph.min_font_size;
+        const fontSize : number = ph.fontSize ?? 40;
+        const color = ph.fontColor ?? "#000000";
+        const family = ph.fontFamily ?? "sans-serif"; 
+        const placeholderWidth = ph.width;
+        const minFontSize = ph.minFontSize;
         
         // Get Placeholder text and apply strategy if needed
         let result : LayoutResult = strategyFn(
             String(content),
-            min_font_size? min_font_size : 10,
+            minFontSize ?? 10,
             width,
-            ph_width,
+            placeholderWidth,
             fontSize,
             family,
             strategy
@@ -63,7 +63,7 @@ export async function renderCertificate(input: RenderInput, debugOptions?: Debug
         
         // strategyFn will return the processed text and font size based on the strategy
         // If no processing is needed, it will return the original content and font size
-        const correctedFontSize = result.font_size;
+        const correctedFontSize = result.fontSize;
         const lineHeight = correctedFontSize * 1.2;
         const totalHeight = (result.lines.length - 1) * lineHeight;
         const startY = centerY - totalHeight / 2;

@@ -1,4 +1,4 @@
-import { apikeys, db } from "@certjs/db";
+import { apiKeys, db } from "@certjs/db";
 import { generateApiKey } from "./generate-api-key.js";
 import { BadRequestError, NotFoundError } from "#app/middleware/express-errors";
 import { and, eq, desc } from "drizzle-orm";
@@ -10,12 +10,12 @@ export async function createApiKeyService(userId: string, name: string, expiry: 
 
     const { apikey, hash, prefix } = generateApiKey();
 
-    const [row] = await db.insert(apikeys).values({
-        user_id: userId,
-        key_hash: hash,
-        key_prefix: prefix,
+    const [row] = await db.insert(apiKeys).values({
+        userId: userId,
+        keyHash: hash,
+        keyPrefix: prefix,
         name: name,
-        expires_at: expiry ?? null
+        expiresAt: expiry ?? null
     }).returning();
 
     return {
@@ -26,10 +26,10 @@ export async function createApiKeyService(userId: string, name: string, expiry: 
 }
 
 export async function getPrefix(apiKeyId: string, userId: string) {
-    const [row] = await db.select().from(apikeys).where(
+    const [row] = await db.select().from(apiKeys).where(
         and(
-            eq(apikeys.id, apiKeyId),
-            eq(apikeys.user_id, userId)
+            eq(apiKeys.id, apiKeyId),
+            eq(apiKeys.userId, userId)
         )
     );
 
@@ -37,14 +37,14 @@ export async function getPrefix(apiKeyId: string, userId: string) {
         throw new NotFoundError("Api key not found");
     }
 
-    return row.key_prefix;
+    return row.keyPrefix;
 }
 
 export async function deleteApiKeyService(apiKeyId: string, userId: string) {
-    const [row] = await db.delete(apikeys).where(
+    const [row] = await db.delete(apiKeys).where(
         and(
-            eq(apikeys.id, apiKeyId),
-            eq(apikeys.user_id, userId)
+            eq(apiKeys.id, apiKeyId),
+            eq(apiKeys.userId, userId)
         )
     ).returning();
 
@@ -56,12 +56,12 @@ export async function deleteApiKeyService(apiKeyId: string, userId: string) {
 }
 
 export async function deActivateApiKeyService(apiKeyId: string, userId: string) {
-    const [row] = await db.update(apikeys).set({
-        is_active: false
+    const [row] = await db.update(apiKeys).set({
+        isActive: false
     }).where(
         and(
-            eq(apikeys.id, apiKeyId),
-            eq(apikeys.user_id, userId)
+            eq(apiKeys.id, apiKeyId),
+            eq(apiKeys.userId, userId)
         )
     ).returning()
 
@@ -69,21 +69,13 @@ export async function deActivateApiKeyService(apiKeyId: string, userId: string) 
         throw new NotFoundError("Api key not found");
     }
 
-    return { name : row.name, prefix: row.key_prefix }
+    return { name : row.name, prefix: row.keyPrefix }
 }
 
 export async function getAllApiKeysService(userId: string) {
-    const rows = await db.select().from(apikeys).where( 
-        eq(apikeys.user_id, userId)
-    ).orderBy(desc(apikeys.created_at));
+    const allApiKeys = await db.select().from(apiKeys).where( 
+        eq(apiKeys.userId, userId)
+    ).orderBy(desc(apiKeys.createdAt));
 
-    return rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        prefix: row.key_prefix,
-        isActive: row.is_active,
-        createdAt: row.created_at,
-        lastUsedAt: row.last_used_at,
-        expiresAt: row.expires_at
-    }));
+    return allApiKeys;
 }

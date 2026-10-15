@@ -24,7 +24,7 @@ export async function signUpUser(req: Request, res: Response) {
         },
         session: {
             id: data.session.id,
-            expiresAt: data.session.expires_at
+            expiresAt: data.session.expiresAt
         }
     });
 }
@@ -38,17 +38,7 @@ export async function loginUser(req: Request, res: Response) {
         refreshCookieOptions
     );
     
-    res.status(200).json({
-        accessToken: data.accessToken,
-        user: {
-            id: data.user.id,
-            email: data.user.email
-        },
-        session: {
-            id: data.session.id,
-            expiresAt: data.session.expires_at
-        }
-    });
+    res.status(200).json(data);
 }
 
 export const logoutUser = async ( req: Request, res: Response ) => {
@@ -69,15 +59,7 @@ export const logoutUser = async ( req: Request, res: Response ) => {
 
 export const getCurrentUser = async (req: Request, res: Response) => {
     const user = await getCurrentUserService(req.user.id);
-    res.status(200).json({
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            avatarUrl: user.avatar_url,
-            emailVerified: user.email_verified
-        }
-    });
+    res.status(200).json({user});
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
@@ -139,7 +121,7 @@ export async function handleGoogleAuthCallback(req: Request, res: Response) {
         refreshToken: `${string}-${string}-${string}-${string}-${string}`;
         session: {
             id: string;
-            expires_at: Date;
+            expiresAt: Date;
         };
         user: {
             id: string;

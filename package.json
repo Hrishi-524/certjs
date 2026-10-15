@@ -8,7 +8,7 @@
     ],
     "scripts": {
         "build": "npm run build:packages && npm run build:apps",
-        "build:packages": "npm run build -w @certjs/db && npm run build -w @certjs/queue && npm run build -w @certjs/core",
+        "build:packages": "npm run build -w @certjs/db && npm run build -w @certjs/queue && npm run build -w @certjs/core && npm run build -w @certjs/storage-contract && npm run build -w @certjs/storage-s3 && npm run build -w @certjs/storage",
         "build:apps": "npm run build -w @certjs/api && npm run build -w @certjs/worker && npm run build -w @certjs/web",
         "build:server": "npm run build:packages && npm run build -w @certjs/api && npm run build -w @certjs/worker",
         "build:web": "npm run build -w @certjs/web",
@@ -18,11 +18,10 @@
         "lint": "npm run lint -w @certjs/api && npm run lint -w @certjs/worker && npm run lint -w @certjs/web",
         "lint:server": "npm run lint -w @certjs/api && npm run lint -w @certjs/worker",
         "lint:web": "npm run lint -w @certjs/web",
-        "typecheck": "npm run typecheck -w @certjs/api && npm run typecheck -w @certjs/worker && npm run typecheck -w @certjs/web && npm run typecheck -w @certjs/db && npm run typecheck -w @certjs/queue && npm run typecheck -w @certjs/core",
-        "typecheck:server": "npm run typecheck -w @certjs/api && npm run typecheck -w @certjs/worker && npm run typecheck -w @certjs/db && npm run typecheck -w @certjs/queue && npm run typecheck -w @certjs/core"
+        "typecheck": "npm run typecheck -w @certjs/api && npm run typecheck -w @certjs/worker && npm run typecheck -w @certjs/web && npm run typecheck -w @certjs/db && npm run typecheck -w @certjs/queue && npm run typecheck -w @certjs/core && npm run typecheck -w @certjs/storage-contract && npm run typecheck -w @certjs/storage-s3 && npm run typecheck -w @certjs/storage",
+        "typecheck:server": "npm run typecheck -w @certjs/api && npm run typecheck -w @certjs/worker && npm run typecheck -w @certjs/db && npm run typecheck -w @certjs/queue && npm run typecheck -w @certjs/core && npm run typecheck -w @certjs/storage-contract && npm run typecheck -w @certjs/storage-s3 && npm run typecheck -w @certjs/storage"
     },
     "dependencies": {
-        "@aws-sdk/s3-request-presigner": "^3.1073.0",
         "archiver": "^8.0.0",
         "bullmq": "^5.72.1",
         "drizzle-orm": "^0.45.1",
@@ -34,7 +33,7 @@
     "devDependencies": {
         "@types/archiver": "^8.0.0",
         "@types/ms": "^2.1.0",
-        "@types/node": "^25.9.2",
+        "@types/node": "^25.9.8",
         "turbo": "^2.10.8",
         "typescript": "5.9.3"
     }

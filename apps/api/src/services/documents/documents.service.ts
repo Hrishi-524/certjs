@@ -1,51 +1,58 @@
-import { documents, jobs } from "@certjs/db";
-import { db } from "@certjs/db";
-import { eq, and } from "drizzle-orm";
-import generatePresignedUrl from "./get-signed-url.js";
+import { documents, jobs, db } from "@certjs/db";
+import type { Document, DocumentWithPresignedUrl } from "#app/types/document-types";
+import { eq } from "drizzle-orm";
+import { storage } from "@certjs/storage";
 import { NotFoundError, UnauthorizedError } from "#app/middleware/express-errors";
 
-export async function getDocumentService(docId: string, userId: string) { 
-    const [doc] = await db.select().from(documents).where(eq(documents.id, docId));
 
-    if(!doc) {
+export async function getDocumentService(
+    docId: string,
+    userId: string,
+): Promise<DocumentWithPresignedUrl> {
+    const [doc] = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.id, docId));
+
+    if (!doc) {
         throw new NotFoundError("Document not found");
     }
 
-    const job = await db.select().from(jobs).where(eq(jobs.id, doc.job_id)).limit(1).then(res => res[0]);
+    const [job] = await db
+        .select()
+        .from(jobs)
+        .where(eq(jobs.id, doc.jobId))
+        .limit(1);
 
     if (!job) {
         throw new NotFoundError("Job not found");
     }
 
-    if (job.user_id !== userId) {
+    if (job.userId !== userId) {
         throw new UnauthorizedError("Unauthorized");
     }
 
-    let presignedUrl = null;
-    if(doc.status === "completed" && doc.s3_url) {
-        presignedUrl = await generatePresignedUrl(doc.s3_url.split(".amazonaws.com/")[1]);
+    let presignedUrl: string | null = null;
+
+    if (doc.status === "completed" && doc.storageKey) {
+        presignedUrl = await storage.getSignedUrl(doc.storageKey);
     }
-    const normalizedDoc = {
-        id: doc.id,
-        jobId: doc.job_id,
-        recipientData: doc.recipient_data,
-        status: doc.status,
-        error: doc.error,
-        verifyToken: doc.verify_token,
-        presignedUrl: presignedUrl,
-        createdAt: doc.created_at,
-        jobStatus: job.status,
-        templateId: job.template_id,
-    }
-    return normalizedDoc;
+
+    return {
+        ...doc,
+        presignedUrl,
+    };
 }
 
-export async function downloadDocumentService(docId: string, userId: string) {
-    const normalizedDoc = await getDocumentService(docId, userId);
+export async function downloadDocumentService(
+    docId: string,
+    userId: string,
+): Promise<string> {
+    const doc = await getDocumentService(docId, userId);
 
-    if(normalizedDoc.status !== "completed" || normalizedDoc.presignedUrl === null) {
+    if (doc.status !== "completed" || doc.presignedUrl === null) {
         throw new NotFoundError("Document not available for download");
     }
 
-    return normalizedDoc.presignedUrl;
+    return doc.presignedUrl;
 }

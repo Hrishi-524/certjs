@@ -1,10 +1,10 @@
 import { users } from "./users";
 import { templates } from "./templates";
 import { documents } from "./documents";
-import { apikeys } from "./apikeys";
+import { apiKeys } from "./apikeys";
 import { placeholders } from "./placeholders";
 import { jobs } from "./jobs";
-import { oauth_accounts } from "./oauth_accounts";
+import { oauthAccounts } from "./oauth_accounts";
 import { sessions } from "./sessions";
 import { statusEnum , oauthProviderEnum } from "./enum";
 
@@ -12,10 +12,10 @@ export {
     users,
     templates,
     documents,
-    apikeys,
+    apiKeys,
     placeholders,
     jobs,
-    oauth_accounts,
+    oauthAccounts,
     sessions,
     statusEnum,
     oauthProviderEnum
@@ -25,10 +25,10 @@ export const schema = {
     users,
     templates,
     documents,
-    apikeys,
+    apiKeys,
     placeholders,
     jobs,
-    oauth_accounts,
+    oauthAccounts,
     sessions,
     statusEnum,
     oauthProviderEnum

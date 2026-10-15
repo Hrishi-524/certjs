@@ -1,23 +1,18 @@
 import { pgTable, uuid, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { jobs } from "./jobs"
-
-/*
-documents schema:
-id, job_id (FK), recipient_data, verify_token, s3_url, created_at
-*/
-type Entry = Record<string, string | number>;
+import type { Entry } from "../types";
 
 export const documents = pgTable("documents", {
     id: uuid("id").defaultRandom().primaryKey(),
-    job_id: uuid("job_id").notNull().references(() => jobs.id),
-    recipient_data: jsonb("recipient_data").$type<Entry>().notNull(),
+    jobId: uuid("job_id").notNull().references(() => jobs.id),
+    recipientData: jsonb("recipient_data").$type<Entry>().notNull(),
     status: text("status", { enum: ["pending", "processing", "completed", "failed"] }).notNull().default("pending"),
     error: text("error"),
-    verify_token: text("verify_token").notNull(),
-    storage_key: text("storage_key"),
-    file_name: text("file_name"),
-    created_at: timestamp("created_at").defaultNow().notNull()
+    verifyToken: text("verify_token").notNull(),
+    storageKey: text("storage_key"),
+    fileName: text("file_name"),
+    createdAt: timestamp("created_at").defaultNow().notNull()
 }, (table) => [
-    index("documents_job_id_index").on(table.job_id),
-    index("documents_verify_token_index").on(table.verify_token)
+    index("documents_job_id_index").on(table.jobId),
+    index("documents_verify_token_index").on(table.verifyToken)
 ]);

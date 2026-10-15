@@ -23,7 +23,7 @@ export async function registerWithPassword(input: RegisterInput) {
     const [user] = await db.insert(users).values({
         name: input.name,
         email: input.email,
-        password_hash: passwordHash
+        passwordHash: passwordHash
     }).returning({
         id: users.id,
         email: users.email
@@ -38,7 +38,7 @@ export async function registerWithPassword(input: RegisterInput) {
         refreshToken,
         session: {
             id: session.id,
-            expires_at: session.expires_at
+            expiresAt: session.expiresAt
         },
         user: {
             id: user.id,
@@ -56,11 +56,11 @@ export async function loginWithPassword(input: LoginInput) {
         throw new UnauthorizedError("Invalid email or password");
     }
 
-    if(user.password_hash === null) {
+    if(user.passwordHash === null) {
         throw new UnauthorizedError("Invalid email or password");
     }
 
-    const isMatch = await bcrypt.compare(input.password, user.password_hash);
+    const isMatch = await bcrypt.compare(input.password, user.passwordHash);
 
     if (!isMatch) {
         throw new UnauthorizedError("Invalid email or password");
@@ -75,7 +75,7 @@ export async function loginWithPassword(input: LoginInput) {
         refreshToken,
         session: {
             id: session.id,
-            expires_at: session.expires_at
+            expiresAt: session.expiresAt
         },
         user: {
             id: user.id,
@@ -89,7 +89,7 @@ export async function refreshSession( refreshToken: string ) {
 
     const rotatedRefreshToken = await rotateRefreshToken(session.id);
 
-    const accessToken = generateAccessToken(session.user_id);
+    const accessToken = generateAccessToken(session.userId);
 
     return {
         accessToken,
@@ -108,7 +108,7 @@ export async function logout( refreshToken: string ) {
 export async function logoutAllSessionsForUser( refreshToken: string ) {
     const session = await findValidSessionByRefreshToken(refreshToken);
 
-    await revokeAllSessionsForUser(session.user_id);
+    await revokeAllSessionsForUser(session.userId);
 
     return { success: true };
 }
@@ -127,7 +127,7 @@ export async function getCurrentUserService(userId: string) {
         id: user.id,
         name: user.name,
         email: user.email,
-        avatar_url: user.avatar_url,
-        email_verified: user.email_verified
+        avatarUrl: user.avatarUrl,
+        emailVerified: user.emailVerified
     };
 }

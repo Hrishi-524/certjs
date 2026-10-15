@@ -1,10 +1,10 @@
 import { pgTable, uuid, text, integer, unique, real, index } from "drizzle-orm/pg-core";
 import { templates } from "./templates"
-import { placeholderTypeEnum } from "./enum";
+import { placeholderStartergyEnum, placeholderTextAlignEnum, placeholderTypeEnum } from "./enum";
 
 export const placeholders = pgTable("placeholders", {
     id: uuid("id").defaultRandom().primaryKey(),
-    template_id: uuid("template_id").notNull().references(() => templates.id),
+    templateId: uuid("template_id").notNull().references(() => templates.id),
     name: text("name").notNull(),
     key: text("key").notNull(),
     type: placeholderTypeEnum("type").$default(() => "text").notNull(),
@@ -12,13 +12,13 @@ export const placeholders = pgTable("placeholders", {
     y: real("y").notNull(),
     width: real("width").notNull(),
     height: real("height").notNull(),
-    strategy: text("strategy", { enum: ["shrink", "ellipsis", "wrap"] }).default("shrink").notNull(), // "shrink" | "ellipsis" | "wrap"
-    min_font_size: integer("min_font_size"),
-    align: text("align", { enum: ["left", "center", "right"] }).notNull().default("left"),
-    font_size: integer("font_size").notNull(),
-    font_color: text("font_color").notNull(),
-    font_family: text("font_family").notNull()
+    strategy: placeholderStartergyEnum("strategy").default("shrink").notNull(), // "shrink" | "ellipsis" | "wrap"
+    minFontSize: integer("min_font_size"),
+    align: placeholderTextAlignEnum("align").notNull().default("left"),
+    fontSize: integer("font_size").notNull(),
+    fontColor: text("font_color").notNull(),
+    fontFamily: text("font_family").notNull()
 }, (table) => [
-    unique("template_key_unique").on(table.template_id, table.key),
-    index("placeholders_template_id_index").on(table.template_id)
+    unique("template_key_unique").on(table.templateId, table.key),
+    index("placeholders_template_id_index").on(table.templateId)
 ]);

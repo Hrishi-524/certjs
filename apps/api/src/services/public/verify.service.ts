@@ -8,12 +8,12 @@ const unverifiedResponse = {
     message: "Certificate not found or invalid or is not generated yet"
 }
 
-export async function verifyCertificateService(verifyToken: string) {
+export async function verifyCertificateService(verifyToken: string): Promise<any> {
     const [row] = await db.select()
         .from(documents)
-        .innerJoin(jobs, eq(documents.job_id, jobs.id))
-        .innerJoin(templates, eq(jobs.template_id, templates.id))
-        .where(eq(documents.verify_token, verifyToken));
+        .innerJoin(jobs, eq(documents.jobId, jobs.id))
+        .innerJoin(templates, eq(jobs.templateId, templates.id))
+        .where(eq(documents.verifyToken, verifyToken));
 
     if(!row) {
         return unverifiedResponse;
@@ -26,8 +26,8 @@ export async function verifyCertificateService(verifyToken: string) {
     return {
         verified: true,
         templateName: row.templates.name,
-        recipient: row.documents.recipient_data,
-        issuedAt: row.documents.created_at,
+        recipient: row.documents.recipientData,
+        issuedAt: row.documents.createdAt,
         status: row.documents.status
     }
 }

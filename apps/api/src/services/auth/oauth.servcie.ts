@@ -1,5 +1,5 @@
 import { googleOAuthClient } from "#app/config/google-oauth";
-import { oauth_accounts, users } from "@certjs/db/schema";
+import { oauthAccounts, users } from "@certjs/db/schema";
 import { db } from "@certjs/db";
 import { InternalServerError, NotFoundError } from "#app/middleware/express-errors";
 import { createSession } from "./sessions.service.js";
@@ -48,11 +48,11 @@ export async function loginWithGoogle(code: string) {
     }
     
     // find oauth account
-    const oauthAccount = await db.query.oauth_accounts.findFirst({
-        where: (oauth_accounts, {eq, and}) => 
+    const oauthAccount = await db.query.oauthAccounts.findFirst({
+        where: (oauthAccounts, {eq, and}) => 
             and(
-                eq(oauth_accounts.provider, "google"),
-                eq(oauth_accounts.provider_account_id, payload.sub)
+                eq(oauthAccounts.provider, "google"),
+                eq(oauthAccounts.providerAccountId, payload.sub)
             )
     })
     
@@ -60,7 +60,7 @@ export async function loginWithGoogle(code: string) {
     let userId: string
 
     if(oauthAccount) {
-        userId = oauthAccount.user_id
+        userId = oauthAccount.userId
     } else {
         userId = await findOrCreateUser(payload)
     }
@@ -89,7 +89,7 @@ export async function loginWithGoogle(code: string) {
         refreshToken,
         session: {
             id: session.id,
-            expires_at: session.expires_at
+            expiresAt: session.expiresAt
         },
         user: {
             id: user.id,
@@ -106,10 +106,10 @@ async function findOrCreateUser( payload: TokenPayload ) {
     })
 
     if(user) {
-        await db.insert(oauth_accounts).values({ 
-            user_id: user.id, 
+        await db.insert(oauthAccounts).values({ 
+            userId: user.id, 
             provider: "google", 
-            provider_account_id: payload.sub, 
+            providerAccountId: payload.sub, 
             email: payload.email!
         })
 
@@ -119,13 +119,13 @@ async function findOrCreateUser( payload: TokenPayload ) {
             const [user] = await tx.insert(users).values({ 
                 name: payload.name!, 
                 email: payload.email!, 
-                avatar_url: payload.picture 
+                avatarUrl: payload.picture 
             }).returning()
 
-            await tx.insert(oauth_accounts).values({ 
-                user_id: user.id, 
+            await tx.insert(oauthAccounts).values({ 
+                userId: user.id, 
                 provider: "google", 
-                provider_account_id: payload.sub, 
+                providerAccountId: payload.sub, 
                 email: payload.email! 
             })
 

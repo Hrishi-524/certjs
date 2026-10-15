@@ -10,7 +10,7 @@ import {
     getJobsService
 } from "#app/services/jobs/jobs.service";
 import { UnauthorizedError } from "#app/middleware/express-errors";
-import generatePresignedUrl from "#app/services/documents/get-signed-url";
+import { storage } from "@certjs/storage";
 
 export async function playgroundPreview(req: Request, res: Response) {
     const data = playgroundPreviewSchema.parse(req.body);
@@ -23,19 +23,19 @@ export async function playgroundPreview(req: Request, res: Response) {
 }
 
 export async function createBatchJob( req: Request, res: Response ) {
-    const data = CreateJobSchema.parse(req.body);
+    const params = CreateJobSchema.parse(req.body);
     const userId = req.user.id
 
     const jobMeta = await createBatchJobService({
         userId: userId,
-        ...data
+        ...params
     })
     
     return res.status(201).json({
         jobId: jobMeta.job.id,
         status: jobMeta.job.status,
-        totalCount: jobMeta.job.total_count,
-        processedCount: jobMeta.job.processed_count
+        totalCount: jobMeta.job.totalCount,
+        processedCount: jobMeta.job.processedCount
     })
 };
 
@@ -81,11 +81,7 @@ export async function downloadJobZip(req: Request, res: Response) {
         return res.status(409).json({ message: "Job not completed yet" });
     }
     
-    const url = new URL(zipUrl);
-
-    const key = url.pathname.slice(1); // removes leading '/'
-
-    const presignedZipUrl = await generatePresignedUrl(key);
+    const presignedZipUrl = await storage.getSignedUrl(zipUrl);
 
     return res.status(200).json({presignedZipUrl})
 }
@@ -141,7 +137,7 @@ export async function getJobDocuments(req: Request, res: Response) {
         status: "pending" | "processing" | "completed" | "failed";
         error: string | null;
         verifyToken: string;
-        s3Url: string | null;
+        storageKey: string | null;
         createdAt: Date;
     }[]
 */

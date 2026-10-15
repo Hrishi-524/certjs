@@ -1,19 +1,35 @@
-** Schema Definations **
+# Database Schema
 
-api_keys schema:
-id, user_id (FK), key_hash, name, created_at, lastused_at
+Drizzle property names use camelCase in TypeScript. The strings passed to Drizzle column constructors remain the physical PostgreSQL column names.
 
-documents schema:
-id, job_id (FK), recipient_data, verify_token, s3_url, created_at
+## `apiKeys` (`apikeys` table)
 
-jobs schema:
-- id (uuid, PK), job_type (text, enum: CERTIFICATE_BATCH), ideompotency_key (text, unique), user_id (uuid, FK to users), template_id (uuid, FK to templates), status (text, enum: queued, processing, completed, failed), attempts (integer), max_attempts (integer), last_error (text), failed_at (timestamp), total_count (integer), processed_count (integer), zip_s3_url (text), webhook_url (text), created_at (timestamp), completed_at (timestamp)   
+- `id`, `rateLimit`, `userId`, `keyHash`, `keyPrefix`, `name`, `isActive`, `createdAt`, `lastUsedAt`, `expiresAt`
 
-placeholders schema:
-id, template_id (FK), name, x, y, width, strategy, min_font_size, align, font_size, font_color, font_family
+## `documents` table
 
-templates schema:
-id, user_id (FK), name, s3_url, width, height, created_at
+- `id`, `jobId`, `recipientData`, `status`, `error`, `verifyToken`, `storageKey`, `fileName`, `createdAt`
 
-users schema:
-id, username, email, password_hash, created_at
+## `jobs` table
+
+- `id`, `jobType`, `idempotencyKey`, `userId`, `templateId`, `status`, `retryCount`, `maxRetries`, `lastError`, `failedAt`, `totalCount`, `processedCount`, `failedCount`, `zipKey`, `createdAt`, `completedAt`, `semantics`
+
+## `placeholders` table
+
+- `id`, `templateId`, `name`, `key`, `type`, `x`, `y`, `width`, `height`, `strategy`, `minFontSize`, `align`, `fontSize`, `fontColor`, `fontFamily`
+
+## `templates` table
+
+- `id`, `userId`, `name`, `storageKey`, `version`, `isActive`, `width`, `height`, `createdAt`, `updatedAt`
+
+## `users` table
+
+- `id`, `name`, `email`, `emailVerified`, `passwordHash`, `avatarUrl`, `createdAt`, `updatedAt`
+
+## `sessions` table
+
+- `id`, `userId`, `tokenHash`, `expiresAt`, `revokedAt`, `createdAt`, `lastUsedAt`, `userAgent`, `ipAddress`
+
+## `oauthAccounts` (`oauth_accounts` table)
+
+- `id`, `userId`, `provider`, `providerAccountId`, `email`, `createdAt`, `updatedAt`
