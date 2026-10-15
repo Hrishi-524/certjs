@@ -17,7 +17,7 @@ export const jobs = pgTable("jobs", {
     total_count: integer("total_count").notNull(),
     processed_count: integer("processed_count").notNull().default(0),
     failed_count: integer("failed_count").notNull().default(0),
-    zip_s3_url: text("zip_s3_url"),
+    zip_key: text("zip_key"),
     created_at: timestamp("created_at").defaultNow().notNull(),
     completed_at: timestamp("completed_at"),
     semantics: jsonb("semantics"),
