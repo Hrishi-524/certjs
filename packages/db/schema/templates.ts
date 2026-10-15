@@ -10,7 +10,7 @@ export const templates = pgTable("templates", {
     id: uuid("id").defaultRandom().primaryKey(),
     user_id: uuid("user_id").notNull().references(() => users.id),
     name: text("name").notNull(),
-    s3_url: text("s3_url").notNull(),
+    storage_key: text("storage_key").notNull(),
     version: integer("version").notNull().default(1),
     is_active: boolean("is_active").notNull().default(true), 
     width: integer("width"),

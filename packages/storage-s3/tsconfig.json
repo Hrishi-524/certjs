@@ -1,0 +1,16 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "outDir": "./dist",
+        "rootDir": ".",
+        "composite": true,
+        "declaration": true
+    },
+    "include": ["*.ts"],
+    "exclude": ["node_modules", "dist"],
+    "references": [
+        { "path": "../storage-contract" }
+    ]
+}

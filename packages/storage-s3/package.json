@@ -1,0 +1,15 @@
+{
+    "name": "@certjs/storage-s3",
+    "version": "1.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.1073.0",
+        "@certjs/storage-contract": "1.0.0"
+    }
+}
