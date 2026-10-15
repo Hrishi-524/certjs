@@ -8,8 +8,7 @@ import { sql } from "drizzle-orm";
 import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError } from "#app/middleware/express-errors";
 import fetchFileBuffer from "#app/utils/fetch-file-buffer"
 import{ renderCertificate} from "@certjs/core/render-engine"
-import generatePresignedUrl from "../documents/get-signed-url.js";
-import { getKeyForS3Url } from "../templates/get-key.js";
+import { storage } from "@certjs/storage";
 import { validate } from "./validate.service.js";
 
 export async function createBatchJobService(params: CreateJobParams) {
@@ -23,12 +22,12 @@ export async function createBatchJobService(params: CreateJobParams) {
     }
 
     // 2. Validate ownership
-    if(template.user_id !== params.userId) {
+    if(template.userId !== params.userId) {
         throw new ForbiddenError("You dont own this template")
     }
 
     // 3. Validate template active
-    if(!template.is_active) {
+    if(!template.isActive) {
         throw new BadRequestError("Template is inactive")
     }
 
@@ -39,8 +38,8 @@ export async function createBatchJobService(params: CreateJobParams) {
             .from(jobs)
             .where(
                 and(
-                    eq(jobs.user_id, params.userId),
-                    eq(jobs.idempotency_key, params.idempotencyKey)
+                    eq(jobs.userId, params.userId),
+                    eq(jobs.idempotencyKey, params.idempotencyKey)
                 )
             );
 
@@ -49,8 +48,8 @@ export async function createBatchJobService(params: CreateJobParams) {
                 job: {
                     id: existingJob.id,
                     status: existingJob.status,
-                    total_count: existingJob.total_count,
-                    processed_count: existingJob.processed_count
+                    totalCount: existingJob.totalCount,
+                    processedCount: existingJob.processedCount
                 }
             };
         }
@@ -58,7 +57,7 @@ export async function createBatchJobService(params: CreateJobParams) {
 
     // 5. Load Placeholders
     const placeholdersList = await db.select().from(placeholders).where(
-        eq(placeholders.template_id, template.id)
+        eq(placeholders.templateId, template.id)
     )
 
     // 6. Validate data
@@ -73,21 +72,21 @@ export async function createBatchJobService(params: CreateJobParams) {
     const { createdDocuments, job } = await db.transaction(async (tx) => {
         // 7. Create Parent Job
         const [job] = await tx.insert(jobs).values({
-            job_type: "CERTIFICATE_BATCH",
-            idempotency_key: params.idempotencyKey,
-            user_id: params.userId,
-            template_id: params.templateId,
+            jobType: "CERTIFICATE_BATCH",
+            idempotencyKey: params.idempotencyKey,
+            userId: params.userId,
+            templateId: params.templateId,
             status: "pending",
-            total_count: fileterdRecipients.length,
-            processed_count: 0,
+            totalCount: fileterdRecipients.length,
+            processedCount: 0,
             semantics: params.semantics
         }).returning()
 
         // 8. Create Document Rows - Child Job (document in bullmq job)
         const documentsList = fileterdRecipients.map(recipient => ({
-            job_id: job.id,
-            recipient_data: recipient, 
-            verify_token: crypto.randomBytes(32).toString("hex")
+            jobId: job.id,
+            recipientData: recipient, 
+            verifyToken: crypto.randomBytes(32).toString("hex")
         }))
         
         // 9. Insert All Dcoument Rows
@@ -104,52 +103,52 @@ export async function createBatchJobService(params: CreateJobParams) {
         job: {
             id: job.id,
             status: job.status,
-            total_count: job.total_count,
-            processed_count: job.processed_count,
-            failed_count: job.failed_count // usually 0
+            totalCount: job.totalCount,
+            processedCount: job.processedCount,
+            failedCount: job.failedCount // usually 0
         },
         validationResult
     };
 }
 
-export async function getJobStatusService(jobId: string, userId: string) {
+export async function getJobStatusService(jobId: string, userId: string): Promise<any> {
     const [job] = await db.select().from(jobs).where(
         and(
             eq(jobs.id, jobId),
-            eq(jobs.user_id, userId)
+            eq(jobs.userId, userId)
         )
     )
 
     if(!job) {
-        throw new NotFoundError("Job with given job_id not found")
+        throw new NotFoundError("Job with given jobId not found")
     }
 
-    if(job.status === "completed" && !job.zip_s3_url) {
-        throw new InternalServerError("Job is completed but zip_s3_url is missing")
+    if(job.status === "completed" && !job.zipKey) {
+        throw new InternalServerError("Job is completed but zipKey is missing")
     }
 
     let presignedZipUrl: string | null = null;
 
-    if(job.status === "completed" && job.zip_s3_url) {
-        presignedZipUrl = await generatePresignedUrl(job.zip_s3_url);
+    if(job.status === "completed" && job.zipKey) {
+        presignedZipUrl = await storage.getSignedUrl(job.zipKey);
     }
 
     return {
         status: job.status,
         meta: {
-            jobType: job.job_type,
-            totalCount: job.total_count,
-            processedCount: job.processed_count,
-            failedCount: job.failed_count,
-            lastError: job.last_error,
+            jobType: job.jobType,
+            totalCount: job.totalCount,
+            processedCount: job.processedCount,
+            failedCount: job.failedCount,
+            lastError: job.lastError,
             jobId: job.id,
-            retryCount: job.retry_count,
-            maxRetries: job.max_retries,
-            failedAt: job.failed_at,
+            retryCount: job.retryCount,
+            maxRetries: job.maxRetries,
+            failedAt: job.failedAt,
             presignedZipUrl: presignedZipUrl,
             semantics: job.semantics,
-            createdAt: job.created_at,
-            completedAt: job.completed_at
+            createdAt: job.createdAt,
+            completedAt: job.completedAt
         }
     }
 }
@@ -170,12 +169,12 @@ export async function playgroundPreviewService(
     }
 
     // 2. Validate ownership
-    if (template.user_id !== userId) {
+    if (template.userId !== userId) {
         throw new ForbiddenError("You don't own this template");
     }
 
     // 3. Validate template active
-    if (!template.is_active) {
+    if (!template.isActive) {
         throw new BadRequestError("Template is inactive");
     }
 
@@ -183,7 +182,7 @@ export async function playgroundPreviewService(
     const placeholdersList = await db
         .select()
         .from(placeholders)
-        .where(eq(placeholders.template_id, template.id));
+        .where(eq(placeholders.templateId, template.id));
 
     if (placeholdersList.length === 0) {
         throw new BadRequestError("Template has no placeholders");
@@ -199,7 +198,7 @@ export async function playgroundPreviewService(
     }
 
     // 6. Download template image
-    const templateBuffer = await fetchFileBuffer(template.s3_url);
+    const templateBuffer = await fetchFileBuffer(template.storageKey);
 
     if (!templateBuffer) {
         throw new InternalServerError("Unable to load template image");
@@ -229,7 +228,7 @@ export async function getZip(jobId: string, userId: string) {
     const [job] = await db.select().from(jobs).where(
         and(
             eq(jobs.id, jobId),
-            eq(jobs.user_id, userId)
+            eq(jobs.userId, userId)
         )
     )
 
@@ -237,18 +236,18 @@ export async function getZip(jobId: string, userId: string) {
         throw new NotFoundError("Job not found")
     }
 
-    if(job.status !== "completed" || !job.zip_s3_url) {
+    if(job.status !== "completed" || !job.zipKey) {
         return undefined
     }
 
-    return job.zip_s3_url
+    return job.zipKey
 }
 
 export async function retryJobService(jobId: string, userId: string) {
     const [job] = await db.select().from(jobs).where(
         and(
             eq(jobs.id, jobId),
-            eq(jobs.user_id, userId)
+            eq(jobs.userId, userId)
         )
     )
 
@@ -258,7 +257,7 @@ export async function retryJobService(jobId: string, userId: string) {
 
     const failedDocs = await db.select().from(documents).where(
         and(
-            eq(documents.job_id, jobId),
+            eq(documents.jobId, jobId),
             eq(documents.status, "failed")
         )
     )
@@ -272,15 +271,15 @@ export async function retryJobService(jobId: string, userId: string) {
         error: null
     }).where(
         and(
-            eq(documents.job_id, jobId),
+            eq(documents.jobId, jobId),
             eq(documents.status, "failed")
         )
     );
 
     await db.update(jobs).set({
         status: "processing",
-        last_error: null,
-        failed_count: sql`${jobs.failed_count} - ${failedDocs.length}`
+        lastError: null,
+        failedCount: sql`${jobs.failedCount} - ${failedDocs.length}`
     }).where(eq(jobs.id, jobId));
 
     await enqueueDocument(failedDocs, jobId);
@@ -290,11 +289,11 @@ export async function retryJobService(jobId: string, userId: string) {
     };
 }
 
-export async function getJobDocumentsService(jobId: string, userId: string) {
+export async function getJobDocumentsService(jobId: string, userId: string): Promise<any> {
     const [job] = await db.select().from(jobs).where(
         and(
             eq(jobs.id, jobId),
-            eq(jobs.user_id, userId)
+            eq(jobs.userId, userId)
         )
     )
 
@@ -303,18 +302,18 @@ export async function getJobDocumentsService(jobId: string, userId: string) {
     }
 
     const docs = await db.select().from(documents).where(
-        eq(documents.job_id, jobId)
+        eq(documents.jobId, jobId)
     )
 
     const normalizedDocs = docs.map(doc => ({
         id: doc.id,
-        jobId: doc.job_id,
-        recipientData: doc.recipient_data,
+        jobId: doc.jobId,
+        recipientData: doc.recipientData,
         status: doc.status,
         error: doc.error,
-        verifyToken: doc.verify_token,
-        s3Url: doc.s3_url,
-        createdAt: doc.created_at
+        verifyToken: doc.verifyToken,
+        storageKey: doc.storageKey,
+        createdAt: doc.createdAt
     }))
 
     return normalizedDocs;
@@ -326,24 +325,24 @@ export async function getJobsService(userId: string) {
 
         status: jobs.status,
 
-        totalCount: jobs.total_count,
-        processedCount: jobs.processed_count,
-        failedCount: jobs.failed_count,
+        totalCount: jobs.totalCount,
+        processedCount: jobs.processedCount,
+        failedCount: jobs.failedCount,
 
-        retryCount: jobs.retry_count,
-        maxRetries: jobs.max_retries,
+        retryCount: jobs.retryCount,
+        maxRetries: jobs.maxRetries,
 
-        createdAt: jobs.created_at,
-        completedAt: jobs.completed_at,
+        createdAt: jobs.createdAt,
+        completedAt: jobs.completedAt,
 
         template : {
             id: templates.id,
             name: templates.name,
         }
     }).from(jobs).leftJoin(templates, 
-        eq(jobs.template_id, templates.id)
+        eq(jobs.templateId, templates.id)
     ).where(
-        eq(jobs.user_id, userId)
+        eq(jobs.userId, userId)
     );
 
     return jobsList;

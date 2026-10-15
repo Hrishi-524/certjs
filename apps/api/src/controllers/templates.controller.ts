@@ -5,8 +5,7 @@ import { uploadTemplateImage } from "#app/services/templates/storage.service";
 import crypto from "crypto";
 import { BadRequestError, NotFoundError } from "#app/middleware/express-errors";
 import { createTemplateSchema, templateIdParamSchema, updateTemplateSchema } from "#app/schema/templates.schema";
-import generatePresignedUrl from "#app/services/documents/get-signed-url";
-import { getKeyForS3Url } from "#app/services/templates/get-key";
+import { storage } from "@certjs/storage";
 
 export const uploadTemplate = async (req: Request, res: Response) => {
     if (!req.file) {
@@ -18,23 +17,18 @@ export const uploadTemplate = async (req: Request, res: Response) => {
    
     const { name, width, height } = createTemplateSchema.parse(req.body);
 
-    const { key, url }= await uploadTemplateImage(
+    const { key } = await uploadTemplateImage(
         req.file.buffer,
         req.file.mimetype,
         userId,
         templateId
     );
     
-    const template = await createTemplate(templateId, url, userId, name, width, height);
+    const template = await createTemplate(templateId, key, userId, name, width, height);
 
     res.status(201).json({
         templateId: template.id,
-        userId: template.user_id,
-        name: template.name,
-        width: template.width,
-        height: template.height,
-        createdAt: template.created_at,
-        updatedAt: template.updated_at
+        ...template
     });
 };
 
@@ -48,18 +42,12 @@ export async function getTemplate(req: Request<IdParam>, res: Response, next: Ne
         throw new NotFoundError("Template not found");
     }
 
-    const key = getKeyForS3Url(template.s3_url)
-    const presignedUrl = await generatePresignedUrl(key);
+    const presignedUrl = await storage.getSignedUrl(template.storageKey);
 
     res.status(200).json({
         templateId: template.id,
-        userId: template.user_id,
-        presignedUrl: presignedUrl,
-        name: template.name,
-        width: template.width,
-        height: template.height,
-        createdAt: template.created_at,
-        updatedAt: template.updated_at
+        ...template,
+        presignedUrl
     });
 }
 
@@ -91,10 +79,10 @@ export async function updateTemplateName(req: Request<IdParam>, res: Response, n
 
     return res.status(200).json({
         templateId: template.id,
-        userId: template.user_id,
+        userId: template.userId,
         name: template.name,
-        createdAt: template.created_at,
-        updatedAt: template.updated_at
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt
     })
 }
 

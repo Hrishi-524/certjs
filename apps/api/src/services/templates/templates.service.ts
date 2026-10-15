@@ -1,18 +1,17 @@
 import { db, placeholders, templates } from "@certjs/db/index";
 import { eq, desc, and } from "drizzle-orm";
 import { NotFoundError } from "#app/middleware/express-errors";
-import generatePresignedUrl from "#app/services/documents/get-signed-url";
-import { getKeyForS3Url } from "#app/services/templates/get-key";
-import { deleteS3Object } from "#app/services/templates/storage.service";
+import { storage } from "@certjs/storage";
+import { deleteStoredObject } from "#app/services/templates/storage.service";
 
-export async function createTemplate(template_id: string, s3_url: string, userId: string, name: string, width: number, height: number) {
+export async function createTemplate(templateId: string, storageKey: string, userId: string, name: string, width: number, height: number) {
     const [template] = await db.insert(templates).values({ 
-        id: template_id,
-        user_id: userId,
-        name: name,
-        width: width,
-        height: height,
-        s3_url: s3_url
+        id: templateId,
+        userId,
+        name,
+        width,
+        height,
+        storageKey
     }).returning();
 
     return template;
@@ -22,7 +21,7 @@ export async function getTemplateById(templateId: string, userId: string) {
     const [template] = await db.select().from(templates).where(
         and(
             eq(templates.id, templateId), 
-            eq(templates.user_id, userId)
+            eq(templates.userId, userId)
         )
     );
 
@@ -31,57 +30,47 @@ export async function getTemplateById(templateId: string, userId: string) {
 
 export async function getAllTemplates(userId: string) {
     const templatesList = await db.select().from(templates).where(
-        eq(templates.user_id, userId)
+        eq(templates.userId, userId)
     ).orderBy(
-        desc(templates.created_at)
+        desc(templates.createdAt)
     );
 
     
-   const normalizedTemplatesList = await Promise.all(
+    const downloadableTemplates = await Promise.all(
         templatesList.map(async (template) => {
-            const key = getKeyForS3Url(template.s3_url);
-            const presignedUrl = await generatePresignedUrl(key);
+            const presignedUrl = await storage.getSignedUrl(template.storageKey);
 
             return {
-                templateId: template.id,
-                userId: template.user_id,
-                name: template.name,
-                presignedUrl,
-                version: template.version,
-                isActive: template.is_active,
-                width: template.width,
-                height: template.height,
-                createdAt: template.created_at,
-                updatedAt: template.updated_at,
+                ...template, 
+                presignedUrl
             };
         })
     );
 
-    return normalizedTemplatesList;
+    return downloadableTemplates;
 }
 
 export async function deleteTemplateById(templateId: string, userId: string){
     const [template] = await db.select().from(templates).where(
         and(
             eq(templates.id, templateId),
-            eq(templates.user_id, userId)
+            eq(templates.userId, userId)
         )
     );
 
     if (!template) throw new NotFoundError("Template not found");
 
-    const key = getKeyForS3Url(template.s3_url);
-    await deleteS3Object(key);
+    await deleteStoredObject(template.storageKey);
 
     await db.transaction(async (tx) => {
         await tx.delete(placeholders).where(
-            eq(placeholders.template_id, templateId)
+            eq(placeholders.templateId, templateId)
         );
 
         await tx.delete(templates).where(
             and(
                 eq(templates.id, templateId),
-                eq(templates.user_id, userId)
+                eq(templates.userId, userId)
             )
         );
     });
@@ -90,12 +79,12 @@ export async function deleteTemplateById(templateId: string, userId: string){
 export async function updateTemplateNameService( templateId: string, userId: string, name: string ) {
     const [template] = await db.update(templates).set({
         name,
-        updated_at: new Date()
+        updatedAt: new Date()
     }).where(
         and(
             eq(templates.id, templateId),
-            eq(templates.user_id, userId),
-            eq(templates.is_active, true)
+            eq(templates.userId, userId),
+            eq(templates.isActive, true)
         )
     ).returning();
 
@@ -108,12 +97,12 @@ export async function updateTemplateNameService( templateId: string, userId: str
 
 export async function deactivateTemplateService(templateId: string, userId: string) {
     const [template] = await db.update(templates).set({
-        is_active: false,
-        updated_at: new Date()
+        isActive: false,
+        updatedAt: new Date()
     }).where(
         and(
             eq(templates.id, templateId),
-            eq(templates.user_id, userId)
+            eq(templates.userId, userId)
         )
     ).returning()
 
@@ -126,12 +115,12 @@ export async function deactivateTemplateService(templateId: string, userId: stri
 
 export async function activateTemplateService(templateId: string, userId: string) {
     const [template] = await db.update(templates).set({
-        is_active: true,
-        updated_at: new Date()
+        isActive: true,
+        updatedAt: new Date()
     }).where(
         and(
             eq(templates.id, templateId),
-            eq(templates.user_id, userId)
+            eq(templates.userId, userId)
         )
     ).returning();
 

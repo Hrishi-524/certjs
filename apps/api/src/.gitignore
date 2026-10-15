@@ -7,7 +7,6 @@ coverage/
 *.env
 *.tsbuildinfo
 *.js
-*.d.ts
 *.map
 .idea/
 .vscode/

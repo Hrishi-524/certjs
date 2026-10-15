@@ -10,6 +10,7 @@ export interface ObjectStorage {
     put(input: PutObjectInput): Promise<void>;
     get(key: string): Promise<Buffer>;
     getStream(key: string): Promise<Readable>;
+    getSignedUrl(key: string, expiresInSeconds?: number): Promise<string>;
     delete(key: string): Promise<void>;
     exists(key: string): Promise<boolean>;
 }

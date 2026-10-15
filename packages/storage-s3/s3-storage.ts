@@ -5,6 +5,7 @@ import {
     PutObjectCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl as createSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import type {
     ObjectStorage,
@@ -22,7 +23,7 @@ export class S3Storage implements ObjectStorage {
             region: process.env.AWS_REGION,
         });
 
-        const bucket = process.env.AWS_S3_BUCKET;
+        const bucket = process.env.AWS_S3_BUCKET ?? process.env.S3_BUCKET_NAME;
 
         if (!bucket) {
             throw new Error("AWS_S3_BUCKET is not configured");
@@ -73,6 +74,17 @@ export class S3Storage implements ObjectStorage {
 
         return Readable.from(
             response.Body as AsyncIterable<Uint8Array>,
+        );
+    }
+
+    async getSignedUrl(key: string, expiresInSeconds = 3600): Promise<string> {
+        return createSignedUrl(
+            this.client,
+            new GetObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+            }),
+            { expiresIn: expiresInSeconds }
         );
     }
 

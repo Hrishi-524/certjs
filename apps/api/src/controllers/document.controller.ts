@@ -23,7 +23,7 @@ export async function getDocument(req: Request, res: Response) {
             status: "pending" | "processing" | "completed" | "failed";
             error: string | null;
             verifyToken: string;
-            s3Url: string | null;
+            presignedUrl: string | null;
             createdAt: Date;
             jobStatus: "pending" | "processing" | "completed" | "failed";
             templateId: string;

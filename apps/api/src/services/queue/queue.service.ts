@@ -28,7 +28,7 @@ export async function enqueueDocument(documents: Document[], jobId: string) {
     } catch (error) {
         await db.update(jobs).set({
             status: "failed",
-            last_error: error instanceof Error ? error.message : "Queue enqueue failed"
+            lastError: error instanceof Error ? error.message : "Queue enqueue failed"
         }).where(eq(jobs.id, jobId));
 
         throw error;

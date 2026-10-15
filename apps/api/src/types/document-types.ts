@@ -1,10 +1,8 @@
-export type Document = {
-    id: string;
-    job_id: string;
-    recipient_data: Record<string, string | number>;
-    status: "pending" | "processing" | "completed" | "failed";
-    error: string | null;
-    verify_token: string;
-    s3_url: string | null;
-    created_at: Date;
-}
+import { documents } from "@certjs/db";
+import type { InferSelectModel } from "drizzle-orm";
+
+export type Document = InferSelectModel<typeof documents>;
+
+export type DocumentWithPresignedUrl = Document & {
+    presignedUrl: string | null;
+};

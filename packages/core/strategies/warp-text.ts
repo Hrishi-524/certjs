@@ -5,11 +5,11 @@ import ellipsisText from "./ellipsis";
 export default function warpText(
     content: string, 
     width: number, 
-    ph_width: number, 
+    placeholderWidth: number, 
     fontSize: number, 
     family: string
 ): LayoutResult {
-    const maxWidth = width * ph_width;
+    const maxWidth = width * placeholderWidth;
     const words = content.split(" ");
 
     const lines : string[] = [];
@@ -29,7 +29,7 @@ export default function warpText(
                     currentLine = ""
                 }
                 // Use ellipsis strategy for the long word
-                const ellipsisResult = ellipsisText(word, width, ph_width, fontSize, family);
+                const ellipsisResult = ellipsisText(word, width, placeholderWidth, fontSize, family);
                 lines.push(...ellipsisResult.lines);
                 continue;
             }
@@ -44,5 +44,5 @@ export default function warpText(
         lines.push(currentLine);
     }
 
-    return { lines: lines, font_size: fontSize };
+    return { lines, fontSize };
 }

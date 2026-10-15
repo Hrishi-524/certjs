@@ -3,6 +3,7 @@ import IORedis from "ioredis";
 import { db, jobs } from "@certjs/db"
 import { eq } from "drizzle-orm";
 import crypto from "crypto"
+import { storage } from "@certjs/storage";
 
 const connection = new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
@@ -21,23 +22,25 @@ export const webhookWorker = new Worker("webhook", async (job) => {
         return;
     }
    
-    if (!batchJob.zip_s3_url) {
+    if (!batchJob.zipKey) {
         throw new Error("ZIP not available");
     }
 
-    if (batchJob.status !== "completed" || !batchJob.zip_s3_url) {
+    if (batchJob.status !== "completed" || !batchJob.zipKey) {
         throw new Error("Batch job not ready for webhook delivery");
     }
+
+    const zipUrl = await storage.getSignedUrl(batchJob.zipKey);
 
     const payload = {
         event: "job.completed",
         jobId: batchJob.id,
         status: batchJob.status,
-        totalCount: batchJob.total_count,
-        processedCount: batchJob.processed_count,
-        failedCount: batchJob.failed_count,
-        zipUrl: batchJob.zip_s3_url,
-        completedAt: batchJob.completed_at
+        totalCount: batchJob.totalCount,
+        processedCount: batchJob.processedCount,
+        failedCount: batchJob.failedCount,
+        zipUrl,
+        completedAt: batchJob.completedAt
     };
 
     const body = JSON.stringify(payload);

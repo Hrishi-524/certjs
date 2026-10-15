@@ -1,4 +1,4 @@
-import { apikeys, db } from "@certjs/db";
+import { apiKeys, db } from "@certjs/db";
 import { eq } from "drizzle-orm"
 import crypto from "crypto"
 import { BadRequestError, UnauthorizedError } from "#app/middleware/express-errors";
@@ -6,21 +6,21 @@ import { BadRequestError, UnauthorizedError } from "#app/middleware/express-erro
 export async function findApiKeyByHash(apiKey: string) {
     const hash = crypto.createHash("sha256").update(apiKey).digest("hex");
 
-    const [row] = await db.select().from(apikeys).where(
-        eq(apikeys.key_hash, hash),
+    const [row] = await db.select().from(apiKeys).where(
+        eq(apiKeys.keyHash, hash),
     )
 
     if(!row) {
         throw new UnauthorizedError("Api Key is invalid or disabled");
     }
 
-    if(!row.is_active) {
+    if(!row.isActive) {
         throw new UnauthorizedError("Api key is invalid or disabled")
     }
 
-    if(row.expires_at && row.expires_at < new Date()) {
+    if(row.expiresAt && row.expiresAt < new Date()) {
         throw new UnauthorizedError("Api key is expired")
     }
 
-    return row.user_id;
+    return row.userId;
 }

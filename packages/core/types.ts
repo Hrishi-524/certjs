@@ -11,7 +11,7 @@ export interface RenderInput {
 
 export interface LayoutResult {
     lines: string[]; 
-    font_size: number;
+    fontSize: number;
 };
 
 export interface DebugOptions {

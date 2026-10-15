@@ -1,3 +1,32 @@
+/**
+ * Certificate Worker
+ *
+ * Responsible for processing individual certificate documents.
+ *
+ * Flow:
+ *  1. Atomically claim the document (pending/failed → processing)
+ *  2. Load job, template, and placeholder definitions
+ *  3. Fetch the template from storage or template cache
+ *  4. Render the certificate using the persisted recipient data
+ *  5. Upload the generated certificate to storage
+ *  6. Mark the document as completed and increment the job's processed count
+ *  7. Enqueue the completed document for the Delivery Worker
+ *
+ * Responsibilities:
+ *  - Certificate generation
+ *  - Document/job state updates
+ *  - Template caching
+ *  - Generation profiling
+ *
+ * Not responsible for:
+ *  - Email or webhook delivery
+ *  - ZIP/batch artifact creation
+ *  - Batch finalization
+ *
+ * The database is the source of truth. Storage/cache is used for
+ * certificate artifacts and performance optimization.
+*/
+
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { renderCertificate } from "@certjs/core/render-engine"
@@ -7,12 +36,12 @@ import { db } from "@certjs/db"
 import { or, and, eq } from "drizzle-orm";
 import { uploadGeneratedCertificate } from "./upload-rendered-document";
 import { sql } from "drizzle-orm";
-import { enqueueFinalizeQueue } from "./finlaize-queue";
 import "./finalizer-worker"
 import "./webhook-worker"
 import { Profiler } from "./utils/profiler";
 import { getTemplate, removeTemplate, setTemplate } from "./utils/template-cache";
 import { cacheRenderedCertificate } from "./utils/finalizer-buffer-cache";
+import { enqueueDeliveryQueue } from "./queues/delivery-queue";
 
 const connection = new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
@@ -21,8 +50,7 @@ const connection = new IORedis(process.env.REDIS_URL!, {
 export const worker = new Worker( "certificates", async (job) => {
     const { document_id } = job.data;
 
-    // 1. Fetch document
-    // 3. Mark document as "processing"
+    // 1. Ideompotency
     const claimed = await db.update(documents).set({ status: "processing" }).where(
         and(
             eq(documents.id, document_id),
@@ -33,20 +61,19 @@ export const worker = new Worker( "certificates", async (job) => {
         )
     ).returning()
 
-    // 2. Ideompotency check
     const [document] = claimed;
-
+    
     if(!document) {
         throw new Error("Document not found");
     }
-
-    // 4.Fetch job
+    
+    // 2. Database Extractions
     const [batchJob] = await db.select().from(jobs).where(eq(jobs.id, document.job_id));
- 
+    
     if(!batchJob) {
         throw new Error("Job not found")
     }
-
+    
     if(batchJob.status === "pending") {
         await db.update(jobs).set({ status: "processing" }).where(
             and(
@@ -55,7 +82,7 @@ export const worker = new Worker( "certificates", async (job) => {
             )
         );
     }
-
+    
     if(batchJob.status === "completed") {
         throw new Error("Job already completed");
     }
@@ -66,31 +93,25 @@ export const worker = new Worker( "certificates", async (job) => {
         batchJobId: batchJob.id,
         documentId: document_id,
     });
+    
+    const [template] = await db.select().from(templates).where(eq(templates.id, batchJob.template_id));
+    
+    if(!template) {
+        throw new Error("Template not found")
+    }
+    
+    const placeholderDefinations = await db.select().from(placeholders).where(eq(placeholders.template_id, template.id));
+
+    const formattedPlaceholders = placeholderDefinations.map(p => ({
+        ...p,
+        x: Number(p.x),
+        y: Number(p.y),
+        width: Number(p.width),
+        min_font_size:  p.min_font_size ? Number(p.min_font_size) : null,
+    }));
 
     try {
-        // 5.Fetch template
-       
-
-        const [template] = await db.select().from(templates).where(eq(templates.id, batchJob.template_id));
-
-        
-
-        if(!template) {
-            throw new Error("Template not found")
-        }
-
-        // 6. Fecth placeholders : PS there will be many placeholders for each template, but we are fetching all of them in one go to minimize DB calls. We can optimize this later if needed.
-        const placeholders_definations = await db.select().from(placeholders).where(eq(placeholders.template_id, template.id));
-
-        const formattedPlaceholders = placeholders_definations.map(p => ({
-            ...p,
-            x: Number(p.x),
-            y: Number(p.y),
-            width: Number(p.width),
-            min_font_size:  p.min_font_size ? Number(p.min_font_size) : null,
-        }));
-
-        // 7. Fetch template buffer from S3
+        // 3. Get the Template Buffer from storage/cache
         if(template.s3_url === null) {
             throw new Error("Template has no associated buffer URL");
         }
@@ -100,7 +121,8 @@ export const worker = new Worker( "certificates", async (job) => {
             operation: "Template Fetch",
             batchJobId: batchJob.id,
             documentId: document_id
-        })
+        });
+
         let templatePromise = getTemplate(template.id);
 
         if (!templatePromise) {
@@ -116,30 +138,16 @@ export const worker = new Worker( "certificates", async (job) => {
         }
 
         const templateBuffer = await templatePromise;
+
         templateProfiler.end();
 
-        // 8. Validate data
-        const data = document.recipient_data;
-
-        for (const placeholder of placeholders_definations) {
-            if (!(placeholder.key in data)) {
-                throw new Error(`Missing field: ${placeholder.name}`);
-            }
-        }
-
-        // 9 Upload
+        // 4. Generate certificate
+        const recipientRecord = document.recipient_data;
 
         const input = {
             templateBuffer,
             placeholders: formattedPlaceholders,
-            data
-        };
-
-        const debugOptions = {
-            enabled: true,
-            showBoxes: true,
-            showCenters: true,
-            showBaselines: true
+            data: recipientRecord
         };
         
         const renderProfiler = new Profiler({
@@ -149,8 +157,7 @@ export const worker = new Worker( "certificates", async (job) => {
             documentId: document_id
         });
 
-        const renderedBuffer = await renderCertificate(input, debugOptions);
-        console.log( `${document_id}: ${(renderedBuffer.length / 1024).toFixed(1)} KB`);
+        const renderedBuffer = await renderCertificate(input);
 
         renderProfiler.end();
 
@@ -163,7 +170,6 @@ export const worker = new Worker( "certificates", async (job) => {
             }
         );
         
-        // 9.5 Upload to S3 and get URL
         const uploadProfiler = new Profiler({
             worker: "CertificateWorker",
             operation: "Upload Certificate",
@@ -178,35 +184,21 @@ export const worker = new Worker( "certificates", async (job) => {
 
         uploadProfiler.end();
         
-        // 10. Update document record with S3 URL and mark as completed
+        // 5. Update Database
         await db.update(documents).set({ 
             s3_url: response.url, 
             status: "completed" 
         }).where(eq(documents.id, document_id));
 
-        // 11. Update processed count in job
         await db.update(jobs).set({
             processed_count: sql`${jobs.processed_count} + 1`
         }).where(eq(jobs.id, batchJob.id));
 
-        // 12. Mark Parent Job as completed if all documents are processed
-        const [updatedJob] = await db.select().from(jobs).where(eq(jobs.id, batchJob.id));
-
-        if(updatedJob && updatedJob.processed_count + updatedJob.failed_count === updatedJob.total_count) {
-            const failedStatus = updatedJob.failed_count > 0 ? "failed" : "completed";
-    
-            if(failedStatus === "completed") {
-                await enqueueFinalizeQueue(batchJob.id);
-            } else {
-                await db.update(jobs).set({ 
-                    status: failedStatus, 
-                    completed_at: new Date() 
-                }).where(eq(jobs.id, batchJob.id));
-            }
-
-        }
+        // 6. Enqueue for delivery
+        await enqueueDeliveryQueue(document_id, batchJob.id);
 
     } catch (error) {
+
         // Required for bullmq retry
         console.error("Worker error:", error);
 

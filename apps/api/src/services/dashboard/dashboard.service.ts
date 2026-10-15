@@ -1,10 +1,9 @@
-import { apikeys, documents, jobs, templates } from "@certjs/db";
+import { apiKeys, documents, jobs, templates } from "@certjs/db";
 import { db } from "@certjs/db";
 import { inArray } from "drizzle-orm";
 import { eq, and } from "drizzle-orm";
 import { desc } from "drizzle-orm";
-import generatePresignedUrl from "../documents/get-signed-url.js";
-import { getKeyForS3Url } from "../templates/get-key.js";
+import { storage } from "@certjs/storage";
 
 export async function getDashboardService(userId: string, {
     activeJobsLimit = 4,
@@ -20,13 +19,13 @@ export async function getDashboardService(userId: string, {
         recentJobs,
         recentTemplates,
     ] = await Promise.all([
-        db.$count(templates, eq(templates.user_id, userId)),
+        db.$count(templates, eq(templates.userId, userId)),
 
-        db.$count(apikeys, eq(apikeys.user_id, userId)),
+        db.$count(apiKeys, eq(apiKeys.userId, userId)),
 
         getDocumentCount(userId),
 
-        db.$count(jobs, eq(jobs.user_id, userId)),
+        db.$count(jobs, eq(jobs.userId, userId)),
 
         getActiveJobs(userId, activeJobsLimit),
 
@@ -60,24 +59,24 @@ export async function getDashboardService(userId: string, {
 async function getRecentTemplates(userId: string, recentTemplatesLimit: number) {
     const recentTemplates = await db.select({
         id: templates.id,
-        userId: templates.user_id,
+        userId: templates.userId,
         name: templates.name,
-        s3Url: templates.s3_url,
+        storageKey: templates.storageKey,
         version: templates.version,
-        isActive: templates.is_active,
+        isActive: templates.isActive,
         width: templates.width,
         height: templates.height,
-        createdAt: templates.created_at,
-        updatedAt: templates.updated_at
+        createdAt: templates.createdAt,
+        updatedAt: templates.updatedAt
     }).from(templates)
-    .where(eq(templates.user_id, userId))
-    .orderBy(desc(templates.created_at))
+    .where(eq(templates.userId, userId))
+    .orderBy(desc(templates.createdAt))
     .limit(recentTemplatesLimit);
 
     const recentTemplatesWithPresignedUrls = await Promise.all(
-        recentTemplates.map(async ({ s3Url, ...template }) => ({
+        recentTemplates.map(async ({ storageKey, ...template }) => ({
             ...template,
-            presignedUrl: await generatePresignedUrl(getKeyForS3Url(s3Url)),
+            presignedUrl: await storage.getSignedUrl(storageKey),
         }))
     );
 
@@ -90,10 +89,10 @@ async function getDocumentCount(userId: string) {
         .from(documents)
         .innerJoin(
             jobs, 
-            eq(jobs.id, documents.job_id)
+            eq(jobs.id, documents.jobId)
         )
         .where(
-            eq(jobs.user_id, userId)
+            eq(jobs.userId, userId)
         );
     return docs.length;
 }
@@ -103,25 +102,25 @@ async function getActiveJobs(userId: string, activeJobsLimit: number) {
     .select({
         id: jobs.id,
         status: jobs.status,
-        processedCount: jobs.processed_count,
-        totalCount: jobs.total_count,
-        failedCount: jobs.failed_count,
+        processedCount: jobs.processedCount,
+        totalCount: jobs.totalCount,
+        failedCount: jobs.failedCount,
 
         template: {
             id: templates.id,
             name: templates.name
         },
 
-        createdAt: jobs.created_at
+        createdAt: jobs.createdAt
     })
     .from(jobs)
     .innerJoin(
         templates,
-        eq(jobs.template_id, templates.id)
+        eq(jobs.templateId, templates.id)
     )
     .where(
         and(
-            eq(jobs.user_id, userId),
+            eq(jobs.userId, userId),
             inArray(jobs.status, [
                 "pending",
                 "processing",
@@ -137,11 +136,11 @@ async function getRecentJobs(userId: string, recentJobsLimit: number) {
     .select({
         id: jobs.id,
         status: jobs.status,
-        processedCount: jobs.processed_count,
-        totalCount: jobs.total_count,
-        failedCount: jobs.failed_count,
-        createdAt: jobs.created_at,
-        completedAt: jobs.completed_at,
+        processedCount: jobs.processedCount,
+        totalCount: jobs.totalCount,
+        failedCount: jobs.failedCount,
+        createdAt: jobs.createdAt,
+        completedAt: jobs.completedAt,
 
         template: {
             id: templates.id,
@@ -151,10 +150,10 @@ async function getRecentJobs(userId: string, recentJobsLimit: number) {
     .from(jobs)
     .innerJoin(
         templates,
-        eq(jobs.template_id, templates.id)
+        eq(jobs.templateId, templates.id)
     )
-    .where(eq(jobs.user_id, userId))
-    .orderBy(desc(jobs.created_at))
+    .where(eq(jobs.userId, userId))
+    .orderBy(desc(jobs.createdAt))
     .limit(recentJobsLimit);
 
     return recentJobs;

@@ -5,7 +5,7 @@ export type Document = {
     status: "pending" | "processing" | "completed" | "failed";
     error: string | null;
     verifyToken: string;
-    s3Url: string | null;
+    storageKey: string | null;
     createdAt: string;
 };
 
